@@ -1,0 +1,45 @@
+
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS societies;
+DROP TABLE IF EXISTS collections;
+DROP TABLE IF EXISTS trash; /*trash is countable and uncountable*/
+DROP TABLE IF EXISTS events;
+
+CREATE TYPE access_rights AS ENUM (
+    'admin',
+    'member'
+);
+
+create table users (
+    id VARCHAR(50) NOT NULL PRIMARY KEY ,
+    firstName VARCHAR(50) NOT NULL,
+    lastName VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL,
+    CONSTRAINT proper_email CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$')
+);
+
+create table societies(
+    id VARCHAR(50) NOT NULL PRIMARY KEY ,
+    name VARCHAR(50) NOT NULL,
+    region VARCHAR(50) NOT NULL,
+    admin VARCHAR(50) REFERENCES users(id)
+);
+
+create table users_societies(
+    id VARCHAR(50) NOT NULL PRIMARY KEY ,
+    "user" VARCHAR(50) REFERENCES users(id),  /*user is a keyword and should be quoted*/
+    society VARCHAR(50) REFERENCES societies(id),
+    membership access_rights
+);
+
+create table collections(
+
+);
+
+create table trash(
+
+);
+
+create table events(
+
+);
