@@ -1,17 +1,28 @@
 
+
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS societies;
+DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS collections;
 DROP TABLE IF EXISTS trash; /*trash is countable and uncountable*/
-DROP TABLE IF EXISTS events;
 
-CREATE TYPE access_rights AS ENUM (
-    'admin',
-    'member'
+CREATE TYPE accessibility AS ENUM (
+    'easy',
+    'medium',
+    'hard'
 );
 
+CREATE TYPE size AS ENUM (
+    'small',
+    'medium',
+    'big',
+    'extremelyBig'
+    );
+
+
+
 create table users (
-    id VARCHAR(50) NOT NULL PRIMARY KEY ,
+    id VARCHAR(50) PRIMARY KEY ,
     firstName VARCHAR(50) NOT NULL,
     lastName VARCHAR(50) NOT NULL,
     email VARCHAR(50) NOT NULL,
@@ -19,27 +30,56 @@ create table users (
 );
 
 create table societies(
-    id VARCHAR(50) NOT NULL PRIMARY KEY ,
+    id VARCHAR(50) PRIMARY KEY ,
     name VARCHAR(50) NOT NULL,
     region VARCHAR(50) NOT NULL,
     admin VARCHAR(50) REFERENCES users(id)
 );
 
-create table users_societies(
-    id VARCHAR(50) NOT NULL PRIMARY KEY ,
-    "user" VARCHAR(50) REFERENCES users(id),  /*user is a keyword and should be quoted*/
-    society VARCHAR(50) REFERENCES societies(id),
-    membership access_rights
+create table events(
+    id VARCHAR(50) PRIMARY KEY ,
+    date BIGINT NOT NULL ,
+    publc boolean NOT NULL
+
+--         exclusive creation
+--   could be created by user or society
 );
 
 create table collections(
-
+--     exclusive collected by
+--     could be collected by one society
+--     or
+--     many users
 );
 
 create table trash(
-
+    id varchar(50) PRIMARY KEY,
+    size size NOT NULL,
+    place VARCHAR(50),
+    found BIGINT NOT NULL ,
+    cleaned BOOLEAN,
+    accessibility accessibility,
+    gps point,
+    founder VARCHAR(50) REFERENCES users
 );
 
-create table events(
 
+
+create table users_societies(
+    id VARCHAR(50) PRIMARY KEY ,
+    "user" VARCHAR(50) REFERENCES users,  /*user is a keyword and should be quoted*/
+    society VARCHAR(50) REFERENCES societies
+);
+
+
+create table approved_trash(
+    "user" VARCHAR(50),
+    trash VARCHAR(50),
+    PRIMARY KEY ("user", trash)
+);
+
+create table events_trash(
+    id VARCHAR(50) PRIMARY KEY,
+    event varchar(50) REFERENCES events,
+    "user" varchar(50) REFERENCES users
 );
