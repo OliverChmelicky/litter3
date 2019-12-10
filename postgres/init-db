@@ -63,9 +63,9 @@ create table trash
     size          size   NOT NULL,
     place         VARCHAR(50),
     found         BIGINT NOT NULL,
-    cleaned       BOOLEAN,
-    accessibility accessibility,
-    gps           point,
+    cleaned       BOOLEAN NOT NULL,
+    accessibility accessibility NOT NULL,
+    gps           point NOT NULL,
     finder        VARCHAR(50) REFERENCES users
 );
 
