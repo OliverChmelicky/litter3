@@ -1,15 +1,17 @@
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS societies;
+DROP TABLE IF EXISTS users_societies;
+DROP TABLE IF EXISTS users_collected;
+DROP TABLE IF EXISTS societies_events;
+DROP TABLE IF EXISTS users_events;
+
+DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS collections;
 DROP TABLE IF EXISTS trash; /*trash is countable and uncountable*/
+DROP TABLE IF EXISTS societies;
+DROP TABLE IF EXISTS users;
 
-DROP TABLE IF EXISTS users_societies;
-DROP TABLE IF EXISTS approved_trash;
-DROP TABLE IF EXISTS events_trash;
-DROP TABLE IF EXISTS users_collected_trash;
-DROP TABLE IF EXISTS users_events;
-
+DROP TYPE IF EXISTS accessibility
+DROP TYPE IF EXISTS "size"
 
 CREATE TYPE accessibility AS ENUM (
     'easy',
@@ -43,11 +45,26 @@ create table societies
     admin  VARCHAR(50) REFERENCES users (id)
 );
 
+create table comments
+(
+    id        VARCHAR(50) PRIMARY KEY,
+    description  VARCHAR(200),
+    date  BIGINT  NOT NULL,
+    trash_exists boolean,
+    trash VARCHAR(50) REFERENCES users (id),
+    "user"  VARCHAR(50) REFERENCES users, /*user is a keyword and should be quoted*/
+    society VARCHAR(50) REFERENCES societies,
+    CONSTRAINT exclusive_writer CHECK ( ("user" is null and society is not null) or ("user" is not null and society is null  ))
+);
+
 create table events
 (
     id    VARCHAR(50) PRIMARY KEY,
     date  BIGINT  NOT NULL,
-    publc boolean NOT NULL
+    publc boolean NOT NULL,
+    userCreator VARCHAR(50) REFERENCES users,
+    societyCreator VARCHAR(50) REFERENCES societies
+        CONSTRAINT  exclusive_creator CHECK ( (userCreator is null and societyCreator is not null) or (userCreator is not null and societyCreator is null  ))
 );
 
 create table collections
@@ -73,31 +90,23 @@ create table trash
 
 create table users_societies
 (
-    "user"  VARCHAR(50) REFERENCES users, /*user is a keyword and should be quoted*/
+    "user"  VARCHAR(50) REFERENCES users,
     society VARCHAR(50) REFERENCES societies,
     PRIMARY KEY ("user", society)
 );
 
-
-create table approved_trash
-(
-    "user" VARCHAR(50),
-    trash  VARCHAR(50),
-    PRIMARY KEY ("user", trash)
-);
-
-create table events_trash
-(
-    event varchar(50) REFERENCES events,
-    trash varchar(50) REFERENCES trash,
-    PRIMARY KEY (event, trash)
-);
-
-create table users_collected_trash
+create table users_collected
 (
     "user" varchar(50) REFERENCES users,
-    trash  varchar(50) REFERENCES trash,
-    PRIMARY KEY ("user", trash)
+    collection  varchar(50) REFERENCES collections,
+    PRIMARY KEY ("user", collection)
+);
+
+create table societies_events
+(
+    society varchar(50) REFERENCES societies,
+    event  varchar(50) REFERENCES events,
+    PRIMARY KEY (society, event)
 );
 
 create table users_events
