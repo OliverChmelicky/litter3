@@ -1,3 +1,4 @@
+ui/src/environments/environment.ts
 # Binaries for programs and plugins
 *.exe
 *.exe~
