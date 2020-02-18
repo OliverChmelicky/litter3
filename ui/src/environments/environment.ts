@@ -4,7 +4,7 @@
 
 import {EnvironmentModel} from '../app/models/environment.model';
 
-export const firebase: EnvironmentModel = {
+export const environment: EnvironmentModel = {
   production: false,
   firebaseConfig: {
     apiKey: '',

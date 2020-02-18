@@ -1,9 +1,8 @@
 // Source https://www.youtube.com/watch?v=qP5zw7fjQgo
 
-import { Injectable } from '@angular/core';
-import {Router} from '@angular/router';
+import {Injectable} from '@angular/core';
 
-import {auth, User} from 'firebase/app';
+import {auth} from 'firebase/app';
 import {AngularFireAuth} from '@angular/fire/auth';
 import {
   AngularFirestore,
@@ -12,7 +11,7 @@ import {
 
 import {Observable, of} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
-import {UserModel} from './user.model';
+import {UserModel} from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,22 +19,11 @@ import {UserModel} from './user.model';
 export class AuthService {
   user$: Observable<UserModel>;
 
-
-
   constructor(
     private afAuth: AngularFireAuth,
     private afs: AngularFirestore,
-    private router: Router
   ) {
-    this.user$ =  this.afAuth.authState.pipe(
-      switchMap(user => {
-        if (user) {
-          return this.afs.doc<UserModel>('users/${user.uid}').valueChanges();
-        } else {
-          return of(null);
-        }
-      })
-    );
+
   }
 
   async googleSignin() {
@@ -46,12 +34,11 @@ export class AuthService {
 
   async signOut() {
     await this.afAuth.auth.signOut();
-    return this.router.navigate(['/']);
   }
 
-  private updateUserData({uid, email, displayName, photoURL}: User) {
+  private updateUserData({uid, email, displayName, photoURL}: UserModel) {
     // Sets user data to firestore on login
-    const userRef: AngularFirestoreDocument<UserModel> = this.afs.doc('user/${user.uid}');
+    const userRef: AngularFirestoreDocument<UserModel> = this.afs.doc(`users/${uid}`);
 
     const data = {
       uid,
@@ -61,6 +48,20 @@ export class AuthService {
     };
 
     return userRef.set(data, {merge: true});
+  }
+
+  RegisterPasswdAuth() {
+    this.afAuth.auth.createUserWithEmailAndPassword("idem@plavat.tu", "test11")
+      .catch(function (error) {
+        console.log(error.message)
+      });
+  }
+
+  LoginPasswdAuth() {
+    this.afAuth.auth.signInWithEmailAndPassword("idem@plavat.tu", "test11").then(data => console.log(data.user.getIdToken()))
+      .catch(function (error) {
+        console.log(error.message)
+      });
   }
 
 }
