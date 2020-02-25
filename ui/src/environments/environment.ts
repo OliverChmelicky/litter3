@@ -15,7 +15,8 @@ export const environment: EnvironmentModel = {
     messagingSenderId: '',
     appId: '',
     measurementId: ''
-  }
+  },
+  googleMapsApiKey: '',
 };
 
 /*

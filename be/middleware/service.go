@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"errors"
 	firebase "firebase.google.com/go"
 	"fmt"
 	"github.com/labstack/echo"
@@ -32,7 +31,7 @@ func (s *MiddlewareService) AuthorizeUser(next echo.HandlerFunc) echo.HandlerFun
 	return func(c echo.Context) error {
 		token := c.Request().Header.Get("Authorization")
 		if token == "" {
-			return c.JSON(http.StatusUnauthorized, errors.New("error missing token"))
+			return c.JSON(http.StatusUnauthorized, "error missing token")
 		}
 
 		firebaseToken, err := s.Connection.VerifyIDToken(context.Background(), token)

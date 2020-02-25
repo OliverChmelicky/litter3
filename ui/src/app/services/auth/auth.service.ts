@@ -10,20 +10,22 @@ import {
 } from '@angular/fire/firestore';
 
 import {Observable, of} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, tap} from 'rxjs/operators';
 import {UserModel} from '../../models/user.model';
+import {HttpClient} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   user$: Observable<UserModel>;
+  heroesUrl = "//localhost:1323";
 
   constructor(
     private afAuth: AngularFireAuth,
     private afs: AngularFirestore,
+    private http: HttpClient,
   ) {
-
   }
 
   async googleSignin() {
@@ -63,5 +65,10 @@ export class AuthService {
         console.log(error.message)
       });
   }
+
+  // getTest(): void {
+  //   console.log(this.heroesUrl);
+  //   this.http.get(this.heroesUrl).toPromise().then(data => console.log(data)).catch(err => console.error(err))
+  // }
 
 }

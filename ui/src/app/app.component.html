@@ -1,18 +1,17 @@
-<h1>Base</h1>
+<app-google-map></app-google-map>
+<!--<div *ngIf="auth.user$ | async as userModel; else login">-->
+<!--  {{userModel | json }}-->
+<!--  <hr>-->
+<!--  <button class="button" (click)="auth.signOut()">Sign Out</button>-->
+<!--</div>-->
 
-<div *ngIf="auth.user$ | async as userModel; else login">
-  {{userModel | json }}
-  <hr>
-  <button class="button" (click)="auth.signOut()">Sign Out</button>
-</div>
-
-<ng-template #login>
-  <button class="button" (click)="auth.googleSignin()">Login with Google</button>
-</ng-template>
-
-
-  <button class="button" (click)="auth.LoginPasswdAuth()">Login with new account</button>
+<!--<ng-template #login>-->
+<!--  <button class="button" (click)="auth.googleSignin()">Login with Google</button>-->
+<!--</ng-template>-->
 
 
-  <button class="button" (click)="auth.RegisterPasswdAuth()">Create new account</button>
+<!--  <button class="button" (click)="auth.LoginPasswdAuth()">Login with new account</button>-->
+
+
+<!--  <button class="button" (click)="auth.RegisterPasswdAuth()">Create new account</button>-->
 

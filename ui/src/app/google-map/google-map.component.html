@@ -1,0 +1,10 @@
+<p>google-map works!</p>
+<agm-map
+  [latitude]="location.lat"
+  [longitude]="location.lng"
+  [zoom]="location.zoom"
+  (mapDblClick)="addMarker($event.coords.lat, $event.coords.lng)"
+  (mapReady)="onMapReady($event)"
+  disableDoubleClickZoom="true">
+  <agm-marker *ngFor="let marker of markers" [latitude]="marker.lat" [longitude]="marker.lng"></agm-marker>
+</agm-map>

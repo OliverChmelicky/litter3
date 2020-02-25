@@ -9,20 +9,30 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 
 // import { environment } from '../environments/environment';
-import { firebaseEnv } from '../environments/environment.private';
+import { AgmCoreModule } from '@agm/core';
+import { environment } from '../environments/environment';
+import {HttpClientModule} from "@angular/common/http";
+import { GoogleMapComponent } from './google-map/google-map.component';
+import {LocationService} from "./services/location/location.service";
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    GoogleMapComponent
   ],
   imports: [
     BrowserModule,
     RouterModule,
-    AngularFireModule.initializeApp(firebaseEnv.firebaseConfig),
+    AngularFireModule.initializeApp(environment.firebaseConfig),
     AngularFirestoreModule,
     AngularFireAuthModule,
+    HttpClientModule,
+    AgmCoreModule.forRoot({
+      apiKey: environment.googleMapsApiKey,
+      libraries: ['places', 'geometry']
+    }),
   ],
-  providers: [],
+  providers: [LocationService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
