@@ -3,12 +3,17 @@ package middleware
 import (
 	"context"
 	firebase "firebase.google.com/go"
+	"firebase.google.com/go/auth"
 	"fmt"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 	"net/http"
 )
+
+type MiddlewareService struct {
+	Connection *auth.Client
+}
 
 func NewMiddlewareService() (*MiddlewareService, error) {
 	opt := option.WithCredentialsFile("secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")

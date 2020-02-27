@@ -1,4 +1,4 @@
-
+postgres
 all:
 	echo "Hello, use one of the options dev"
 

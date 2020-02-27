@@ -1,32 +1,34 @@
 version: '3'
 services:
-  backend:
-    image: litter3-img:latest
-    volumes:
-      - .:/go/src/github.com/olo/litter3/be
+#  backend:
+#    image: litter3-img:latest
+#    volumes:
+#      - .:/go/src/github.com/olo/litter3/be
 #    working_dir: /go/src/github.com/olo/litter3/be
 #    command: go run ./cmd/litter3/main.go    is already in image
 #    restart: always
-    networks:
-      - dev
-    environment:
-      - GO111MODULE=on
+#    networks:
+#      - dev
+#    environment:
+#      - GO111MODULE=on
 #      - SERVICE_ACCOUNT_KEY=../secrets/service-account-dev.json
 #      - CLOUDSQL_DB_CREDENTIALS_USER=goo
 #      - CLOUDSQL_DB_CREDENTIALS_PASSWORD=goo
 #      - DB_NAME=goo
-#  db-svc:
-#    image: kartoza/postgis
-#    restart: always
-#    container_name: db-svc
-#    environment:
-#      - POSTGRES_DBNAME=goo
-#      - POSTGRES_USER=goo
-#      - POSTGRES_PASS=goo
-##      - DB_EXTENSION=pgcrypto
-#    networks:
-#      - dev
-#    ports:
-#      - 5432:5432
+  db-svc:
+    image: kartoza/postgis
+    restart: always
+    volumes:
+    - ./postgres:/docker-entrypoint-initdb.d
+    container_name: db-svc
+    environment:
+      - POSTGRES_DBNAME=goo
+      - POSTGRES_USER=goo
+      - POSTGRES_PASS=goo
+#      - DB_EXTENSION=pgcrypto
+    networks:
+      - dev
+    ports:
+      - 5432:5432
 networks:
   dev:
