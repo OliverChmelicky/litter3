@@ -26,6 +26,7 @@ export class AuthService {
     private afs: AngularFirestore,
     private http: HttpClient,
   ) {
+    this.LoginPasswdAuth();
   }
 
   async googleSignin() {

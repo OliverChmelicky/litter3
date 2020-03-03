@@ -1,5 +1,6 @@
-DROP TABLE IF EXISTS users_societies;
-DROP TABLE IF EXISTS users_collected;
+DROP TABLE IF EXISTS users_societies_members;
+DROP TABLE IF EXISTS users_societies_admins;
+DROP TABLE IF EXISTS users_collections;
 DROP TABLE IF EXISTS societies_events;
 DROP TABLE IF EXISTS users_events;
 
@@ -10,8 +11,8 @@ DROP TABLE IF EXISTS trash; /*trash is countable and uncountable*/
 DROP TABLE IF EXISTS societies;
 DROP TABLE IF EXISTS users;
 
-DROP TYPE IF EXISTS accessibility
-DROP TYPE IF EXISTS "size"
+DROP TYPE IF EXISTS accessibility;
+DROP TYPE IF EXISTS "size";
 
 CREATE TYPE accessibility AS ENUM (
     'easy',
@@ -30,88 +31,100 @@ CREATE TYPE size AS ENUM (
 
 create table users
 (
-    id        VARCHAR PRIMARY KEY,
-    firstName VARCHAR NOT NULL,
-    lastName  VARCHAR NOT NULL,
-    email     VARCHAR NOT NULL,
-    CONSTRAINT proper_email CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$')
+    id         VARCHAR PRIMARY KEY,
+    first_name VARCHAR NOT NULL,
+    last_name  VARCHAR NOT NULL,
+    email      VARCHAR NOT NULL,
+    CONSTRAINT proper_email CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
+    created    BIGINT  NOT NULL
 );
 
 create table societies
 (
-    id     VARCHAR PRIMARY KEY,
-    name   VARCHAR NOT NULL,
-    region VARCHAR NOT NULL,
-    admin  VARCHAR REFERENCES users (id)
+    id      VARCHAR PRIMARY KEY,
+    name    VARCHAR NOT NULL,
+    region  VARCHAR NOT NULL,
+    admins  VARCHAR REFERENCES users_societies_admins ("user", society),
+    created BIGINT  NOT NULL
 );
 
 create table comments
 (
-    id        VARCHAR PRIMARY KEY,
-    description  VARCHAR),
-    date  BIGINT  NOT NULL,
+    id           VARCHAR PRIMARY KEY,
+    description  VARCHAR,
     trash_exists boolean,
-    trash VARCHAR REFERENCES users (id),
-    "user"  VARCHAR REFERENCES users, /*user is a keyword and should be quoted*/
-    society VARCHAR REFERENCES societies,
-    CONSTRAINT exclusive_writer CHECK ( ("user" is null and society is not null) or ("user" is not null and society is null  ))
+    trash        VARCHAR REFERENCES trash (id),
+    "user"       VARCHAR REFERENCES users (id), /*user is a keyword and should be quoted*/
+    society      VARCHAR REFERENCES societies (id),
+    CONSTRAINT exclusive_writer CHECK ( ("user" is null and society is not null) or
+                                        ("user" is not null and society is null)),
+    created      BIGINT NOT NULL
 );
 
 create table events
 (
-    id    VARCHAR PRIMARY KEY,
-    date  BIGINT  NOT NULL,
-    publc boolean NOT NULL,
-    userCreator VARCHAR REFERENCES users,
-    societyCreator VARCHAR REFERENCES societies
-        CONSTRAINT  exclusive_creator CHECK ( (userCreator is null and societyCreator is not null) or (userCreator is not null and societyCreator is null  ))
+    id              VARCHAR PRIMARY KEY,
+    date            BIGINT  NOT NULL,
+    publc           boolean NOT NULL,
+    user_creator    VARCHAR REFERENCES users (id),
+    society_creator VARCHAR REFERENCES societies (id),
+    CONSTRAINT exclusive_creator CHECK ( (user_creator is null and society_creator is not null) or
+                                         (user_creator is not null and society_creator is null)),
+    created         BIGINT  NOT NULL
 );
 
 create table collections
 (
     id      VARCHAR PRIMARY KEY,
-    date    BIGINT  NOT NULL,
-    cleaned boolean NOT NULL
+    trash   VARCHAR REFERENCES trash (id),
+    cleaned boolean NOT NULL,
+    created BIGINT  NOT NULL
 );
 
 create table trash
 (
     id            VARCHAR PRIMARY KEY,
-    size          size   NOT NULL,
     place         VARCHAR,
-    found         BIGINT NOT NULL,
-    cleaned       BOOLEAN NOT NULL,
+    cleaned       BOOLEAN       NOT NULL,
+    size          size          NOT NULL,
     accessibility accessibility NOT NULL,
-    gps           point NOT NULL,
-    finder        VARCHAR REFERENCES users
+    gps           point         NOT NULL,
+    finder        VARCHAR REFERENCES users,
+    created         BIGINT        NOT NULL
 );
 
 
-
-create table users_societies
+create table users_societies_admins
 (
-    "user"  VARCHAR REFERENCES users,
-    society VARCHAR REFERENCES societies,
+    "user"  VARCHAR REFERENCES users (id),
+    society VARCHAR REFERENCES societies (id),
     PRIMARY KEY ("user", society)
 );
 
-create table users_collected
+create table users_societies_members
 (
-    "user" VARCHAR REFERENCES users,
-    collection  VARCHAR REFERENCES collections,
+    "user"  VARCHAR REFERENCES users (id),
+    society VARCHAR REFERENCES societies (id),
+    PRIMARY KEY ("user", society)
+);
+
+create table users_collections
+(
+    "user"     VARCHAR REFERENCES users (id),
+    collection VARCHAR REFERENCES collections (id),
     PRIMARY KEY ("user", collection)
 );
 
 create table societies_events
 (
-    society VARCHAR REFERENCES societies,
-    event  VARCHAR REFERENCES events,
+    society VARCHAR REFERENCES societies (id),
+    event   VARCHAR REFERENCES events (id),
     PRIMARY KEY (society, event)
 );
 
 create table users_events
 (
-    "user" VARCHAR REFERENCES users,
-    event  VARCHAR REFERENCES events,
+    "user" VARCHAR REFERENCES users (id),
+    event  VARCHAR REFERENCES events (id),
     PRIMARY KEY ("user", event)
 );

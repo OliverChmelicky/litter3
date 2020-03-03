@@ -9,10 +9,10 @@ import (
 )
 
 type user struct {
-	id        string
-	firstName string
-	lastName  string
-	email     string
+	Id        string
+	FirstName string
+	LastName  string
+	Email     string
 }
 
 func main() {
@@ -20,18 +20,20 @@ func main() {
 		User:     "goo",
 		Password: "goo",
 		Database: "goo",
+		Addr:     "localhost:5432",
 	})
 	defer db.Close()
-	db.AddQueryHook(dbMiddleware{})
+	db.AddQueryHook(middlewareService.DbMiddleware{})
 
-	usr := user{id: "9"}
-	res, err := db.Model(&usr).Insert(&usr)
+	usr := &user{Id: "9", FirstName: "Oliver"}
+	//res, err := db.Model(&usr).Insert(&usr)
+	err := db.Insert(usr)
 	if err != nil {
 		log.Error(err)
 		return
 	}
 
-	log.Info(res)
+	//log.Info(res)
 
 	e := echo.New()
 	tokenMiddleware, err := middlewareService.NewMiddlewareService()

@@ -6,13 +6,13 @@ import (
 	"github.com/go-pg/pg/v9"
 )
 
-type dbMiddleware struct{}
+type DbMiddleware struct{}
 
-func (d dbMiddleware) BeforeQuery(c context.Context, q *pg.QueryEvent) (context.Context, error) {
+func (d DbMiddleware) BeforeQuery(c context.Context, q *pg.QueryEvent) (context.Context, error) {
 	return c, nil
 }
 
-func (d dbMiddleware) AfterQuery(c context.Context, q *pg.QueryEvent) error {
+func (d DbMiddleware) AfterQuery(c context.Context, q *pg.QueryEvent) error {
 	fmt.Println(q.FormattedQuery())
 	return nil
 }
