@@ -19,7 +19,7 @@ services:
     image: kartoza/postgis
     restart: always
     volumes:
-    - ./postgres:/docker-entrypoint-initdb.d
+    - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     container_name: db-svc
     environment:
       - POSTGRES_DBNAME=goo

@@ -44,8 +44,19 @@ create table societies
     id      VARCHAR PRIMARY KEY,
     name    VARCHAR NOT NULL,
     region  VARCHAR NOT NULL,
-    admins  VARCHAR REFERENCES users_societies_admins ("user", society),
     created BIGINT  NOT NULL
+);
+
+create table trash
+(
+    id            VARCHAR PRIMARY KEY,
+    cleaned       BOOLEAN       NOT NULL,
+    size          size          NOT NULL,
+    accessibility accessibility NOT NULL,
+    gps           point         NOT NULL,
+    description   VARCHAR,
+    finder        VARCHAR REFERENCES users,
+    created       BIGINT        NOT NULL
 );
 
 create table comments
@@ -79,18 +90,6 @@ create table collections
     trash   VARCHAR REFERENCES trash (id),
     cleaned boolean NOT NULL,
     created BIGINT  NOT NULL
-);
-
-create table trash
-(
-    id            VARCHAR PRIMARY KEY,
-    place         VARCHAR,
-    cleaned       BOOLEAN       NOT NULL,
-    size          size          NOT NULL,
-    accessibility accessibility NOT NULL,
-    gps           point         NOT NULL,
-    finder        VARCHAR REFERENCES users,
-    created         BIGINT        NOT NULL
 );
 
 
