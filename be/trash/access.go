@@ -22,8 +22,8 @@ func (s *trashAccess) CreateTrash(in *TrashModel) (*TrashModel, error) {
 	return in, nil
 }
 
-func (s *trashAccess) GetTrash(in string) (TrashModel, error) {
-	return TrashModel{}, nil
+func (s *trashAccess) GetTrash(in string) (*TrashModel, error) {
+	return &TrashModel{}, nil
 }
 
 func (s *trashAccess) UpdateTrash(in *TrashModel) (*TrashModel, error) {

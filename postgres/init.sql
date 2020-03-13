@@ -43,7 +43,6 @@ create table societies
 (
     id      VARCHAR PRIMARY KEY,
     name    VARCHAR NOT NULL,
-    region  VARCHAR NOT NULL,
     created BIGINT  NOT NULL
 );
 

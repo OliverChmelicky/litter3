@@ -45,6 +45,7 @@ func main() {
 	userService := user.CreateService(db, firebaseAuth)
 	e.POST("/users/new", userService.CreateUser)
 	e.GET("users/:id", userService.GetUser, tokenMiddleware.FillUserContext)
+	e.GET("users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/societies/new", userService.CreateSociety, tokenMiddleware.AuthorizeUser)

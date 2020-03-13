@@ -18,10 +18,23 @@ func CreateService(db *pg.DB, authConn *auth.Client) *userService {
 }
 
 func (s *userService) CreateUser(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+	user := new(UserModel)
+	if err := c.Bind(user); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	user, err := s.userAccess.CreateUser(user)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusNotImplemented, user)
 }
 
 func (s *userService) GetUser(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, "Implement me")
+}
+
+func (s *userService) GetCurrentUser(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
 
