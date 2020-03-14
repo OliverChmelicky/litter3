@@ -9,7 +9,7 @@ type UserModel struct {
 	Created   int64
 }
 
-type Society struct {
+type SocietyModel struct {
 	tableName struct{} `pg:"societies"`
 	Id        string
 	Name      string

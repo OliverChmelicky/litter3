@@ -47,7 +47,7 @@ func (s *trashService) GetTrashById(c echo.Context) error {
 	return c.JSON(http.StatusOK, trash)
 }
 
-func (s *trashService) GetTrashByInRange(c echo.Context) error {
+func (s *trashService) GetTrashInRange(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
 
@@ -59,7 +59,7 @@ func (s *trashService) UpdateTrash(c echo.Context) error {
 
 	_, err := s.trashAccess.GetTrash(trash.Id)
 	if err != nil {
-		return c.String(http.StatusNotFound, "Invalid arguments")
+		return c.String(http.StatusNotFound, "Trash with provided Id does not exist")
 	}
 
 	trash, err = s.trashAccess.UpdateTrash(trash)
@@ -71,5 +71,34 @@ func (s *trashService) UpdateTrash(c echo.Context) error {
 }
 
 func (s *trashService) DeleteTrash(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, "Implement me")
+}
+
+func (s *trashService) CreateCollection(c echo.Context) error {
+	user := new(CollectionModel)
+	if err := c.Bind(user); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	user, err := s.userAccess.CreateCollection(user)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusNotImplemented, user)
+}
+
+func (s *trashService) GetCollection(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, "Implement me")
+}
+
+func (s *trashService) GetCurrentCollection(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, "Implement me")
+}
+
+func (s *trashService) UpdateCollection(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, "Implement me")
+}
+
+func (s *trashService) DeleteCollection(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
