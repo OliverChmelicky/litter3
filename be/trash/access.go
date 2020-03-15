@@ -38,3 +38,15 @@ func (s *trashAccess) UpdateTrash(in *TrashModel) (*TrashModel, error) {
 func (s *trashAccess) DeleteTrash(in string) error {
 	return nil
 }
+
+func (s *trashAccess) CreateCollection(in *CollectionModel) (*CollectionModel, error) {
+	in.Id = uuid.NewV4().String()
+	in.Created = time.Now().Unix()
+	s.db.Model()
+	err := s.db.Insert(in)
+	if err != nil {
+		return &CollectionModel{}, err
+	}
+
+	return in, nil
+}

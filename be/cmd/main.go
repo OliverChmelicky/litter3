@@ -42,7 +42,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	userService := user.CreateService(db, firebaseAuth)
+	userService := user.CreateService(db)
 	e.POST("/users/new", userService.CreateUser)
 	e.GET("users/:id", userService.GetUser, tokenMiddleware.FillUserContext)
 	e.GET("users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)

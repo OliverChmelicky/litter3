@@ -20,6 +20,11 @@ CREATE TYPE accessibility AS ENUM (
     'hard'
     );
 
+CREATE TYPE membership AS ENUM (
+    'admin',
+    'member'
+    );
+
 CREATE TYPE size AS ENUM (
     'small',
     'medium',
@@ -92,14 +97,15 @@ create table collections
 );
 
 
-create table users_societies_admins
+create table societies_members
 (
     "user"  VARCHAR REFERENCES users (id),
     society VARCHAR REFERENCES societies (id),
+    permission membership not null ,
     PRIMARY KEY ("user", society)
 );
 
-create table users_societies_members
+create table societies_applicants
 (
     "user"  VARCHAR REFERENCES users (id),
     society VARCHAR REFERENCES societies (id),

@@ -80,7 +80,7 @@ func (s *trashService) CreateCollection(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	user, err := s.userAccess.CreateCollection(user)
+	user, err := s.trashAccess.CreateCollection(user)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}

@@ -19,7 +19,7 @@ type TrashModel struct {
 type size string
 type accessibility string
 
-type Collection struct {
+type CollectionModel struct {
 	tableName struct{} `pg:"trash"`
 	Id        string
 	Created   int64
