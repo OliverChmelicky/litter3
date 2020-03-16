@@ -119,12 +119,14 @@ func (s *userService) DeleteUser(c echo.Context) error {
 }
 
 func (s *userService) CreateSociety(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
 	society := new(SocietyModel)
 	if err := c.Bind(society); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	society, err := s.userAccess.CreateSociety(society)
+	society, err := s.userAccess.CreateSociety(society, userId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}

@@ -59,7 +59,7 @@ create table trash
     accessibility accessibility NOT NULL,
     gps           point         NOT NULL,
     description   VARCHAR,
-    finder        VARCHAR REFERENCES users,
+    finder_id     VARCHAR REFERENCES users,
     created       BIGINT        NOT NULL
 );
 
@@ -68,11 +68,11 @@ create table comments
     id           VARCHAR PRIMARY KEY,
     description  VARCHAR,
     trash_exists boolean,
-    trash        VARCHAR REFERENCES trash (id),
-    "user"       VARCHAR REFERENCES users (id), /*user is a keyword and should be quoted*/
-    society      VARCHAR REFERENCES societies (id),
-    CONSTRAINT exclusive_writer CHECK ( ("user" is null and society is not null) or
-                                        ("user" is not null and society is null)),
+    trash_id        VARCHAR REFERENCES trash (id),
+    "user_id"       VARCHAR REFERENCES users (id), /*user is a keyword and should be quoted*/
+    society_id      VARCHAR REFERENCES societies (id),
+    CONSTRAINT exclusive_writer CHECK ( ("user_id" is null and society_id is not null) or
+                                        ("user_id" is not null and society_id is null)),
     created      BIGINT NOT NULL
 );
 
@@ -81,17 +81,17 @@ create table events
     id              VARCHAR PRIMARY KEY,
     date            BIGINT  NOT NULL,
     publc           boolean NOT NULL,
-    user_creator    VARCHAR REFERENCES users (id),
-    society_creator VARCHAR REFERENCES societies (id),
-    CONSTRAINT exclusive_creator CHECK ( (user_creator is null and society_creator is not null) or
-                                         (user_creator is not null and society_creator is null)),
+    user_id    VARCHAR REFERENCES users (id),
+    society_id VARCHAR REFERENCES societies (id),
+    CONSTRAINT exclusive_creator CHECK ( (user_id is null and society_id is not null) or
+                                         (user_id is not null and society_id is null)),
     created         BIGINT  NOT NULL
 );
 
 create table collections
 (
     id      VARCHAR PRIMARY KEY,
-    trash   VARCHAR REFERENCES trash (id),
+    trash_id   VARCHAR REFERENCES trash (id),
     cleaned boolean NOT NULL,
     created BIGINT  NOT NULL
 );
@@ -99,36 +99,36 @@ create table collections
 
 create table societies_members
 (
-    "user"  VARCHAR REFERENCES users (id),
-    society VARCHAR REFERENCES societies (id),
-    permission membership not null ,
-    PRIMARY KEY ("user", society)
+    "user_id"     VARCHAR REFERENCES users (id),
+    society_id    VARCHAR REFERENCES societies (id),
+    permission membership not null,
+    PRIMARY KEY ("user_id", society_id)
 );
 
 create table societies_applicants
 (
-    "user"  VARCHAR REFERENCES users (id),
-    society VARCHAR REFERENCES societies (id),
-    PRIMARY KEY ("user", society)
+    "user_id"  VARCHAR REFERENCES users (id),
+    society_id VARCHAR REFERENCES societies (id),
+    PRIMARY KEY ("user_id", society_id)
 );
 
 create table users_collections
 (
-    "user"     VARCHAR REFERENCES users (id),
-    collection VARCHAR REFERENCES collections (id),
-    PRIMARY KEY ("user", collection)
+    "user_id"     VARCHAR REFERENCES users (id),
+    collection_id VARCHAR REFERENCES collections (id),
+    PRIMARY KEY ("user_id", collection_id)
 );
 
 create table societies_events
 (
-    society VARCHAR REFERENCES societies (id),
-    event   VARCHAR REFERENCES events (id),
-    PRIMARY KEY (society, event)
+    society_id VARCHAR REFERENCES societies (id),
+    event_id   VARCHAR REFERENCES events (id),
+    PRIMARY KEY (society_id, event_id)
 );
 
 create table users_events
 (
-    "user" VARCHAR REFERENCES users (id),
-    event  VARCHAR REFERENCES events (id),
-    PRIMARY KEY ("user", event)
+    "user_id" VARCHAR REFERENCES users (id),
+    event_id  VARCHAR REFERENCES events (id),
+    PRIMARY KEY ("user_id", event_id)
 );

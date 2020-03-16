@@ -48,6 +48,8 @@ func main() {
 	e.GET("users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 
+	e.POST("/societies/new", userService.CreateUser, tokenMiddleware.AuthorizeUser)
+
 	e.POST("/societies/new", userService.CreateSociety, tokenMiddleware.AuthorizeUser)
 
 	trashService := trash.CreateService(db)
@@ -61,7 +63,7 @@ func getFirebaseAuth() (*auth.Client, error) {
 	opt := option.WithCredentialsFile("secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
-		log.Error("error initializing app: %v", err)
+		log.Errorf("error initializing app: %s\n", err.Error())
 		return &auth.Client{}, err
 	}
 

@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	uuid "github.com/satori/go.uuid"
 	"time"
@@ -14,7 +15,6 @@ type userAccess struct {
 func (s *userAccess) CreateUser(in *UserModel) (*UserModel, error) {
 	in.Id = uuid.NewV4().String()
 	in.Created = time.Now().Unix()
-	s.db.Model()
 	err := s.db.Insert(in)
 	if err != nil {
 		return &UserModel{}, err
@@ -57,12 +57,30 @@ func (s *userAccess) DeleteUser(in string) error {
 	return nil
 }
 
-func (s *userAccess) CreateSociety(in *SocietyModel) (*SocietyModel, error) {
+func (s *userAccess) CreateSociety(in *SocietyModel, adminId string) (*SocietyModel, error) {
+	//Make it transactional
+	//put Id creation, created into db middleware
 	in.Id = uuid.NewV4().String()
 	in.Created = time.Now().Unix()
 	s.db.Model()
+	fmt.Println("Admin Id: ", adminId)
 	err := s.db.Insert(in)
 	if err != nil {
+		return &SocietyModel{}, err
+	}
+
+	admin := &MemberModel{
+
+		SocietyId:  in.Id,
+		UserId:     adminId,
+		Permission: "admin",
+	}
+	fmt.Println("Druhy insert")
+	s.db.Model()
+	err = s.db.Insert(admin)
+	if err != nil {
+		fmt.Println("ERRORIS")
+		fmt.Println(err)
 		return &SocietyModel{}, err
 	}
 
