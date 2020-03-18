@@ -2,9 +2,9 @@ package user
 
 import (
 	"errors"
-	"fmt"
 	"github.com/go-pg/pg/v9"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -57,13 +57,12 @@ func (s *userAccess) DeleteUser(in string) error {
 	return nil
 }
 
-func (s *userAccess) CreateSociety(in *SocietyModel, adminId string) (*SocietyModel, error) {
+func (s *userAccess) CreateSocietyWithAdmin(in *SocietyModel, adminId string) (*SocietyModel, error) {
 	//Make it transactional
 	//put Id creation, created into db middleware
 	in.Id = uuid.NewV4().String()
 	in.Created = time.Now().Unix()
-	s.db.Model()
-	fmt.Println("Admin Id: ", adminId)
+
 	err := s.db.Insert(in)
 	if err != nil {
 		return &SocietyModel{}, err
@@ -75,12 +74,9 @@ func (s *userAccess) CreateSociety(in *SocietyModel, adminId string) (*SocietyMo
 		UserId:     adminId,
 		Permission: "admin",
 	}
-	fmt.Println("Druhy insert")
-	s.db.Model()
+
 	err = s.db.Insert(admin)
 	if err != nil {
-		fmt.Println("ERRORIS")
-		fmt.Println(err)
 		return &SocietyModel{}, err
 	}
 
@@ -99,11 +95,14 @@ func (s *userAccess) GetSociety(in string) (*SocietyModel, error) {
 func (s *userAccess) GetSocietyAdmins(in string) ([]string, error) {
 	members := new(MemberModel)
 	var admins []string
+	//error: pg: Model(non-pointer []string)
 	err := s.db.Model(members).Column("user_id").Where("membership = admin and society_id = ? ", in).Select(admins) //does it work like this, is slice pointer itself?
 	if err != nil {
+		logrus.Error(err)
 		return nil, err
 	}
 
+	logrus.Info(admins)
 	return admins, nil
 }
 

@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -39,13 +40,14 @@ func (s *SocietySuite) SetupSuite() {
 	s.e = echo.New()
 }
 
-func (s *SocietySuite) TestCreateSociety() {
+func (s *SocietySuite) TestCRU_Society() {
 	user := &UserModel{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", Created: 538}
+	newSociety := &SocietyModel{Name: "Dake meno"}
+	numberOfAdmins := 1
 
 	user, err := s.service.userAccess.CreateUser(user)
 	s.NoError(err)
 
-	newSociety := SocietyModel{Name: "Dake meno"}
 	bytes, _ := json.Marshal(newSociety)
 
 	req := httptest.NewRequest(echo.POST, "/societies/new", strings.NewReader(string(bytes)))
@@ -56,21 +58,37 @@ func (s *SocietySuite) TestCreateSociety() {
 	c.Set("userId", user.Id)
 
 	s.NoError(s.service.CreateSociety(c))
+
+	resp := &SocietyModel{}
+	err = json.Unmarshal(rec.Body.Bytes(), resp)
+	s.Nil(err)
+	fmt.Println(resp)
+
+	newSociety.Id = resp.Id
+	newSociety.Created = resp.Created
+	s.EqualValues(newSociety, resp)
+
+	isAdmin, numAdmins, err := s.service.isUserSocietyAdmin(user.Id, resp.Id)
+	s.Nil(err)
+	s.True(isAdmin)
+	s.EqualValues(numberOfAdmins, numAdmins)
+
+	//test update group
+
 }
 
-//func (s *SocietySuite) TestGetIncidentsCount() {
-//	req := httptest.NewRequest(echo.GET, "/incidents/info", nil)
-//	q := req.URL.Query()
-//	q.Add("from", "30")
-//	req.URL.RawQuery = q.Encode()
-//
-//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-//	rec := httptest.NewRecorder()
-//	c := s.e.NewContext(req, rec)
-//	c.Set("owner", "2")
-//
-//	s.NoError(s.service.GetIncidentsCount(c))
-//}
+//add admin
+//remove admin by another admin
+//test remove member
+
+//test ApplyForMembership nie je clenom
+////test ApplyForMembership je uz clenom
+////test removeApplication for membership
+
+//test add member
+//test dismiss applicant
+
+//test delete society --> complicated
 
 func (s *SocietySuite) TearDownSuite() {
 	s.db.Close()

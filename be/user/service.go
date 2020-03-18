@@ -126,7 +126,7 @@ func (s *userService) CreateSociety(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	society, err := s.userAccess.CreateSociety(society, userId)
+	society, err := s.userAccess.CreateSocietyWithAdmin(society, userId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -143,6 +143,10 @@ func (s *userService) GetSociety(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, user)
+}
+
+func (s *userService) GetSocietyMembers(c echo.Context) error {
+	return c.JSON(http.StatusNotImplemented, "IMPLEMENT ME")
 }
 
 func (s *userService) UpdateSociety(c echo.Context) error {
@@ -167,6 +171,12 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 func (s *userService) AcceptApplicant(c echo.Context) error {
 	//transactional...
 	//from applicant table to member
+	return c.JSON(http.StatusNotImplemented, "Implement me")
+}
+
+func (s *userService) ChangeMemberRights(c echo.Context) error {
+	//caller is admin
+	// access.update user membership
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
 
@@ -274,8 +284,8 @@ func (s *userService) isUserSocietyAdmin(userId, societyId string) (bool, int, e
 		return false, 0, err
 	}
 
-	for _, admin := range admins {
-		if admin == userId {
+	for _, adminId := range admins {
+		if adminId == userId {
 			return true, len(admins), nil
 		}
 	}
