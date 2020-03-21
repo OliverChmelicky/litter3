@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 type SocietySuite struct {
@@ -41,39 +42,77 @@ func (s *SocietySuite) SetupSuite() {
 }
 
 func (s *SocietySuite) TestCRU_Society() {
-	user := &UserModel{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", Created: 538}
-	newSociety := &SocietyModel{Name: "Dake meno"}
-	numberOfAdmins := 1
+	candidates := []struct {
+		user          *User
+		society       *Society
+		numOfAdmins   int
+		societyUpdate *Society
+	}{
+		{
+			user:          &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			society:       &Society{Name: "Dake meno"},
+			numOfAdmins:   1,
+			societyUpdate: &Society{Name: "Nove menicko ako v restauracii"},
+		},
+	}
 
-	user, err := s.service.userAccess.CreateUser(user)
-	s.NoError(err)
+	for i, _ := range candidates {
+		user, err := s.service.userAccess.CreateUser(candidates[i].user)
+		candidates[i].user = user
+		s.NoError(err)
 
-	bytes, _ := json.Marshal(newSociety)
+		bytes, err := json.Marshal(candidates[i].society)
+		s.Nil(err)
 
-	req := httptest.NewRequest(echo.POST, "/societies/new", strings.NewReader(string(bytes)))
+		req := httptest.NewRequest(echo.POST, "/societies/new", strings.NewReader(string(bytes)))
 
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := s.e.NewContext(req, rec)
-	c.Set("userId", user.Id)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidates[i].user.Id)
 
-	s.NoError(s.service.CreateSociety(c))
+		s.NoError(s.service.CreateSociety(c))
 
-	resp := &SocietyModel{}
-	err = json.Unmarshal(rec.Body.Bytes(), resp)
-	s.Nil(err)
-	fmt.Println(resp)
+		resp := &Society{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
 
-	newSociety.Id = resp.Id
-	newSociety.Created = resp.Created
-	s.EqualValues(newSociety, resp)
+		candidates[i].society.Id = resp.Id
+		candidates[i].society.CreatedAt = resp.CreatedAt
+		s.EqualValues(candidates[i].society, resp)
+		candidates[i].societyUpdate.Id = resp.Id
+		candidates[i].societyUpdate.CreatedAt = resp.CreatedAt
 
-	isAdmin, numAdmins, err := s.service.isUserSocietyAdmin(user.Id, resp.Id)
-	s.Nil(err)
-	s.True(isAdmin)
-	s.EqualValues(numberOfAdmins, numAdmins)
+		//oprav acces admina
+
+		isAdmin, numAdmins, err := s.service.isUserSocietyAdmin(candidates[i].user.Id, resp.Id)
+		s.Nil(err)
+		s.True(isAdmin)
+		s.EqualValues(candidates[i].numOfAdmins, numAdmins)
+	}
 
 	//test update group
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(candidate.societyUpdate)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.PUT, "/societies/update", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.user.Id)
+
+		s.NoError(s.service.UpdateSociety(c))
+
+		resp := &Society{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		fmt.Println(err)
+		s.Nil(err)
+
+		s.EqualValues(candidate.societyUpdate, resp)
+
+	}
 
 }
 

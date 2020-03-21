@@ -1,33 +1,35 @@
 package user
 
-type UserModel struct {
-	tableName struct{} `pg:"users"`
+import "time"
+
+type User struct {
+	tableName struct{} `pg:"users"json:"-"`
 	Id        string
 	FirstName string
 	LastName  string
 	Email     string
-	Created   int64
+	CreatedAt time.Time `pg:"default:now()"`
 }
 
-type SocietyModel struct {
+type Society struct {
 	tableName struct{} `pg:"societies"`
 	Id        string
 	Name      string
-	Created   int64
+	CreatedAt time.Time `pg:"default:now()"`
 }
 
-type MemberModel struct {
+type Member struct {
 	tableName  struct{} `pg:"societies_members"`
 	UserId     string
 	SocietyId  string
 	Permission membership
 }
 
-type ApplicantModel struct {
+type Applicant struct {
 	tableName struct{} `pg:"societies_applicants"`
 	UserId    string
 	SocietyId string
-	Created   int64
+	CreatedAt time.Time `pg:"default:now()"`
 }
 
 type membership string

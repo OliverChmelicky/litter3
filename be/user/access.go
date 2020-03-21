@@ -12,43 +12,43 @@ type userAccess struct {
 	db *pg.DB
 }
 
-func (s *userAccess) CreateUser(in *UserModel) (*UserModel, error) {
+func (s *userAccess) CreateUser(in *User) (*User, error) {
 	in.Id = uuid.NewV4().String()
-	in.Created = time.Now().Unix()
+	in.CreatedAt = time.Now()
 	err := s.db.Insert(in)
 	if err != nil {
-		return &UserModel{}, err
+		return &User{}, err
 	}
 
 	return in, nil
 }
 
-func (s *userAccess) GetUser(in string) (*UserModel, error) {
-	user := new(UserModel)
+func (s *userAccess) GetUser(in string) (*User, error) {
+	user := new(User)
 	err := s.db.Model(user).Where("id = ?", in).Select()
 	if err != nil {
-		return &UserModel{}, err
+		return &User{}, err
 	}
 	return user, nil
 }
 
-func (s *userAccess) UpdateUser(in *UserModel) (*UserModel, error) {
-	return in, nil
+func (s *userAccess) UpdateUser(in *User) (*User, error) {
+	return in, s.db.Update(in)
 }
 
-func (s *userAccess) AddApplicant(in *ApplicantModel) (*ApplicantModel, error) {
-	in.Created = time.Now().Unix()
+func (s *userAccess) AddApplicant(in *Applicant) (*Applicant, error) {
+	in.CreatedAt = time.Now()
 	s.db.Model()
 	err := s.db.Insert(in)
 	if err != nil {
-		return &ApplicantModel{}, err
+		return &Applicant{}, err
 	}
 
 	return in, err
 }
 
-func (s *userAccess) RemoveApplicationForMembership(in *ApplicantModel) error {
-	applicant := new(ApplicantModel)
+func (s *userAccess) RemoveApplicationForMembership(in *Applicant) error {
+	applicant := new(Applicant)
 	_, err := s.db.Model(applicant).Where("user_id = ? and society_id = ?", in.UserId, in.SocietyId).Delete()
 	return err
 }
@@ -57,18 +57,20 @@ func (s *userAccess) DeleteUser(in string) error {
 	return nil
 }
 
-func (s *userAccess) CreateSocietyWithAdmin(in *SocietyModel, adminId string) (*SocietyModel, error) {
+func (s *userAccess) CreateSocietyWithAdmin(in *Society, adminId string) (*Society, error) {
 	//Make it transactional
 	//put Id creation, created into db middleware
 	in.Id = uuid.NewV4().String()
-	in.Created = time.Now().Unix()
+	in.CreatedAt = time.Now()
 
 	err := s.db.Insert(in)
 	if err != nil {
-		return &SocietyModel{}, err
+		logrus.Error("Velkaaa chybaaa Hned tu")
+		logrus.Error(err)
+		return &Society{}, err
 	}
 
-	admin := &MemberModel{
+	admin := &Member{
 
 		SocietyId:  in.Id,
 		UserId:     adminId,
@@ -77,26 +79,27 @@ func (s *userAccess) CreateSocietyWithAdmin(in *SocietyModel, adminId string) (*
 
 	err = s.db.Insert(admin)
 	if err != nil {
-		return &SocietyModel{}, err
+		logrus.Error("Velkaaa chybaaa")
+		logrus.Error(err)
+		return &Society{}, err
 	}
 
 	return in, nil
 }
 
-func (s *userAccess) GetSociety(in string) (*SocietyModel, error) {
-	society := new(SocietyModel)
+func (s *userAccess) GetSociety(in string) (*Society, error) {
+	society := new(Society)
 	err := s.db.Model(society).Where("id = ?", in).Select()
 	if err != nil {
-		return &SocietyModel{}, err
+		return &Society{}, err
 	}
 	return society, nil
 }
 
 func (s *userAccess) GetSocietyAdmins(in string) ([]string, error) {
-	members := new(MemberModel)
+	members := new(Member)
 	var admins []string
-	//error: pg: Model(non-pointer []string)
-	err := s.db.Model(members).Column("user_id").Where("membership = admin and society_id = ? ", in).Select(admins) //does it work like this, is slice pointer itself?
+	err := s.db.Model(members).Column("user_id").Where("permission = 'admin' and society_id = ? ", in).Select(&admins)
 	if err != nil {
 		logrus.Error(err)
 		return nil, err
@@ -106,18 +109,29 @@ func (s *userAccess) GetSocietyAdmins(in string) ([]string, error) {
 	return admins, nil
 }
 
-func (s *userAccess) UpdateSociety(in *SocietyModel) (*SocietyModel, error) {
-	return in, nil
+func (s *userAccess) CountSocietyAdmins(in string) (int, error) {
+	members := new(Member)
+	num, err := s.db.Model(members).Column("user_id").Where("permission = 'admin' and society_id = ? ", in).Count()
+	if err != nil {
+		logrus.Error(err)
+		return 0, err
+	}
+
+	return num, nil
+}
+
+func (s *userAccess) UpdateSociety(in *Society) (*Society, error) {
+	return in, s.db.Update(in)
 }
 
 func (s *userAccess) RemoveMember(userId, societyId string) error {
-	member := new(MemberModel)
+	member := new(Member)
 	_, err := s.db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Delete()
 	return err
 }
 
 func (s *userAccess) IsMember(userId, societyId string) (bool, error) {
-	member := new(MemberModel)
+	member := new(Member)
 	err := s.db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Select()
 	if err != nil {
 		return false, err
