@@ -3,9 +3,6 @@ package user
 import (
 	"errors"
 	"github.com/go-pg/pg/v9"
-	uuid "github.com/satori/go.uuid"
-	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type userAccess struct {
@@ -13,8 +10,6 @@ type userAccess struct {
 }
 
 func (s *userAccess) CreateUser(in *User) (*User, error) {
-	in.Id = uuid.NewV4().String()
-	in.CreatedAt = time.Now()
 	err := s.db.Insert(in)
 	if err != nil {
 		return &User{}, err
@@ -37,8 +32,6 @@ func (s *userAccess) UpdateUser(in *User) (*User, error) {
 }
 
 func (s *userAccess) AddApplicant(in *Applicant) (*Applicant, error) {
-	in.CreatedAt = time.Now()
-	s.db.Model()
 	err := s.db.Insert(in)
 	if err != nil {
 		return &Applicant{}, err
@@ -57,34 +50,36 @@ func (s *userAccess) DeleteUser(in string) error {
 	return nil
 }
 
-func (s *userAccess) CreateSocietyWithAdmin(in *Society, adminId string) (*Society, error) {
-	//Make it transactional
-	//put Id creation, created into db middleware
-	in.Id = uuid.NewV4().String()
-	in.CreatedAt = time.Now()
+//
+//
+//
+//
+//
 
-	err := s.db.Insert(in)
+func (s *userAccess) CreateSocietyWithAdmin(in *Society, adminId string) (*Society, error) {
+	tx, err := s.db.Begin()
 	if err != nil {
-		logrus.Error("Velkaaa chybaaa Hned tu")
-		logrus.Error(err)
+		return &Society{}, err
+	}
+	defer tx.Rollback()
+
+	err = tx.Insert(in)
+	if err != nil {
 		return &Society{}, err
 	}
 
 	admin := &Member{
-
 		SocietyId:  in.Id,
 		UserId:     adminId,
 		Permission: "admin",
 	}
 
-	err = s.db.Insert(admin)
+	err = tx.Insert(admin)
 	if err != nil {
-		logrus.Error("Velkaaa chybaaa")
-		logrus.Error(err)
 		return &Society{}, err
 	}
 
-	return in, nil
+	return in, tx.Commit()
 }
 
 func (s *userAccess) GetSociety(in string) (*Society, error) {
@@ -101,11 +96,9 @@ func (s *userAccess) GetSocietyAdmins(in string) ([]string, error) {
 	var admins []string
 	err := s.db.Model(members).Column("user_id").Where("permission = 'admin' and society_id = ? ", in).Select(&admins)
 	if err != nil {
-		logrus.Error(err)
 		return nil, err
 	}
 
-	logrus.Info(admins)
 	return admins, nil
 }
 
@@ -113,7 +106,6 @@ func (s *userAccess) CountSocietyAdmins(in string) (int, error) {
 	members := new(Member)
 	num, err := s.db.Model(members).Column("user_id").Where("permission = 'admin' and society_id = ? ", in).Count()
 	if err != nil {
-		logrus.Error(err)
 		return 0, err
 	}
 

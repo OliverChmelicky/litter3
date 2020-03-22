@@ -49,8 +49,10 @@ func main() {
 	e.PUT("users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/societies/new", userService.CreateUser, tokenMiddleware.AuthorizeUser)
+	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)
 
-	e.POST("/societies/new", userService.CreateSociety, tokenMiddleware.AuthorizeUser)
+	e.POST("membership", userService.ApplyForMembership, tokenMiddleware.AuthorizeUser)
+	e.DELETE("membership/:societyId", userService.RemoveApplicationForMembership, tokenMiddleware.AuthorizeUser)
 
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)

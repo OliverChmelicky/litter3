@@ -96,13 +96,9 @@ func (s *userService) ApplyForMembership(c echo.Context) error {
 
 func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
+	societyId := c.Param("societyId")
 
-	request := new(UserGroupRequest)
-	if err := c.Bind(request); err != nil {
-		return c.String(http.StatusBadRequest, "Invalid arguments")
-	}
-
-	err := s.userAccess.RemoveApplicationForMembership(&Applicant{UserId: requesterId, SocietyId: requesterId})
+	err := s.userAccess.RemoveApplicationForMembership(&Applicant{UserId: requesterId, SocietyId: societyId})
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -117,6 +113,12 @@ func (s *userService) DeleteUser(c echo.Context) error {
 	//remove notifications
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
+
+//
+//
+//
+//
+//
 
 func (s *userService) CreateSociety(c echo.Context) error {
 	creatorId := c.Get("userId").(string)
@@ -164,7 +166,6 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 
 	admin, _, _ := s.isUserSocietyAdmin(userId, society.Id)
 	if !admin {
-		fmt.Println("ZASEEEEEE")
 		return c.String(http.StatusForbidden, "You have no right to update society")
 	}
 
@@ -189,14 +190,14 @@ func (s *userService) ChangeMemberRights(c echo.Context) error {
 }
 
 func (s *userService) DismissApplicant(c echo.Context) error {
-	id := c.Get("userId")
-	requesterId := fmt.Sprintf("%v", id)
+	userId := c.Get("userId").(string)
 
 	request := new(UserGroupRequest)
 	if err := c.Bind(request); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
-	admin, _, err := s.isUserSocietyAdmin(requesterId, request.SocietyId)
+
+	admin, _, err := s.isUserSocietyAdmin(userId, request.SocietyId)
 	if err != nil {
 		return c.String(http.StatusNotFound, err.Error())
 	}
@@ -214,7 +215,7 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 }
 
 func (s *userService) RemoveMember(c echo.Context) error {
-	//PUT {userId, societyId}
+	//DELETE {userId, societyId}
 	id := c.Get("userId")
 	requesterId := fmt.Sprintf("%v", id)
 

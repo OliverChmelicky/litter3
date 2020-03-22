@@ -19,7 +19,6 @@ func CreateService(db *pg.DB) *trashService {
 func (s *trashService) CreateTrash(c echo.Context) error {
 	trash := new(TrashModel)
 	if err := c.Bind(trash); err != nil {
-		log.Error(trash)
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
