@@ -183,39 +183,36 @@ func (s *userService) AcceptApplicant(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
 
+func (s *userService) DismissApplicant(c echo.Context) error {
+	admin := c.Get("userId").(string)
+	societyId := c.Param("societyId")
+	removingUserId := c.Param("userId")
+
+	isAdmin, _, err := s.isUserSocietyAdmin(admin, societyId)
+	if err != nil {
+		return c.String(http.StatusNotFound, err.Error())
+	}
+
+	if !isAdmin {
+		return c.String(http.StatusUnauthorized, "You are not an admin")
+	}
+
+	err = s.userAccess.RemoveApplicationForMembership(&Applicant{UserId: removingUserId, SocietyId: societyId})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+
+	return c.String(http.StatusOK, "")
+}
+
 func (s *userService) ChangeMemberRights(c echo.Context) error {
 	//caller is admin
 	// access.update user membership
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
 
-func (s *userService) DismissApplicant(c echo.Context) error {
-	userId := c.Get("userId").(string)
-
-	request := new(UserGroupRequest)
-	if err := c.Bind(request); err != nil {
-		return c.String(http.StatusBadRequest, "Invalid arguments")
-	}
-
-	admin, _, err := s.isUserSocietyAdmin(userId, request.SocietyId)
-	if err != nil {
-		return c.String(http.StatusNotFound, err.Error())
-	}
-
-	if !admin {
-		return c.String(http.StatusUnauthorized, "You are not an admin")
-	}
-
-	err = s.userAccess.RemoveApplicationForMembership(&Applicant{UserId: request.UserId, SocietyId: request.SocietyId})
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err)
-	}
-
-	return c.JSON(http.StatusOK, "")
-}
-
 func (s *userService) RemoveMember(c echo.Context) error {
-	//DELETE {userId, societyId}
+	//DELETE {userId, societyId} ----> prerob, tak by v body nebolo nic
 	id := c.Get("userId")
 	requesterId := fmt.Sprintf("%v", id)
 

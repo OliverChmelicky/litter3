@@ -91,10 +91,10 @@ func (s *userAccess) GetSociety(in string) (*Society, error) {
 	return society, nil
 }
 
-func (s *userAccess) GetSocietyAdmins(in string) ([]string, error) {
+func (s *userAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	members := new(Member)
 	var admins []string
-	err := s.db.Model(members).Column("user_id").Where("permission = 'admin' and society_id = ? ", in).Select(&admins)
+	err := s.db.Model(members).Column("user_id").Where("permission = 'admin' and society_id = ? ", societyId).Select(&admins)
 	if err != nil {
 		return nil, err
 	}

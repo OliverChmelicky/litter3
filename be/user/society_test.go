@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
 	"github.com/labstack/echo"
@@ -115,7 +116,6 @@ func (s *SocietySuite) TestCRU_Society() {
 
 }
 
-//TODO test ApplyForMembership je uz clenom
 func (s *SocietySuite) TestMembershipApplication_Apply_Remove() {
 	candidates := []struct {
 		admin           *User
@@ -182,11 +182,64 @@ func (s *SocietySuite) TestMembershipApplication_Apply_Remove() {
 	}
 }
 
-//TODO test ApplyForMembership ked uz je clenom society
+////TODO test ApplyForMembership ked uz je clenom society
+//func (s *Society) TestApplyFormMembershipExistingMember() {
+//
+//}
 
-//test add member
-//test dismiss applicant
 func (s *SocietySuite) TestApproveMember_RemoveApplication() {
+	candidates := []struct {
+		admin       *User
+		society     *Society
+		newMember   *User
+		application *Applicant
+	}{
+		{
+			admin:     &User{Id: "2", FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
+			society:   &Society{Name: "More members than one"},
+			newMember: &User{FirstName: "Hello", LastName: "Flowup"},
+		},
+	}
+
+	var err error
+	for i, _ := range candidates {
+		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].newMember, err = s.service.userAccess.CreateUser(candidates[i].newMember)
+		s.Nil(err)
+
+		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		s.Nil(err)
+
+		//for filling request structure
+		candidates[i].application = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.userAccess.AddApplicant(candidates[i].application)
+		s.Nil(err)
+	}
+
+	for _, cand := range candidates {
+		req := httptest.NewRequest(echo.PUT, "/societies/dismiss/"+cand.society.Id+"/"+cand.newMember.Id, nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.Set("userId", cand.admin.Id)
+
+		c.SetPath("/societies/dismiss/:societyId/:userId")
+		c.SetParamNames("societyId", "userId")
+		c.SetParamValues(cand.society.Id, cand.newMember.Id)
+
+		s.NoError(s.service.DismissApplicant(c))
+		fmt.Println(rec.Code)
+		fmt.Println(rec.Body.String())
+
+		s.EqualValues("", rec.Body.String())
+	}
+
+}
+
+func (s *SocietySuite) TestApproveMember_AddMember() {
 
 }
 
