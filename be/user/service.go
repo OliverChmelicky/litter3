@@ -81,8 +81,11 @@ func (s *userService) ApplyForMembership(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
 
-	//chceck ci uz je member
-	if s.IsMember(requesterId, request.UserId) {
+	isMember, err := s.userAccess.IsMember(request.UserId, request.SocietyId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	if isMember {
 		return c.String(http.StatusConflict, "User is already a member")
 	}
 
@@ -178,9 +181,25 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 }
 
 func (s *userService) AcceptApplicant(c echo.Context) error {
-	//transactional...
-	//from applicant table to member
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+	userId := c.Get("userId").(string)
+
+	newMemberId := c.Param("userId")
+	societyId := c.Param("societyId")
+
+	isMember, err := s.userAccess.IsMember(userId, societyId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	if isMember {
+		return c.String(http.StatusConflict, "You are already a member of society")
+	}
+
+	newMember, err := s.userAccess.AcceptApplicant(newMemberId, societyId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, newMember)
 }
 
 func (s *userService) DismissApplicant(c echo.Context) error {
@@ -297,13 +316,4 @@ func (s *userService) isUserSocietyAdmin(userId, societyId string) (bool, int, e
 	}
 
 	return false, len(admins), nil
-}
-
-func (s *userService) IsMember(userId, societyId string) bool {
-	member, err := s.userAccess.IsMember(userId, societyId)
-	if err != nil {
-		return false
-	}
-
-	return member
 }

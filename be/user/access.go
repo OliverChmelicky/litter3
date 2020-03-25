@@ -116,6 +116,33 @@ func (s *userAccess) UpdateSociety(in *Society) (*Society, error) {
 	return in, s.db.Update(in)
 }
 
+func (s *userAccess) AcceptApplicant(userId, societyId string) (*Member, error) {
+	applicant := new(Applicant)
+	err := s.db.Model(applicant).Where("user_id = ? and society_id = ?", userId, societyId).Select()
+	if err != nil {
+		return &Member{}, err
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return &Member{}, err
+	}
+	defer tx.Rollback()
+
+	err = tx.Delete(applicant)
+	if err != nil {
+		return &Member{}, err
+	}
+
+	newMember := &Member{UserId: userId, SocietyId: societyId, Permission: membership("member")}
+	err = tx.Insert(newMember)
+	if err != nil {
+		return &Member{}, err
+	}
+
+	return newMember, tx.Commit()
+}
+
 func (s *userAccess) RemoveMember(userId, societyId string) error {
 	member := new(Member)
 	_, err := s.db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Delete()
@@ -125,11 +152,13 @@ func (s *userAccess) RemoveMember(userId, societyId string) error {
 func (s *userAccess) IsMember(userId, societyId string) (bool, error) {
 	member := new(Member)
 	err := s.db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Select()
+	if err == pg.ErrNoRows { //record was not found
+		return false, nil
+	}
 	if err != nil {
 		return false, err
 	}
 
-	//co ak nenajde? Hodi err?
 	return true, nil
 }
 

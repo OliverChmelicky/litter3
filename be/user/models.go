@@ -43,15 +43,15 @@ func (u *Society) BeforeInsert(ctx context.Context) (context.Context, error) {
 
 type Member struct {
 	tableName  struct{} `pg:"societies_members"json:"-"`
-	UserId     string
-	SocietyId  string
+	UserId     string   `pg:",pk"`
+	SocietyId  string   `pg:",pk"`
 	Permission membership
 }
 
 type Applicant struct {
-	tableName struct{} `pg:"societies_applicants"json:"-"`
-	UserId    string
-	SocietyId string
+	tableName struct{}  `pg:"societies_applicants"json:"-"`
+	UserId    string    `pg:",pk"`
+	SocietyId string    `pg:",pk"`
 	CreatedAt time.Time `pg:"default:now()"`
 }
 

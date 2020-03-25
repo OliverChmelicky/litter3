@@ -42,7 +42,7 @@ func (s *SocietySuite) SetupSuite() {
 	s.e = echo.New()
 }
 
-func (s *SocietySuite) TestCRU_Society() {
+func (s *SocietySuite) Test_CRUsociety() {
 	candidates := []struct {
 		user          *User
 		society       *Society
@@ -50,7 +50,7 @@ func (s *SocietySuite) TestCRU_Society() {
 		societyUpdate *Society
 	}{
 		{
-			user:          &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			user:          &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
 			society:       &Society{Name: "Dake meno"},
 			numOfAdmins:   1,
 			societyUpdate: &Society{Name: "Nove menicko ako v restauracii"},
@@ -116,7 +116,7 @@ func (s *SocietySuite) TestCRU_Society() {
 
 }
 
-func (s *SocietySuite) TestMembershipApplication_Apply_Remove() {
+func (s *SocietySuite) Test_ApplyFormMembership_RemoveApplication_AllByUser() {
 	candidates := []struct {
 		admin           *User
 		society         *Society
@@ -151,7 +151,7 @@ func (s *SocietySuite) TestMembershipApplication_Apply_Remove() {
 		bytes, err := json.Marshal(candidate.applicationForm)
 		s.Nil(err)
 
-		req := httptest.NewRequest(echo.PUT, "/societies/apply", strings.NewReader(string(bytes)))
+		req := httptest.NewRequest(echo.POST, "/societies/apply", strings.NewReader(string(bytes)))
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
@@ -182,12 +182,73 @@ func (s *SocietySuite) TestMembershipApplication_Apply_Remove() {
 	}
 }
 
-////TODO test ApplyForMembership ked uz je clenom society
-//func (s *Society) TestApplyFormMembershipExistingMember() {
-//
-//}
+func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
+	candidates := []struct {
+		admin           *User
+		society         *Society
+		newMember       *User
+		applicationForm *UserGroupRequest
+		finalApplicant  *Applicant
+		err             string
+	}{
+		{
+			admin:     &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
+			society:   &Society{Name: "TestApplyFormMembershipExistingMember"},
+			newMember: &User{FirstName: "Novy", LastName: "Member", Email: "blbost@newMember.com"},
+		},
+	}
 
-func (s *SocietySuite) TestApproveMember_RemoveApplication() {
+	var err error
+	for i, _ := range candidates {
+		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].newMember, err = s.service.userAccess.CreateUser(candidates[i].newMember)
+		s.Nil(err)
+
+		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		s.Nil(err)
+
+		newMember := &Member{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id, Permission: membership("member")}
+		err := s.service.userAccess.db.Insert(newMember)
+		s.Nil(err)
+
+		testExistence := new(Member)
+		err = s.db.Model(testExistence).Where("user_id = ?", candidates[i].newMember.Id).Select()
+		if err != nil {
+			s.Nil(err) //end test
+		}
+		if err == pg.ErrNoRows {
+			fmt.Println("Should be found something")
+			s.Error(nil) //throw error in test
+		}
+
+		//for filling request structure
+		candidates[i].applicationForm = &UserGroupRequest{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		candidates[i].finalApplicant = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+	}
+
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(candidate.applicationForm)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/societies/apply", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.newMember.Id)
+
+		s.Nil(s.service.ApplyForMembership(c))
+
+		resp := &Applicant{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.NotNil(err)
+
+		s.EqualValues("User is already a member", rec.Body.String())
+	}
+}
+
+func (s *SocietySuite) Test_DismissApplicant() {
 	candidates := []struct {
 		admin       *User
 		society     *Society
@@ -218,7 +279,7 @@ func (s *SocietySuite) TestApproveMember_RemoveApplication() {
 	}
 
 	for _, cand := range candidates {
-		req := httptest.NewRequest(echo.PUT, "/societies/dismiss/"+cand.society.Id+"/"+cand.newMember.Id, nil)
+		req := httptest.NewRequest(echo.DELETE, "/societies/dismiss/"+cand.society.Id+"/"+cand.newMember.Id, nil)
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
@@ -231,24 +292,75 @@ func (s *SocietySuite) TestApproveMember_RemoveApplication() {
 		c.SetParamValues(cand.society.Id, cand.newMember.Id)
 
 		s.NoError(s.service.DismissApplicant(c))
-		fmt.Println(rec.Code)
-		fmt.Println(rec.Body.String())
 
 		s.EqualValues("", rec.Body.String())
 	}
 
 }
 
-func (s *SocietySuite) TestApproveMember_AddMember() {
+func (s *SocietySuite) Test_AddMember() {
+	candidates := []struct {
+		admin       *User
+		society     *Society
+		newMember   *User
+		application *Applicant
+		response    *Member
+	}{
+		{
+			admin:     &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
+			society:   &Society{Name: "More members than one"},
+			newMember: &User{FirstName: "Hello", LastName: "Flowup"},
+			response:  &Member{Permission: "member"},
+		},
+	}
 
+	var err error
+	for i := range candidates {
+		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].newMember, err = s.service.userAccess.CreateUser(candidates[i].newMember)
+		s.Nil(err)
+
+		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		s.Nil(err)
+		candidates[i].response.UserId = candidates[i].newMember.Id
+		candidates[i].response.SocietyId = candidates[i].society.Id
+
+		//for filling request structure
+		candidates[i].application = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.userAccess.AddApplicant(candidates[i].application)
+		s.Nil(err)
+	}
+
+	for _, candidate := range candidates {
+		req := httptest.NewRequest(echo.POST, "/societies/"+candidate.application.SocietyId+"/"+candidate.application.UserId+"/approve", nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.Set("userId", candidate.newMember.Id)
+		c.SetParamNames("societyId", "userId")
+		c.SetParamValues(candidate.society.Id, candidate.newMember.Id)
+
+		s.Nil(s.service.AcceptApplicant(c))
+
+		resp := &Member{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		s.EqualValues(candidate.response, resp)
+	}
 }
 
+//TODO
 //uz mam v skupine admina a membera
 //changeUserRights to admin
 //remove admin by another admin
-//test remove member
+//test remove member (ale nie delete society)
 
 //test delete society //delete user --> complicated pockaj si na odpoved veduceho
+//ale delete society mozem spravit dvomi sposobmi, odide posledny admin, alebo to admin zrusi priamo
 
 func (s *SocietySuite) TearDownSuite() {
 	s.db.Close()
