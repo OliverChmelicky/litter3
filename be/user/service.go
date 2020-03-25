@@ -247,7 +247,7 @@ func (s *userService) ChangeMemberRights(c echo.Context) error {
 
 	member, err := s.userAccess.ChangeUserRights(request)
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusNotImplemented, member)
