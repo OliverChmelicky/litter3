@@ -356,8 +356,78 @@ func (s *SocietySuite) Test_AddMember() {
 //TODO
 //uz mam v skupine admina a membera
 //changeUserRights to admin
+func (s *SocietySuite) Test_ChangeRights() {
+	candidates := []struct {
+		admin         *User
+		society       *Society
+		friend        *User
+		oldMembership *Member
+		newMembership *Member
+		err           string
+	}{
+		{
+			admin:         &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			society:       &Society{Name: "Dake meno"},
+			friend:        &User{FirstName: "Novy", LastName: "Member"},
+			oldMembership: &Member{Permission: membership("member")},
+			newMembership: &Member{Permission: membership("admin")},
+		},
+		{
+			admin:         &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			society:       &Society{Name: "Dake meno"},
+			friend:        &User{FirstName: "Novy", LastName: "Member"},
+			oldMembership: &Member{Permission: membership("admin")},
+			newMembership: &Member{Permission: membership("member")},
+		},
+	}
+
+	var err error
+	for i, _ := range candidates {
+		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].friend, err = s.service.userAccess.CreateUser(candidates[i].friend)
+		s.Nil(err)
+
+		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		s.Nil(err)
+
+		candidates[i].oldMembership.UserId = candidates[i].friend.Id
+		candidates[i].oldMembership.SocietyId = candidates[i].society.Id
+		err = s.db.Insert(candidates[i].oldMembership)
+		s.Nil(err)
+		err := s.db.Select(candidates[i].oldMembership)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		candidates[i].newMembership.UserId = candidates[i].friend.Id
+		candidates[i].newMembership.SocietyId = candidates[i].society.Id
+	}
+
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(candidate.newMembership)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.PUT, "/society/members/update", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.admin.Id)
+
+		s.NoError(s.service.ChangeMemberRights(c))
+
+		resp := &Member{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		s.EqualValues(candidate.newMembership, resp)
+	}
+}
+
 //remove admin by another admin
-//test remove member (ale nie delete society)
+//remove member by admin
+//test remove sam seba(som admin) a som posledny admin v society
 
 //test delete society //delete user --> complicated pockaj si na odpoved veduceho
 //ale delete society mozem spravit dvomi sposobmi, odide posledny admin, alebo to admin zrusi priamo

@@ -143,6 +143,30 @@ func (s *userAccess) AcceptApplicant(userId, societyId string) (*Member, error) 
 	return newMember, tx.Commit()
 }
 
+func (s *userAccess) ChangeUserRights(request *Member) (*Member, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return &Member{}, err
+	}
+	defer tx.Rollback()
+
+	member := new(Member)
+	member.UserId = request.UserId
+	member.SocietyId = request.SocietyId
+	err = tx.Select(member)
+	if err != nil {
+		return &Member{}, err
+	}
+
+	member.Permission = request.Permission
+	err = tx.Update(member)
+	if err != nil {
+		return &Member{}, err
+	}
+
+	return member, tx.Commit()
+}
+
 func (s *userAccess) RemoveMember(userId, societyId string) error {
 	member := new(Member)
 	_, err := s.db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Delete()

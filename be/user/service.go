@@ -225,9 +225,32 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 }
 
 func (s *userService) ChangeMemberRights(c echo.Context) error {
-	//caller is admin
-	// access.update user membership
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+	id := c.Get("userId").(string)
+
+	request := new(Member)
+	err := c.Bind(request)
+	if err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	isAdmin, numOfAdmins, err := s.isUserSocietyAdmin(id, request.SocietyId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	if !isAdmin {
+		return c.String(http.StatusForbidden, "You are not an admin")
+	}
+
+	if numOfAdmins == 1 && request.UserId == id && request.Permission == membership("member") {
+		return c.String(http.StatusConflict, "You are the only one admin in group")
+	}
+
+	member, err := s.userAccess.ChangeUserRights(request)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusNotImplemented, member)
 }
 
 func (s *userService) RemoveMember(c echo.Context) error {
