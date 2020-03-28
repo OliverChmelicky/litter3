@@ -2,7 +2,6 @@ package trash
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
 	"github.com/labstack/echo"
@@ -53,8 +52,8 @@ func (s *TrashSuite) Test_CreateTrash() {
 	}{
 		{
 			creator:  &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:    &Trash{Accessibility: "car", Location: Point{20, 30}},
-			updating: &Trash{Accessibility: "underWater", Location: Point{99, 69}},
+			trash:    &Trash{Location: Point{20, 30}},
+			updating: &Trash{Location: Point{99, 69}},
 		},
 	}
 
@@ -77,11 +76,12 @@ func (s *TrashSuite) Test_CreateTrash() {
 
 		resp := &Trash{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
-		fmt.Println(err)
 		s.Nil(err)
 
 		candidates[i].trash.Id = resp.Id
 		candidates[i].trash.CreatedAt = resp.CreatedAt
+		log.Info("a trash je")
+		log.Info(resp)
 		s.EqualValues(candidates[i].trash, resp)
 		candidates[i].updating.Id = resp.Id
 		candidates[i].updating.CreatedAt = resp.CreatedAt

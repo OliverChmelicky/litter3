@@ -74,7 +74,7 @@ create table trash
     cleaned       BOOLEAN                NOT NULL default false,
     size          size                   NOT NULL default 'unknown',
     accessibility accessibility          NOT NULL default 'unknown',
-    trashType     trashType              NOT NULL default 'unknown',
+    trash_type    trashType              NOT NULL default 'unknown',
     location      GEOGRAPHY(POINT, 4326) NOT NULL,
     description   VARCHAR,
     finder_id     VARCHAR REFERENCES users,

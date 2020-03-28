@@ -67,7 +67,7 @@ type Trash struct {
 	Size          size
 	Accessibility accessibility
 	trashType     trashType
-	Location      Point
+	Location      Point `pg:"type:geometry"`
 	Description   string
 	FinderId      string
 	CreatedAt     time.Time `pg:"default:now()"`
