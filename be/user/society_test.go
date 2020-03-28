@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
@@ -217,7 +218,7 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 		if err != nil {
 			s.Nil(err) //end test
 		}
-		if err == pg.ErrNoRows {
+		if errors.Is(err, pg.ErrNoRows) {
 			fmt.Println("Should be found something")
 			s.Error(nil) //throw error in test
 		}

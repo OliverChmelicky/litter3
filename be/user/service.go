@@ -8,11 +8,11 @@ import (
 )
 
 type userService struct {
-	userAccess *userAccess
+	UserAccess *UserAccess
 }
 
 func CreateService(db *pg.DB) *userService {
-	access := &userAccess{db: db}
+	access := &UserAccess{Db: db}
 	return &userService{access}
 }
 
@@ -22,7 +22,7 @@ func (s *userService) CreateUser(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	user, err := s.userAccess.CreateUser(user)
+	user, err := s.UserAccess.CreateUser(user)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -32,7 +32,7 @@ func (s *userService) CreateUser(c echo.Context) error {
 func (s *userService) GetUser(c echo.Context) error {
 	id := c.Param("id")
 
-	user, err := s.userAccess.GetUser(id)
+	user, err := s.UserAccess.GetUser(id)
 	if err != nil {
 		return c.String(http.StatusNotFound, fmt.Sprintf("User with id %s does not exist", id))
 	}
@@ -43,7 +43,7 @@ func (s *userService) GetUser(c echo.Context) error {
 func (s *userService) GetCurrentUser(c echo.Context) error {
 	id := c.Get("userId").(string)
 
-	user, err := s.userAccess.GetUser(id)
+	user, err := s.UserAccess.GetUser(id)
 	if err != nil {
 		return c.String(http.StatusNotFound, fmt.Sprintf("User with id %s does not exist", id))
 	}
@@ -60,12 +60,12 @@ func (s *userService) UpdateUser(c echo.Context) error {
 	}
 	user.Id = updatorId
 
-	_, err := s.userAccess.GetUser(user.Id)
+	_, err := s.UserAccess.GetUser(user.Id)
 	if err != nil {
 		return c.String(http.StatusNotFound, "Trash with provided Id does not exist")
 	}
 
-	user, err = s.userAccess.UpdateUser(user)
+	user, err = s.UserAccess.UpdateUser(user)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error updating user")
 	}
@@ -81,7 +81,7 @@ func (s *userService) ApplyForMembership(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
 
-	isMember, err := s.userAccess.IsMember(request.UserId, request.SocietyId)
+	isMember, err := s.UserAccess.IsMember(request.UserId, request.SocietyId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -89,7 +89,7 @@ func (s *userService) ApplyForMembership(c echo.Context) error {
 		return c.String(http.StatusConflict, "User is already a member")
 	}
 
-	applicant, err := s.userAccess.AddApplicant(&Applicant{SocietyId: request.SocietyId, UserId: requesterId})
+	applicant, err := s.UserAccess.AddApplicant(&Applicant{SocietyId: request.SocietyId, UserId: requesterId})
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -101,7 +101,7 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 	societyId := c.Param("societyId")
 
-	err := s.userAccess.RemoveApplicationForMembership(&Applicant{UserId: requesterId, SocietyId: societyId})
+	err := s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: requesterId, SocietyId: societyId})
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -131,7 +131,7 @@ func (s *userService) CreateSociety(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	society, err := s.userAccess.CreateSocietyWithAdmin(society, creatorId)
+	society, err := s.UserAccess.CreateSocietyWithAdmin(society, creatorId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -142,7 +142,7 @@ func (s *userService) CreateSociety(c echo.Context) error {
 func (s *userService) GetSociety(c echo.Context) error {
 	id := c.Param("id")
 
-	society, err := s.userAccess.GetSociety(id)
+	society, err := s.UserAccess.GetSociety(id)
 	if err != nil {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Society with id %s does not exist", id))
 	}
@@ -162,7 +162,7 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
 
-	_, err := s.userAccess.GetSociety(society.Id)
+	_, err := s.UserAccess.GetSociety(society.Id)
 	if err != nil {
 		return c.String(http.StatusNotFound, "Society with provided Id does not exist")
 	}
@@ -172,7 +172,7 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 		return c.String(http.StatusForbidden, "You have no right to update society")
 	}
 
-	society, err = s.userAccess.UpdateSociety(society)
+	society, err = s.UserAccess.UpdateSociety(society)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error updating society")
 	}
@@ -186,7 +186,7 @@ func (s *userService) AcceptApplicant(c echo.Context) error {
 	newMemberId := c.Param("userId")
 	societyId := c.Param("societyId")
 
-	isMember, err := s.userAccess.IsMember(userId, societyId)
+	isMember, err := s.UserAccess.IsMember(userId, societyId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -194,7 +194,7 @@ func (s *userService) AcceptApplicant(c echo.Context) error {
 		return c.String(http.StatusConflict, "You are already a member of society")
 	}
 
-	newMember, err := s.userAccess.AcceptApplicant(newMemberId, societyId)
+	newMember, err := s.UserAccess.AcceptApplicant(newMemberId, societyId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -216,7 +216,7 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "You are not an admin")
 	}
 
-	err = s.userAccess.RemoveApplicationForMembership(&Applicant{UserId: removingUserId, SocietyId: societyId})
+	err = s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: removingUserId, SocietyId: societyId})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
@@ -245,7 +245,7 @@ func (s *userService) ChangeMemberRights(c echo.Context) error {
 		return c.String(http.StatusConflict, "You are the only one admin in group")
 	}
 
-	member, err := s.userAccess.ChangeUserRights(request)
+	member, err := s.UserAccess.ChangeUserRights(request)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -270,16 +270,16 @@ func (s *userService) RemoveMember(c echo.Context) error {
 	if request.UserId == c.Get("useId") { //user asks for removing himself
 		if admin {
 			if adminNumber == 1 {
-				err = s.userAccess.DeleteSociety(request.SocietyId)
+				err = s.UserAccess.DeleteSociety(request.SocietyId)
 			} else {
-				err = s.userAccess.RemoveMember(request.UserId, request.SocietyId)
+				err = s.UserAccess.RemoveMember(request.UserId, request.SocietyId)
 			}
 
 			if err != nil {
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
 		} else {
-			err = s.userAccess.RemoveMember(request.UserId, request.SocietyId)
+			err = s.UserAccess.RemoveMember(request.UserId, request.SocietyId)
 			if err != nil {
 				return c.String(http.StatusInternalServerError, err.Error())
 			}
@@ -290,7 +290,7 @@ func (s *userService) RemoveMember(c echo.Context) error {
 		if !admin {
 			return c.String(http.StatusUnauthorized, "You are not an admin")
 		}
-		err = s.userAccess.RemoveMember(request.UserId, request.SocietyId)
+		err = s.UserAccess.RemoveMember(request.UserId, request.SocietyId)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
@@ -315,7 +315,7 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "You are not an admin")
 	}
 
-	err = s.userAccess.DeleteSociety(societyId)
+	err = s.UserAccess.DeleteSociety(societyId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -324,7 +324,7 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 }
 
 func (s *userService) isUserSocietyAdmin(userId, societyId string) (bool, int, error) {
-	admins, err := s.userAccess.GetSocietyAdmins(societyId)
+	admins, err := s.UserAccess.GetSocietyAdmins(societyId)
 	if err != nil {
 		return false, 0, err
 	}

@@ -25,6 +25,7 @@ func main() {
 	_, err := db.Exec("SELECT 1")
 	if err != nil {
 		log.Error("PostgreSQL is down")
+		return
 	}
 	db.AddQueryHook(middlewareService.DbMiddleware{})
 
@@ -56,7 +57,7 @@ func main() {
 
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)
-	e.POST("/trash", trashService.CreateTrash) //point makes troubles while inserting
+	e.POST("/trash", trashService.CreateTrash)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

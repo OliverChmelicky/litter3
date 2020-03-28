@@ -15,9 +15,26 @@ DROP TYPE IF EXISTS accessibility;
 DROP TYPE IF EXISTS "size";
 
 CREATE TYPE accessibility AS ENUM (
+    'unknown',
     'easy',
-    'medium',
-    'hard'
+    'car',
+    'cave',
+    'underWater'
+    );
+
+CREATE TYPE trashType AS ENUM (
+    'unknown',
+    'household',
+    'automotive',
+    'construction',
+    'plastics',
+    'electronic',
+    'glass',
+    'metal',
+    'liquid',
+    'dangerous',
+    'carcass',
+    'organic'
     );
 
 CREATE TYPE membership AS ENUM (
@@ -26,10 +43,10 @@ CREATE TYPE membership AS ENUM (
     );
 
 CREATE TYPE size AS ENUM (
-    'small',
-    'medium',
-    'big',
-    'extremelyBig'
+    'unknown',
+    'bag',
+    'wheelbarrow',
+    'car'
     );
 
 
@@ -47,20 +64,21 @@ create table users
 create table societies
 (
     id         VARCHAR PRIMARY KEY,
-    name       VARCHAR          NOT NULL,
+    name       VARCHAR     NOT NULL,
     created_at timestamptz NOT NULL
 );
 
 create table trash
 (
     id            VARCHAR PRIMARY KEY,
-    cleaned       BOOLEAN        NOT NULL,
-    size          size           NOT NULL,
-    accessibility accessibility  NOT NULL,
-    gps           point          NOT NULL,
+    cleaned       BOOLEAN                NOT NULL default false,
+    size          size                   NOT NULL default 'unknown',
+    accessibility accessibility          NOT NULL default 'unknown',
+    trashType     trashType              NOT NULL default 'unknown',
+    location      GEOGRAPHY(POINT, 4326) NOT NULL,
     description   VARCHAR,
     finder_id     VARCHAR REFERENCES users,
-    created_at    timestamptz NOT NULL
+    created_at    timestamptz            NOT NULL
 );
 
 create table comments
@@ -119,16 +137,25 @@ create table users_collections
     PRIMARY KEY ("user_id", collection_id)
 );
 
+
+CREATE TYPE eventRights AS ENUM (
+    'admin',
+    'viewer'
+    );
+
+/*mozno zjednot societies_events a users_events*/
 create table societies_events
 (
     society_id VARCHAR REFERENCES societies (id),
     event_id   VARCHAR REFERENCES events (id),
+    permission eventRights not null,
     PRIMARY KEY (society_id, event_id)
 );
 
 create table users_events
 (
-    "user_id" VARCHAR REFERENCES users (id),
-    event_id  VARCHAR REFERENCES events (id),
+    "user_id"  VARCHAR REFERENCES users (id),
+    event_id   VARCHAR REFERENCES events (id),
+    permission eventRights not null,
     PRIMARY KEY ("user_id", event_id)
 );
