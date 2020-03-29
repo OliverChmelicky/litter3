@@ -88,3 +88,13 @@ type Collection struct {
 	Id        string
 	CreatedAt time.Time `pg:"default:now()"`
 }
+
+//type RangeRequest struct {
+//	location Point
+//	radius  float64
+//}
+
+type RangeRequest struct {
+	Location Point
+	Radius   float64
+}

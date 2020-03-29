@@ -44,7 +44,20 @@ func (s *trashService) GetTrashById(c echo.Context) error {
 }
 
 func (s *trashService) GetTrashInRange(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+	request := new(RangeRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	fmt.Printf("%+v \n", request)
+
+	trash, err := s.trashAccess.GetTrashInRange(request)
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError("GetTrashInRangeAccess", err))
+	}
+
+	return c.JSON(http.StatusOK, trash)
 }
 
 func (s *trashService) UpdateTrash(c echo.Context) error {

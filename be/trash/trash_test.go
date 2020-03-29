@@ -80,33 +80,72 @@ func (s *TrashSuite) Test_CreateTrash() {
 
 		candidates[i].trash.Id = resp.Id
 		candidates[i].trash.CreatedAt = resp.CreatedAt
-		log.Info("a trash je")
-		log.Info(resp)
 		s.EqualValues(candidates[i].trash, resp)
 		candidates[i].updating.Id = resp.Id
 		candidates[i].updating.CreatedAt = resp.CreatedAt
 	}
 
 	//test update trash
-	for _, candidate := range candidates {
-		bytes, err := json.Marshal(candidate.updating)
+	//for _, candidate := range candidates {
+	//	bytes, err := json.Marshal(candidate.updating)
+	//	s.Nil(err)
+	//
+	//	req := httptest.NewRequest(echo.PUT, "/trash/update", strings.NewReader(string(bytes)))
+	//
+	//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	//	rec := httptest.NewRecorder()
+	//	c := s.e.NewContext(req, rec)
+	//	c.Set("userId", candidate.creator.Id)
+	//
+	//	s.NoError(s.service.UpdateTrash(c))
+	//
+	//	resp := &Trash{}
+	//	err = json.Unmarshal(rec.Body.Bytes(), resp)
+	//	s.Nil(err)
+	//
+	//	s.EqualValues(candidate.updating, resp)
+	//
+	//}
+}
+
+func (s *TrashSuite) Test_GetAround() {
+	candidates := []struct {
+		creator      *user.User
+		trash        *Trash
+		rangeRequest *RangeRequest
+	}{
+		{
+			creator:      &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:        &Trash{Location: Point{20, 30}},
+			rangeRequest: &RangeRequest{Location: Point{20, 29.99}, Radius: 50000.0},
+		},
+	}
+
+	for i, _ := range candidates {
+		var err error
+		candidates[i].creator, err = s.userAccess.CreateUser(candidates[i].creator)
+		s.Nil(err)
+		candidates[i].trash, err = s.service.trashAccess.CreateTrash(candidates[i].trash)
 		s.Nil(err)
 
-		req := httptest.NewRequest(echo.PUT, "/trash/update", strings.NewReader(string(bytes)))
+		bytes, err := json.Marshal(candidates[i].rangeRequest)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/trash/get/range", strings.NewReader(string(bytes)))
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
 		c := s.e.NewContext(req, rec)
-		c.Set("userId", candidate.creator.Id)
 
-		s.NoError(s.service.UpdateTrash(c))
+		s.NoError(s.service.GetTrashInRange(c))
 
 		resp := &Trash{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
-		s.EqualValues(candidate.updating, resp)
-
+		candidates[i].trash.Id = resp.Id
+		candidates[i].trash.CreatedAt = resp.CreatedAt
+		s.EqualValues(candidates[i].trash, resp)
 	}
 }
 

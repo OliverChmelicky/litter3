@@ -13,7 +13,6 @@ type trashAccess struct {
 func (s *trashAccess) CreateTrash(in *Trash) (*Trash, error) {
 	in.Id = uuid.NewV4().String()
 	err := s.db.Insert(in)
-	fmt.Println(in)
 	if err != nil {
 		return &Trash{}, err
 	}
@@ -24,6 +23,19 @@ func (s *trashAccess) CreateTrash(in *Trash) (*Trash, error) {
 func (s *trashAccess) GetTrash(in string) (*Trash, error) {
 	trash := new(Trash)
 	err := s.db.Select(trash)
+	if err != nil {
+		return &Trash{}, err
+	}
+	return trash, nil
+}
+
+func (s *trashAccess) GetTrashInRange(request *RangeRequest) (*Trash, error) {
+	//https://postgis.net/docs/PostGIS_FAQ.html#idm1368
+	//SELECT * FROM geotable
+	//WHERE ST_DWithin(geocolumn, 'POINT(1000 1000)', 100.0);
+	trash := new(Trash)
+	err := s.db.Model(trash).Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).Select()
+	fmt.Printf("%+v \n", request)
 	if err != nil {
 		return &Trash{}, err
 	}
