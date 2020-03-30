@@ -86,26 +86,26 @@ func (s *TrashSuite) Test_CreateTrash() {
 	}
 
 	//test update trash
-	//for _, candidate := range candidates {
-	//	bytes, err := json.Marshal(candidate.updating)
-	//	s.Nil(err)
-	//
-	//	req := httptest.NewRequest(echo.PUT, "/trash/update", strings.NewReader(string(bytes)))
-	//
-	//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	//	rec := httptest.NewRecorder()
-	//	c := s.e.NewContext(req, rec)
-	//	c.Set("userId", candidate.creator.Id)
-	//
-	//	s.NoError(s.service.UpdateTrash(c))
-	//
-	//	resp := &Trash{}
-	//	err = json.Unmarshal(rec.Body.Bytes(), resp)
-	//	s.Nil(err)
-	//
-	//	s.EqualValues(candidate.updating, resp)
-	//
-	//}
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(candidate.updating)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.PUT, "/trash/update", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.creator.Id)
+
+		s.NoError(s.service.UpdateTrash(c))
+
+		resp := &Trash{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		s.EqualValues(candidate.updating, resp)
+
+	}
 }
 
 func (s *TrashSuite) Test_GetAround() {
