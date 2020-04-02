@@ -109,6 +109,87 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 	return c.String(http.StatusOK, "")
 }
 
+//len nazvy funkcii su ok, doimplementuj
+//func (s *userService) ApplyForFriendship(c echo.Context) error {
+//	requesterId := c.Get("userId").(string)
+//
+//	request := new(UserGroupRequest)
+//	if err := c.Bind(request); err != nil {
+//		return c.String(http.StatusBadRequest, "Invalid arguments")
+//	}
+//
+//	isMember, err := s.UserAccess.IsMember(request.UserId, request.SocietyId)
+//	if err != nil {
+//		return c.String(http.StatusInternalServerError, err.Error())
+//	}
+//	if isMember {
+//		return c.String(http.StatusConflict, "User is already a member")
+//	}
+//
+//	applicant, err := s.UserAccess.AddApplicant(&Applicant{SocietyId: request.SocietyId, UserId: requesterId})
+//	if err != nil {
+//		return c.String(http.StatusInternalServerError, err.Error())
+//	}
+//
+//	return c.JSON(http.StatusNotImplemented, applicant)
+//}
+//
+//func (s *userService) RemoveApplicationForFriendship(c echo.Context) error {
+//	requesterId := c.Get("userId").(string)
+//	societyId := c.Param("societyId")
+//
+//	err := s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: requesterId, SocietyId: societyId})
+//	if err != nil {
+//		return c.String(http.StatusInternalServerError, err.Error())
+//	}
+//
+//	return c.String(http.StatusOK, "")
+//}
+
+//func (s *userService) AcceptFriendship(c echo.Context) error {
+//	userId := c.Get("userId").(string)
+//
+//	newMemberId := c.Param("userId")
+//	societyId := c.Param("societyId")
+//
+//	isMember, err := s.UserAccess.IsMember(userId, societyId)
+//	if err != nil {
+//		return c.String(http.StatusInternalServerError, err.Error())
+//	}
+//	if isMember {
+//		return c.String(http.StatusConflict, "You are already a member of society")
+//	}
+//
+//	newMember, err := s.UserAccess.AcceptApplicant(newMemberId, societyId)
+//	if err != nil {
+//		return c.String(http.StatusInternalServerError, err.Error())
+//	}
+//
+//	return c.JSON(http.StatusCreated, newMember)
+//}
+//
+//func (s *userService) DismissFriendship(c echo.Context) error {
+//	admin := c.Get("userId").(string)
+//	societyId := c.Param("societyId")
+//	removingUserId := c.Param("userId")
+//
+//	isAdmin, _, err := s.isUserSocietyAdmin(admin, societyId)
+//	if err != nil {
+//		return c.String(http.StatusNotFound, err.Error())
+//	}
+//
+//	if !isAdmin {
+//		return c.String(http.StatusUnauthorized, "You are not an admin")
+//	}
+//
+//	err = s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: removingUserId, SocietyId: societyId})
+//	if err != nil {
+//		return c.JSON(http.StatusInternalServerError, err)
+//	}
+//
+//	return c.String(http.StatusOK, "")
+//}
+
 func (s *userService) DeleteUser(c echo.Context) error {
 	//remove comments
 	//what with events

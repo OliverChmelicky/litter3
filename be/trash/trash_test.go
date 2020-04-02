@@ -149,6 +149,13 @@ func (s *TrashSuite) Test_GetAround() {
 	}
 }
 
+//test create collection random
+//test get collections of user
+//create comment trash (user only)
+//get comment trash
+//update comment
+//delete comment
+
 func (s *TrashSuite) SetupTest() {
 	s.Nil(s.db.DropTable((*user.User)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
 	s.Nil(s.db.DropTable((*Trash)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))

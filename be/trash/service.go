@@ -90,16 +90,16 @@ func (s *trashService) DeleteTrash(c echo.Context) error {
 //
 
 func (s *trashService) CreateCollection(c echo.Context) error {
-	user := new(Collection)
-	if err := c.Bind(user); err != nil {
+	request := new(CreateCollectionRandomRequest)
+	if err := c.Bind(request); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	user, err := s.trashAccess.CreateCollection(user)
+	collection, err := s.trashAccess.CreateCollectionRandom(request)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusNotImplemented, user)
+	return c.JSON(http.StatusNotImplemented, collection)
 }
 
 func (s *trashService) GetCollection(c echo.Context) error {

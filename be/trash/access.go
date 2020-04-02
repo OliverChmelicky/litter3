@@ -48,14 +48,36 @@ func (s *trashAccess) DeleteTrash(in string) error {
 	return nil
 }
 
-func (s *trashAccess) CreateCollectionRandom(in *Collection) (*Collection, error) {
-	in.Id = uuid.NewV4().String()
-	err := s.db.Insert(in)
+//
+//
+//
+//
+//
+
+func (s *trashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) (*Collection, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return &Collection{}, err
+	}
+	defer tx.Rollback()
+
+	collection := &Collection{TrashId: in.TrashId, CleanedTrash: in.CleanedTrash}
+	err = tx.Insert(collection)
 	if err != nil {
 		return &Collection{}, err
 	}
 
-	return in, nil
+	userCollection := &UserCollection{}
+	for _, picker := range in.UsersIds {
+		userCollection.UserId = picker
+		userCollection.CollectionId = collection.Id
+		err = tx.Insert()
+		if err != nil {
+			return &Collection{}, err
+		}
+	}
+
+	return collection, tx.Commit()
 }
 
 //from event

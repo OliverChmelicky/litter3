@@ -84,15 +84,43 @@ func (u *Trash) BeforeInsert(ctx context.Context) (context.Context, error) {
 }
 
 type Collection struct {
-	tableName struct{} `pg:"collection"json:"-"`
-	Id        string
-	CreatedAt time.Time `pg:"default:now()"`
+	tableName    struct{} `pg:"collection"json:"-"`
+	Id           string
+	TrashId      string
+	CleanedTrash bool
+	CreatedAt    time.Time `pg:"default:now()"`
 }
 
-//type RangeRequest struct {
-//	location Point
-//	radius  float64
-//}
+var _ pg.BeforeInsertHook = (*Collection)(nil)
+
+func (u *Collection) BeforeInsert(ctx context.Context) (context.Context, error) {
+	if u.Id == "" {
+		u.Id = uuid.NewV4().String()
+	}
+	u.CreatedAt = time.Now()
+	return ctx, nil
+}
+
+type UserCollection struct {
+	tableName    struct{} `pg:"user_collection"json:"-"`
+	UserId       string
+	CollectionId string
+	CreatedAt    time.Time `pg:"default:now()"`
+}
+
+var _ pg.BeforeInsertHook = (*UserCollection)(nil)
+
+func (u *UserCollection) BeforeInsert(ctx context.Context) (context.Context, error) {
+	u.CreatedAt = time.Now()
+	return ctx, nil
+}
+
+type CreateCollectionRandomRequest struct {
+	//veci z collection + users a vsetci budu moct upravovat! Da sa spatne upravovat a odstranit sameho seba odtial
+	TrashId      string
+	CleanedTrash bool
+	UsersIds     []string
+}
 
 type RangeRequest struct {
 	Location Point

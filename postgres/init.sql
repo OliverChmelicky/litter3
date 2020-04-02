@@ -108,10 +108,10 @@ create table events
 
 create table collections
 (
-    id         VARCHAR PRIMARY KEY,
-    trash_id   VARCHAR REFERENCES trash (id),
-    cleaned    boolean     NOT NULL,
-    created_at timestamptz NOT NULL
+    id            VARCHAR PRIMARY KEY,
+    trash_id      VARCHAR REFERENCES trash (id),
+    cleaned_trash boolean     NOT NULL,
+    created_at    timestamptz NOT NULL
 );
 
 
