@@ -7,6 +7,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
 	"github.com/labstack/echo"
+	custom_errors "github.com/olo/litter3/custom-errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http/httptest"
@@ -59,7 +60,7 @@ func (s *SocietySuite) Test_CRUsociety() {
 	}
 
 	for i, _ := range candidates {
-		user, err := s.service.userAccess.CreateUser(candidates[i].user)
+		user, err := s.service.UserAccess.CreateUser(candidates[i].user)
 		candidates[i].user = user
 		s.NoError(err)
 
@@ -117,12 +118,12 @@ func (s *SocietySuite) Test_CRUsociety() {
 
 }
 
-func (s *SocietySuite) Test_ApplyFormMembership_RemoveApplication_AllByUser() {
+func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 	candidates := []struct {
 		admin           *User
 		society         *Society
 		newMember       *User
-		applicationForm *UserGroupRequest
+		applicationForm *IdMessage
 		finalApplicant  *Applicant
 		err             string
 	}{
@@ -135,16 +136,17 @@ func (s *SocietySuite) Test_ApplyFormMembership_RemoveApplication_AllByUser() {
 
 	var err error
 	for i, _ := range candidates {
-		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
 		s.Nil(err)
-		candidates[i].newMember, err = s.service.userAccess.CreateUser(candidates[i].newMember)
+		candidates[i].newMember, err = s.service.UserAccess.CreateUser(candidates[i].newMember)
 		s.Nil(err)
 
-		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
 		s.Nil(err)
+		fmt.Println(candidates[i].society)
 
 		//for filling request structure
-		candidates[i].applicationForm = &UserGroupRequest{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		candidates[i].applicationForm = &IdMessage{Id: candidates[i].society.Id}
 		candidates[i].finalApplicant = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
 	}
 
@@ -188,29 +190,30 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 		admin           *User
 		society         *Society
 		newMember       *User
-		applicationForm *UserGroupRequest
+		applicationForm *IdMessage
 		finalApplicant  *Applicant
-		err             string
+		err             *custom_errors.ErrorModel
 	}{
 		{
 			admin:     &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
 			society:   &Society{Name: "TestApplyFormMembershipExistingMember"},
 			newMember: &User{FirstName: "Novy", LastName: "Member", Email: "blbost@newMember.com"},
+			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrConflict, Message: "User is already a member"},
 		},
 	}
 
 	var err error
 	for i, _ := range candidates {
-		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
 		s.Nil(err)
-		candidates[i].newMember, err = s.service.userAccess.CreateUser(candidates[i].newMember)
+		candidates[i].newMember, err = s.service.UserAccess.CreateUser(candidates[i].newMember)
 		s.Nil(err)
 
-		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
 		s.Nil(err)
 
 		newMember := &Member{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id, Permission: membership("member")}
-		err := s.service.userAccess.db.Insert(newMember)
+		err := s.service.UserAccess.Db.Insert(newMember)
 		s.Nil(err)
 
 		testExistence := new(Member)
@@ -224,7 +227,7 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 		}
 
 		//for filling request structure
-		candidates[i].applicationForm = &UserGroupRequest{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		candidates[i].applicationForm = &IdMessage{Id: candidates[i].society.Id}
 		candidates[i].finalApplicant = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
 	}
 
@@ -241,11 +244,10 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 
 		s.Nil(s.service.ApplyForMembership(c))
 
-		resp := &Applicant{}
+		resp := &custom_errors.ErrorModel{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
-		s.NotNil(err)
 
-		s.EqualValues("User is already a member", rec.Body.String())
+		s.EqualValues(candidate.err, resp)
 	}
 }
 
@@ -265,17 +267,17 @@ func (s *SocietySuite) Test_DismissApplicant() {
 
 	var err error
 	for i, _ := range candidates {
-		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
 		s.Nil(err)
-		candidates[i].newMember, err = s.service.userAccess.CreateUser(candidates[i].newMember)
+		candidates[i].newMember, err = s.service.UserAccess.CreateUser(candidates[i].newMember)
 		s.Nil(err)
 
-		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
 		s.Nil(err)
 
 		//for filling request structure
 		candidates[i].application = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
-		_, err = s.service.userAccess.AddApplicant(candidates[i].application)
+		_, err = s.service.UserAccess.AddApplicant(candidates[i].application)
 		s.Nil(err)
 	}
 
@@ -317,19 +319,19 @@ func (s *SocietySuite) Test_AddMember() {
 
 	var err error
 	for i := range candidates {
-		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
 		s.Nil(err)
-		candidates[i].newMember, err = s.service.userAccess.CreateUser(candidates[i].newMember)
+		candidates[i].newMember, err = s.service.UserAccess.CreateUser(candidates[i].newMember)
 		s.Nil(err)
 
-		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
 		s.Nil(err)
 		candidates[i].response.UserId = candidates[i].newMember.Id
 		candidates[i].response.SocietyId = candidates[i].society.Id
 
 		//for filling request structure
 		candidates[i].application = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
-		_, err = s.service.userAccess.AddApplicant(candidates[i].application)
+		_, err = s.service.UserAccess.AddApplicant(candidates[i].application)
 		s.Nil(err)
 	}
 
@@ -350,13 +352,11 @@ func (s *SocietySuite) Test_AddMember() {
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
+		candidate.response.CreatedAt = resp.CreatedAt
 		s.EqualValues(candidate.response, resp)
 	}
 }
 
-//TODO
-//uz mam v skupine admina a membera
-//changeUserRights to admin
 func (s *SocietySuite) Test_ChangeRights() {
 	candidates := []struct {
 		admin         *User
@@ -384,12 +384,12 @@ func (s *SocietySuite) Test_ChangeRights() {
 
 	var err error
 	for i, _ := range candidates {
-		candidates[i].admin, err = s.service.userAccess.CreateUser(candidates[i].admin)
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
 		s.Nil(err)
-		candidates[i].friend, err = s.service.userAccess.CreateUser(candidates[i].friend)
+		candidates[i].friend, err = s.service.UserAccess.CreateUser(candidates[i].friend)
 		s.Nil(err)
 
-		candidates[i].society, err = s.service.userAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
 		s.Nil(err)
 
 		candidates[i].oldMembership.UserId = candidates[i].friend.Id
@@ -422,6 +422,7 @@ func (s *SocietySuite) Test_ChangeRights() {
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
+		candidate.newMembership.CreatedAt = resp.CreatedAt
 		s.EqualValues(candidate.newMembership, resp)
 	}
 }
@@ -449,6 +450,6 @@ func (s *SocietySuite) SetupTest() {
 	s.Nil(s.db.CreateTable((*Member)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 }
 
-func TestUserServiceSuite(t *testing.T) {
+func TestSocietyServiceSuite(t *testing.T) {
 	suite.Run(t, &SocietySuite{})
 }

@@ -1,9 +1,11 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
+	custom_errors "github.com/olo/litter3/custom-errors"
 	"net/http"
 )
 
@@ -76,25 +78,25 @@ func (s *userService) UpdateUser(c echo.Context) error {
 func (s *userService) ApplyForMembership(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 
-	request := new(UserGroupRequest)
+	request := new(IdMessage)
 	if err := c.Bind(request); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
 
-	isMember, err := s.UserAccess.IsMember(request.UserId, request.SocietyId)
+	isMember, err := s.UserAccess.IsMember(requesterId, request.Id)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
 	}
 	if isMember {
-		return c.String(http.StatusConflict, "User is already a member")
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("User is already a member")))
 	}
 
-	applicant, err := s.UserAccess.AddApplicant(&Applicant{SocietyId: request.SocietyId, UserId: requesterId})
+	applicant, err := s.UserAccess.AddApplicant(&Applicant{SocietyId: request.Id, UserId: requesterId})
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
 	}
 
-	return c.JSON(http.StatusNotImplemented, applicant)
+	return c.JSON(http.StatusOK, applicant)
 }
 
 func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
@@ -109,98 +111,97 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 	return c.String(http.StatusOK, "")
 }
 
-//len nazvy funkcii su ok, doimplementuj
-//func (s *userService) ApplyForFriendship(c echo.Context) error {
-//	requesterId := c.Get("userId").(string)
 //
-//	request := new(UserGroupRequest)
-//	if err := c.Bind(request); err != nil {
-//		return c.String(http.StatusBadRequest, "Invalid arguments")
-//	}
 //
-//	isMember, err := s.UserAccess.IsMember(request.UserId, request.SocietyId)
-//	if err != nil {
-//		return c.String(http.StatusInternalServerError, err.Error())
-//	}
-//	if isMember {
-//		return c.String(http.StatusConflict, "User is already a member")
-//	}
 //
-//	applicant, err := s.UserAccess.AddApplicant(&Applicant{SocietyId: request.SocietyId, UserId: requesterId})
-//	if err != nil {
-//		return c.String(http.StatusInternalServerError, err.Error())
-//	}
+//	FRIENDSHIP PART
 //
-//	return c.JSON(http.StatusNotImplemented, applicant)
-//}
 //
-//func (s *userService) RemoveApplicationForFriendship(c echo.Context) error {
-//	requesterId := c.Get("userId").(string)
-//	societyId := c.Param("societyId")
-//
-//	err := s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: requesterId, SocietyId: societyId})
-//	if err != nil {
-//		return c.String(http.StatusInternalServerError, err.Error())
-//	}
-//
-//	return c.String(http.StatusOK, "")
-//}
 
-//func (s *userService) AcceptFriendship(c echo.Context) error {
-//	userId := c.Get("userId").(string)
-//
-//	newMemberId := c.Param("userId")
-//	societyId := c.Param("societyId")
-//
-//	isMember, err := s.UserAccess.IsMember(userId, societyId)
-//	if err != nil {
-//		return c.String(http.StatusInternalServerError, err.Error())
-//	}
-//	if isMember {
-//		return c.String(http.StatusConflict, "You are already a member of society")
-//	}
-//
-//	newMember, err := s.UserAccess.AcceptApplicant(newMemberId, societyId)
-//	if err != nil {
-//		return c.String(http.StatusInternalServerError, err.Error())
-//	}
-//
-//	return c.JSON(http.StatusCreated, newMember)
-//}
-//
-//func (s *userService) DismissFriendship(c echo.Context) error {
-//	admin := c.Get("userId").(string)
-//	societyId := c.Param("societyId")
-//	removingUserId := c.Param("userId")
-//
-//	isAdmin, _, err := s.isUserSocietyAdmin(admin, societyId)
-//	if err != nil {
-//		return c.String(http.StatusNotFound, err.Error())
-//	}
-//
-//	if !isAdmin {
-//		return c.String(http.StatusUnauthorized, "You are not an admin")
-//	}
-//
-//	err = s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: removingUserId, SocietyId: societyId})
-//	if err != nil {
-//		return c.JSON(http.StatusInternalServerError, err)
-//	}
-//
-//	return c.String(http.StatusOK, "")
-//}
+func (s *userService) ApplyForFriendship(c echo.Context) error {
+	requesterId := c.Get("userId").(string)
 
-func (s *userService) DeleteUser(c echo.Context) error {
-	//remove comments
-	//what with events
-	//what with collected trash
-	//remove notifications
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+	request := new(IdMessage)
+	if err := c.Bind(request); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid arguments")
+	}
+
+	friendRequest := &FriendRequest{User1Id: requesterId, User2Id: request.Id}
+
+	isMember, err := s.UserAccess.IsFriendRequestSendAlready(friendRequest)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
+	}
+	if isMember {
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("USERS ARE FIENDS ALREADY")))
+	}
+
+	applicant, err := s.UserAccess.AddFriendshipRequest(friendRequest)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
+	}
+
+	return c.JSON(http.StatusNotImplemented, applicant)
+}
+
+func (s *userService) RemoveApplicationForFriendship(c echo.Context) error {
+	requesterId := c.Get("userId").(string)
+	notWanted := c.Param("unfriendId")
+
+	application := &FriendRequest{User1Id: notWanted, User2Id: requesterId}
+
+	err := s.UserAccess.RemoveApplicationForFriendship(application)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveApplicationForFriendship, err))
+	}
+
+	return c.String(http.StatusOK, "")
+}
+
+func (s *userService) AcceptFriendship(c echo.Context) error {
+	requesterId := c.Get("userId").(string)
+	user1Id := c.Param("user1Id")
+	user2Id := c.Param("user2Id")
+
+	if requesterId != user1Id || requesterId != user2Id {
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are not in this relation")))
+	}
+
+	friendship := &Friends{User1Id: user1Id, User2Id: user2Id}
+	areFriends, err := s.UserAccess.AreFriends(friendship)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
+	}
+	if areFriends {
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are friends already")))
+	}
+
+	newMember, err := s.UserAccess.ConfirmFriendship(user1Id, user2Id)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, newMember)
+}
+
+func (s *userService) RemoveFriend(c echo.Context) error {
+	requesterId := c.Get("userId").(string)
+	unfriend := c.Param("unfriendId")
+
+	friendship := &Friends{User1Id: requesterId, User2Id: unfriend}
+
+	err := s.UserAccess.RemoveFriend(friendship)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveFriend, err))
+	}
+
+	return c.String(http.StatusOK, "")
 }
 
 //
 //
 //
+//	SOCIETY PART
 //
 //
 
@@ -335,7 +336,7 @@ func (s *userService) ChangeMemberRights(c echo.Context) error {
 }
 
 func (s *userService) RemoveMember(c echo.Context) error {
-	//DELETE {userId, societyId} ----> prerob, tak by v body nebolo nic
+	//TODO DELETE {userId, societyId} ----> prerob, tak by v body nebolo nic
 	id := c.Get("userId")
 	requesterId := fmt.Sprintf("%v", id)
 
@@ -382,7 +383,6 @@ func (s *userService) RemoveMember(c echo.Context) error {
 }
 
 func (s *userService) DeleteSociety(c echo.Context) error {
-	//remove members
 	id := c.Get("userId")
 	userId := fmt.Sprintf("%v", id)
 	societyId := c.Param("id")

@@ -62,7 +62,7 @@ type accessibility string
 type trashType string
 type Trash struct {
 	tableName     struct{} `pg:"trash"json:"-"`
-	Id            string
+	Id            string   `pg:",pk"`
 	Cleaned       bool
 	Size          size
 	Accessibility accessibility
@@ -85,7 +85,7 @@ func (u *Trash) BeforeInsert(ctx context.Context) (context.Context, error) {
 
 type Collection struct {
 	tableName    struct{} `pg:"collection"json:"-"`
-	Id           string
+	Id           string   `pg:",pk"`
 	TrashId      string
 	CleanedTrash bool
 	CreatedAt    time.Time `pg:"default:now()"`
@@ -102,9 +102,9 @@ func (u *Collection) BeforeInsert(ctx context.Context) (context.Context, error) 
 }
 
 type UserCollection struct {
-	tableName    struct{} `pg:"user_collection"json:"-"`
-	UserId       string
-	CollectionId string
+	tableName    struct{}  `pg:"user_collection"json:"-"`
+	UserId       string    `pg:",pk"`
+	CollectionId string    `pg:",pk"`
 	CreatedAt    time.Time `pg:"default:now()"`
 }
 

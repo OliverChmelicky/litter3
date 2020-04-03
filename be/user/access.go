@@ -2,12 +2,21 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-pg/pg/v9"
+	"strings"
 )
 
 type UserAccess struct {
 	Db *pg.DB
 }
+
+//
+//
+//
+//	USER PART
+//
+//
 
 func (s *UserAccess) CreateUser(in *User) (*User, error) {
 	err := s.Db.Insert(in)
@@ -32,12 +41,18 @@ func (s *UserAccess) UpdateUser(in *User) (*User, error) {
 }
 
 func (s *UserAccess) AddApplicant(in *Applicant) (*Applicant, error) {
-	err := s.Db.Insert(in)
+	society := new(Society)
+	err := s.Db.Model(society).Where("id = ?", in.SocietyId).Select()
 	if err != nil {
-		return &Applicant{}, err
+		return &Applicant{}, fmt.Errorf("ERROR FIND SOCIETY %w", err)
 	}
 
-	return in, err
+	err = s.Db.Insert(in)
+	if err != nil {
+		return &Applicant{}, fmt.Errorf("ERROR INSERT APPLICATION %w", err)
+	}
+
+	return in, nil
 }
 
 func (s *UserAccess) RemoveApplicationForMembership(in *Applicant) error {
@@ -53,6 +68,7 @@ func (s *UserAccess) DeleteUser(in string) error {
 //
 //
 //
+//	SOCIETY PART
 //
 //
 
@@ -187,6 +203,7 @@ func (s *UserAccess) IsMember(userId, societyId string) (bool, error) {
 }
 
 func (s *UserAccess) DeleteSociety(in string) error {
+	//TODO
 	//transaction
 
 	//remove comments
@@ -194,4 +211,107 @@ func (s *UserAccess) DeleteSociety(in string) error {
 	//what with collected trash --> removedSociety
 
 	return errors.New("Uninplemented")
+}
+
+//
+//
+//
+//	FRIEDNSHIP PART
+//
+//
+
+func (s *UserAccess) AreFriends(friendship *Friends) (bool, error) {
+	correctIdOrderFriend(friendship)
+
+	err := s.Db.Model(friendship).Where("user1_id = ? and user2_id = ?", friendship.User1Id, friendship.User2Id).Select()
+	if err == pg.ErrNoRows { //record was not found
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (s *UserAccess) IsFriendRequestSendAlready(request *FriendRequest) (bool, error) {
+	correctIdOrderFriendRequest(request)
+
+	err := s.Db.Model(request).Where("user1_id = ? and user2_id = ?", request.User1Id, request.User2Id).Select()
+	if err == pg.ErrNoRows { //record was not found
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (s *UserAccess) AddFriendshipRequest(request *FriendRequest) (*FriendRequest, error) {
+	//Ids will be worted ascending by Hook or trigger in DB
+	err := s.Db.Insert(request)
+	if err != nil {
+		return &FriendRequest{}, err
+	}
+	return request, nil
+}
+
+func (s *UserAccess) RemoveApplicationForFriendship(request *FriendRequest) error {
+	correctIdOrderFriendRequest(request)
+	applicant := new(FriendRequest)
+	_, err := s.Db.Model(applicant).Where("user1_id = ? and user2_id = ?", request.User1Id, request.User2Id).Delete()
+	return err
+}
+
+func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*Friends, error) {
+	//Ids will be sorted ascending by Hook or trigger in DB
+	request := &FriendRequest{User1Id: user1Id, User2Id: user2Id}
+	correctIdOrderFriendRequest(request)
+
+	err := s.Db.Model(request).Where("user1_id = ? and user2_id = ?", request.User1Id, request.User2Id).Select()
+	if err != nil {
+		return &Friends{}, err
+	}
+
+	tx, err := s.Db.Begin()
+	if err != nil {
+		return &Friends{}, fmt.Errorf("Error creating transaction %w", err)
+	}
+	defer tx.Rollback()
+
+	err = tx.Delete(request)
+	if err != nil {
+		return &Friends{}, fmt.Errorf("Error deleting Friendship request %w", err)
+	}
+
+	friendship := &Friends{User1Id: request.User1Id, User2Id: request.User2Id}
+	err = s.Db.Insert(friendship)
+	if err != nil {
+		return &Friends{}, fmt.Errorf("Error creating Friendship %w", err)
+	}
+	return friendship, nil
+}
+
+func (s *UserAccess) RemoveFriend(friendship *Friends) error {
+	member := new(Friends)
+	_, err := s.Db.Model(member).Where("user1_id = ? and user2_id ?", friendship.User1Id, friendship.User2Id).Delete()
+	return err
+}
+
+func correctIdOrderFriend(request *Friends) {
+	order := strings.Compare(request.User1Id, request.User2Id)
+	if order == 1 {
+		tmp := request.User1Id
+		request.User1Id = request.User2Id
+		request.User2Id = tmp
+	}
+}
+func correctIdOrderFriendRequest(request *FriendRequest) {
+	order := strings.Compare(request.User1Id, request.User2Id)
+	if order == 1 {
+		tmp := request.User1Id
+		request.User1Id = request.User2Id
+		request.User2Id = tmp
+	}
 }

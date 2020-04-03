@@ -1,7 +1,5 @@
 package custom_errors
 
-import "errors"
-
 type ErrorModel struct {
 	ErrorType string `json:"errorType"`
 	Message   string `json:"errorMessage"`
@@ -15,21 +13,11 @@ func WrapError(errorType string, err error) ErrorModel {
 }
 
 var (
-	ErrPageConfigNotFound  = errors.New("pageConfig not found")
-	ErrPageDataNotFound    = errors.New("no pageData found")
-	ErrInterfaceConversion = errors.New("interface conversion failed")
-	ErrProductNotActive    = errors.New("product is not valid")
-	ErrIndexOutOfRange     = errors.New("index out of range")
-	ErrSchemaNotFound      = errors.New("schema not found")
-	ErrDetailQueryNotValid = errors.New("query is not valid")
-	ErrAmendNotSet         = errors.New("amend is not set")
-	ErrProductNotFound     = errors.New("no product found")
-	ErrMinAggNotFound      = errors.New("min aggregation not found")
-	ErrMaxAggNotFound      = errors.New("max aggregation not found")
-	ErrMissingToken        = errors.New("token is missing")
-	ErrInvalidFilter       = errors.New("invalid filter query value")
-)
-
-var (
-	ErrBindingRequest = "ERROR BINDING REQUEST"
+	ErrBindingRequest                 = "ERROR BINDING REQUEST"
+	ErrApplyForMembership             = "ERROR APPLY FOR MEMBERSHIP"
+	ErrRemoveApplicationForMembership = "ERROR REMOVE APPLICATION FOR MEMBERSHIP"
+	ErrApplyForFriendship             = "ERROR APPLY FOR FRIENDSHIP"
+	ErrRemoveApplicationForFriendship = "ERROR REMOVE APPLICATION FOR FRIENDSHIP"
+	ErrRemoveFriend                   = "ERROR REMOVE FRIEND"
+	ErrConflict                       = "CONFLICT"
 )
