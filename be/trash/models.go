@@ -115,6 +115,38 @@ func (u *UserCollection) BeforeInsert(ctx context.Context) (context.Context, err
 	return ctx, nil
 }
 
+type TrashComment struct {
+	tableName struct{} `pg:"trash_comments"json:"-"`
+	Id        string   `pg:",pk"`
+	UserId    string
+	TrashId   string
+	message   string
+	CreatedAt time.Time `pg:"default:now()"`
+	UpdatedAt time.Time `pg:"default:now()"`
+}
+
+var _ pg.BeforeInsertHook = (*TrashComment)(nil)
+
+func (u *TrashComment) BeforeInsert(ctx context.Context) (context.Context, error) {
+	if u.CreatedAt.IsZero() {
+		u.CreatedAt = time.Now()
+	}
+	u.UpdatedAt = time.Time{}
+	return ctx, nil
+}
+
+var _ pg.BeforeUpdateHook = (*TrashComment)(nil)
+
+func (u *TrashComment) BeforeUpdate(ctx context.Context) (context.Context, error) {
+	u.UpdatedAt = time.Now()
+	return ctx, nil
+}
+
+type TrashCommentRequest struct {
+	TrashId string
+	message string
+}
+
 type CreateCollectionRandomRequest struct {
 	//veci z collection + users a vsetci budu moct upravovat! Da sa spatne upravovat a odstranit sameho seba odtial
 	TrashId      string

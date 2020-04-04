@@ -119,8 +119,8 @@ create table societies_members
 (
     "user_id"  VARCHAR REFERENCES users (id),
     society_id VARCHAR REFERENCES societies (id),
-    permission membership not null,
-    created_at    timestamptz NOT NULL,
+    permission membership  not null,
+    created_at timestamptz NOT NULL,
     PRIMARY KEY ("user_id", society_id)
 );
 
@@ -128,7 +128,7 @@ create table societies_applicants
 (
     "user_id"  VARCHAR REFERENCES users (id),
     society_id VARCHAR REFERENCES societies (id),
-    created_at    timestamptz NOT NULL,
+    created_at timestamptz NOT NULL,
     PRIMARY KEY ("user_id", society_id)
 );
 
@@ -152,7 +152,7 @@ create table societies_events
     society_id VARCHAR REFERENCES societies (id),
     event_id   VARCHAR REFERENCES events (id),
     permission eventRights not null,
-    created_at    timestamptz NOT NULL,
+    created_at timestamptz NOT NULL,
     PRIMARY KEY (society_id, event_id)
 );
 
@@ -161,25 +161,36 @@ create table users_events
     "user_id"  VARCHAR REFERENCES users (id),
     event_id   VARCHAR REFERENCES events (id),
     permission eventRights not null,
-    created_at    timestamptz NOT NULL,
+    created_at timestamptz NOT NULL,
     PRIMARY KEY ("user_id", event_id)
 );
 
 
 create table friends
 (
-    user1_id  VARCHAR REFERENCES users (id),
-    user2_id VARCHAR REFERENCES users (id),
-    created_at    timestamptz NOT NULL,
+    user1_id   VARCHAR REFERENCES users (id),
+    user2_id   VARCHAR REFERENCES users (id),
+    created_at timestamptz NOT NULL,
     PRIMARY KEY (user1_id, user2_id)
 );
 
 create table friend_requests
 (
-    user1_id  VARCHAR REFERENCES users (id),
-    user2_id VARCHAR REFERENCES users (id),
-    created_at    timestamptz NOT NULL,
+    user1_id   VARCHAR REFERENCES users (id),
+    user2_id   VARCHAR REFERENCES users (id),
+    created_at timestamptz NOT NULL,
     PRIMARY KEY (user1_id, user2_id)
+);
+
+create table trash_comments
+(
+    Id         varchar PRIMARY KEY,
+    UserId     varchar     not null,
+    TrashId    varchar     not null,
+    message    varchar     not null,
+    user1_id   VARCHAR REFERENCES users (id),
+    user2_id   VARCHAR REFERENCES users (id),
+    created_at timestamptz NOT NULL
 );
 
 --not possible before create

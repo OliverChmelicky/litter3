@@ -105,7 +105,7 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 
 	err := s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: requesterId, SocietyId: societyId})
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveApplicationForMembership, err))
 	}
 
 	return c.String(http.StatusOK, "")

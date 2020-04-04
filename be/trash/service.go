@@ -61,28 +61,87 @@ func (s *trashService) GetTrashInRange(c echo.Context) error {
 }
 
 func (s *trashService) UpdateTrash(c echo.Context) error {
-	trash := new(Trash)
-	if err := c.Bind(trash); err != nil {
+	request := new(TrashCommentRequest)
+	if err := c.Bind(TrashCommentRequest{}); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	_, err := s.trashAccess.GetTrash(trash.Id)
+	comment, err := s.trashAccess.GetTrashComment(request.TrashId)
 	if err != nil {
 		return c.String(http.StatusNotFound, "Trash with provided Id does not exist")
 	}
 
-	trash, err = s.trashAccess.UpdateTrash(trash)
+	comment.message = request.message
+	comment, err = s.trashAccess.UpdateTrashComment(comment)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error updating trash")
+	}
+
+	return c.JSON(http.StatusOK, comment)
+}
+
+func (s *trashService) DeleteTrash(c echo.Context) error {
+	//cez param
+	return c.JSON(http.StatusNotImplemented, "Implement me")
+}
+
+//
+//
+//	TRASH COMMENT
+//
+//
+
+func (s *trashService) CreateComment(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	request := new(TrashCommentRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	comment, err := s.trashAccess.CreateTrashComment(&TrashComment{TrashId: request.TrashId, UserId: userId, message: request.message})
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateComment, err))
+	}
+
+	return c.JSON(http.StatusOK, comment)
+}
+
+func (s *trashService) GetTrashComments(c echo.Context) error {
+	trashId := c.Param("id")
+
+	comments, err := s.trashAccess.GetTrashComments(trashId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetTrash, err))
+	}
+
+	return c.JSON(http.StatusOK, comments)
+}
+
+func (s *trashService) UpdateComment(c echo.Context) error {
+	id := c.Param("id")
+
+	trash, err := s.trashAccess.GetTrash(id)
+	if err != nil {
+		return c.String(http.StatusNotFound, "Trash with id does not exist")
 	}
 
 	return c.JSON(http.StatusOK, trash)
 }
 
-func (s *trashService) DeleteTrash(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+func (s *trashService) DeleteComment(c echo.Context) error {
+	id := c.Param("id")
+
+	trash, err := s.trashAccess.GetTrash(id)
+	if err != nil {
+		return c.String(http.StatusNotFound, "Trash with id does not exist")
+	}
+
+	return c.JSON(http.StatusOK, trash)
 }
 
+//
 //
 //
 //

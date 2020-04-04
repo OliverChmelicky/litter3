@@ -19,5 +19,7 @@ var (
 	ErrApplyForFriendship             = "ERROR APPLY FOR FRIENDSHIP"
 	ErrRemoveApplicationForFriendship = "ERROR REMOVE APPLICATION FOR FRIENDSHIP"
 	ErrRemoveFriend                   = "ERROR REMOVE FRIEND"
+	ErrCreateComment                  = "ERROR CREATE COMMENT"
+	ErrGetTrash                       = "ERROR GET TRASH"
 	ErrConflict                       = "CONFLICT"
 )
