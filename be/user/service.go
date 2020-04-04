@@ -166,8 +166,6 @@ func (s *userService) AcceptFriendship(c echo.Context) error {
 	}
 
 	if requesterId != request.User1Id && requesterId != request.User2Id {
-		fmt.Println(request)
-		fmt.Println(requesterId)
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are not in this relation")))
 	}
 
@@ -179,7 +177,7 @@ func (s *userService) AcceptFriendship(c echo.Context) error {
 	if areFriends {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are friends already")))
 	}
-	fmt.Println("Pred Confirm")
+
 	newMember, err := s.UserAccess.ConfirmFriendship(request.User1Id, request.User2Id)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))

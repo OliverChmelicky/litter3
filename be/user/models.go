@@ -111,7 +111,6 @@ func (u *Friends) BeforeDelete(ctx context.Context) (context.Context, error) {
 	if cmp == 1 {
 		swapUsersFriendsStruct(u)
 	}
-	u.CreatedAt = time.Now()
 	return ctx, nil
 }
 
@@ -144,7 +143,6 @@ func (u *FriendRequest) BeforeDelete(ctx context.Context) (context.Context, erro
 	if cmp == 1 {
 		swapUsersFriendRequest(u)
 	}
-	u.CreatedAt = time.Now()
 	return ctx, nil
 }
 

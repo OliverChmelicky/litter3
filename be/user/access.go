@@ -258,9 +258,8 @@ func (s *UserAccess) AddFriendshipRequest(request *FriendRequest) (*FriendReques
 }
 
 func (s *UserAccess) RemoveApplicationForFriendship(request *FriendRequest) error {
-	correctIdOrderFriendRequest(request)
-	applicant := new(FriendRequest)
-	_, err := s.Db.Model(applicant).Where("user1_id = ? and user2_id = ?", request.User1Id, request.User2Id).Delete()
+	//correctIdOrderFriendRequest(request)
+	err := s.Db.Delete(request)
 	return err
 }
 
@@ -269,18 +268,13 @@ func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*Friends, error
 	request := &FriendRequest{User1Id: user1Id, User2Id: user2Id}
 	correctIdOrderFriendRequest(request)
 
-	err := s.Db.Model(request).Where("user1_id = ? and user2_id = ?", request.User1Id, request.User2Id).Select()
-	if err != nil {
-		return &Friends{}, err
-	}
-
 	tx, err := s.Db.Begin()
 	if err != nil {
 		return &Friends{}, fmt.Errorf("Error creating transaction %w", err)
 	}
 	defer tx.Rollback()
 
-	err = tx.Delete(request)
+	_, err = tx.Model(request).Where("user1_id = ? and user2_id = ?", request.User1Id, request.User2Id).Delete()
 	if err != nil {
 		return &Friends{}, fmt.Errorf("Error deleting Friendship request %w", err)
 	}
@@ -294,8 +288,7 @@ func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*Friends, error
 }
 
 func (s *UserAccess) RemoveFriend(friendship *Friends) error {
-	member := new(Friends)
-	_, err := s.Db.Model(member).Where("user1_id = ? and user2_id ?", friendship.User1Id, friendship.User2Id).Delete()
+	err := s.Db.Delete(friendship)
 	return err
 }
 

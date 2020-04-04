@@ -9,6 +9,7 @@ import (
 	custom_errors "github.com/olo/litter3/custom-errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -244,60 +245,50 @@ func (s *UserSuite) Test_AddFriend() {
 	}
 }
 
-//func (s *UserSuite) Test_RemoveFriend() {
-//	candidates := []struct {
-//		heinrich    *User
-//		society     *Society
-//		peterAsks   *User
-//		application *Applicant
-//		response    *Member
-//	}{
-//		{
-//			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
-//			society:   &Society{Name: "More members than one"},
-//			peterAsks: &User{FirstName: "Hello", LastName: "Flowup"},
-//			response:  &Member{Permission: "member"},
-//		},
-//	}
-//
-//	var err error
-//	for i := range candidates {
-//		candidates[i].heinrich, err = s.service.UserAccess.CreateUser(candidates[i].heinrich)
-//		s.Nil(err)
-//		candidates[i].peterAsks, err = s.service.UserAccess.CreateUser(candidates[i].peterAsks)
-//		s.Nil(err)
-//
-//		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].heinrich.Id)
-//		s.Nil(err)
-//		candidates[i].response.UserId = candidates[i].peterAsks.Id
-//		candidates[i].response.SocietyId = candidates[i].society.Id
-//
-//		//for filling request structure
-//		candidates[i].application = &Applicant{UserId: candidates[i].peterAsks.Id, SocietyId: candidates[i].society.Id}
-//		_, err = s.service.UserAccess.AddApplicant(candidates[i].application)
-//		s.Nil(err)
-//	}
-//
-//	for _, candidate := range candidates {
-//		req := httptest.NewRequest(echo.POST, "/societies/"+candidate.application.SocietyId+"/"+candidate.application.UserId+"/approve", nil)
-//
-//		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-//		rec := httptest.NewRecorder()
-//		c := s.e.NewContext(req, rec)
-//
-//		c.Set("userId", candidate.peterAsks.Id)
-//		c.SetParamNames("societyId", "userId")
-//		c.SetParamValues(candidate.society.Id, candidate.peterAsks.Id)
-//
-//		s.Nil(s.service.AcceptApplicant(c))
-//
-//		resp := &Member{}
-//		err = json.Unmarshal(rec.Body.Bytes(), resp)
-//		s.Nil(err)
-//
-//		s.EqualValues(candidate.response, resp)
-//	}
-//}
+func (s *UserSuite) Test_RemoveFriend() {
+	candidates := []struct {
+		heinrich   *User
+		peterAsks  *User
+		friendship *Friends
+	}{
+		{
+			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
+			peterAsks: &User{FirstName: "Hello", LastName: "Flowup"},
+		},
+	}
+
+	var err error
+	for i := range candidates {
+		candidates[i].heinrich, err = s.service.UserAccess.CreateUser(candidates[i].heinrich)
+		s.Nil(err)
+		candidates[i].peterAsks, err = s.service.UserAccess.CreateUser(candidates[i].peterAsks)
+		s.Nil(err)
+
+		//create friendship
+		candidates[i].friendship = &Friends{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
+		correctIdOrderFriend(candidates[i].friendship)
+		err = s.db.Insert(candidates[i].friendship)
+		s.Nil(err)
+	}
+
+	for _, candidate := range candidates {
+		req := httptest.NewRequest(echo.DELETE, "/users/friends/remove/"+candidate.heinrich.Id, nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.SetParamNames("unfriendId")
+		c.SetParamValues(candidate.heinrich.Id)
+		c.Set("userId", candidate.peterAsks.Id)
+
+		s.NoError(s.service.RemoveFriend(c))
+		s.EqualValues(http.StatusOK, rec.Code)
+
+		rq := &Friends{}
+		err = s.db.Model(rq).Where("user1_id = ? and user2_id = ?", candidate.friendship.User1Id, candidate.friendship.User2Id).Select()
+		s.EqualValues(pg.ErrNoRows, err)
+	}
+}
 
 func (s *UserSuite) TearDownSuite() {
 	s.db.Close()
@@ -308,11 +299,15 @@ func (s *UserSuite) SetupTest() {
 	s.Nil(s.db.DropTable((*Society)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
 	s.Nil(s.db.DropTable((*FriendRequest)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
 	s.Nil(s.db.DropTable((*Friends)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
+	s.Nil(s.db.DropTable((*Applicant)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
+	s.Nil(s.db.DropTable((*Member)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
 
 	s.Nil(s.db.CreateTable((*User)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 	s.Nil(s.db.CreateTable((*Society)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 	s.Nil(s.db.CreateTable((*FriendRequest)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 	s.Nil(s.db.CreateTable((*Friends)(nil), &orm.CreateTableOptions{IfNotExists: true}))
+	s.Nil(s.db.CreateTable((*Applicant)(nil), &orm.CreateTableOptions{IfNotExists: true}))
+	s.Nil(s.db.CreateTable((*Member)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 }
 
 func TestUserServiceSuite(t *testing.T) {

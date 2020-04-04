@@ -25,7 +25,6 @@ func (s *trashService) CreateTrash(c echo.Context) error {
 
 	trash, err := s.trashAccess.CreateTrash(trash)
 	if err != nil {
-		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 

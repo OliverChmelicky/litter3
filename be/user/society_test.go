@@ -302,11 +302,11 @@ func (s *SocietySuite) Test_DismissApplicant() {
 
 func (s *SocietySuite) Test_AddMember() {
 	candidates := []struct {
-		admin       *User
-		society     *Society
-		newMember   *User
-		application *Applicant
-		response    *Member
+		admin     *User
+		society   *Society
+		newMember *User
+		request   *UserGroupRequest
+		response  *Member
 	}{
 		{
 			admin:     &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
@@ -328,25 +328,26 @@ func (s *SocietySuite) Test_AddMember() {
 		candidates[i].response.UserId = candidates[i].newMember.Id
 		candidates[i].response.SocietyId = candidates[i].society.Id
 
-		//for filling request structure
-		candidates[i].application = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
-		_, err = s.service.UserAccess.AddApplicant(candidates[i].application)
+		//preparing request
+		candidates[i].request = &UserGroupRequest{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+
+		//preparing db
+		application := &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.UserAccess.AddApplicant(application)
 		s.Nil(err)
 	}
 
 	for _, candidate := range candidates {
-		body, err := json.Marshal(candidate.application)
+		body, err := json.Marshal(candidate.request)
 		s.Nil(err)
 
-		req := httptest.NewRequest(echo.POST, "/societies//approve", strings.NewReader(string(body)))
+		req := httptest.NewRequest(echo.POST, "/societies/approve", strings.NewReader(string(body)))
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
 		c := s.e.NewContext(req, rec)
 
-		c.Set("userId", candidate.newMember.Id)
-		c.SetParamNames("societyId", "userId")
-		c.SetParamValues(candidate.society.Id, candidate.newMember.Id)
+		c.Set("userId", candidate.admin.Id)
 
 		s.Nil(s.service.AcceptApplicant(c))
 
@@ -444,11 +445,15 @@ func (s *SocietySuite) TearDownSuite() {
 func (s *SocietySuite) SetupTest() {
 	s.Nil(s.db.DropTable((*User)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
 	s.Nil(s.db.DropTable((*Society)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
+	s.Nil(s.db.DropTable((*FriendRequest)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
+	s.Nil(s.db.DropTable((*Friends)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
 	s.Nil(s.db.DropTable((*Applicant)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
 	s.Nil(s.db.DropTable((*Member)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
 
 	s.Nil(s.db.CreateTable((*User)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 	s.Nil(s.db.CreateTable((*Society)(nil), &orm.CreateTableOptions{IfNotExists: true}))
+	s.Nil(s.db.CreateTable((*FriendRequest)(nil), &orm.CreateTableOptions{IfNotExists: true}))
+	s.Nil(s.db.CreateTable((*Friends)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 	s.Nil(s.db.CreateTable((*Applicant)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 	s.Nil(s.db.CreateTable((*Member)(nil), &orm.CreateTableOptions{IfNotExists: true}))
 }
