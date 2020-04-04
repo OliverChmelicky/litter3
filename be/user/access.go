@@ -249,7 +249,7 @@ func (s *UserAccess) IsFriendRequestSendAlready(request *FriendRequest) (bool, e
 }
 
 func (s *UserAccess) AddFriendshipRequest(request *FriendRequest) (*FriendRequest, error) {
-	//Ids will be worted ascending by Hook or trigger in DB
+	//Ids will be sorted ascending by Hook or trigger in DB
 	err := s.Db.Insert(request)
 	if err != nil {
 		return &FriendRequest{}, err

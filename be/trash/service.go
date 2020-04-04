@@ -49,11 +49,8 @@ func (s *trashService) GetTrashInRange(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	fmt.Printf("%+v \n", request)
-
 	trash, err := s.trashAccess.GetTrashInRange(request)
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError("GetTrashInRangeAccess", err))
 	}
 
@@ -61,23 +58,22 @@ func (s *trashService) GetTrashInRange(c echo.Context) error {
 }
 
 func (s *trashService) UpdateTrash(c echo.Context) error {
-	request := new(TrashCommentRequest)
-	if err := c.Bind(TrashCommentRequest{}); err != nil {
+	trash := new(Trash)
+	if err := c.Bind(trash); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	comment, err := s.trashAccess.GetTrashComment(request.TrashId)
+	_, err := s.trashAccess.GetTrash(trash.Id)
 	if err != nil {
 		return c.String(http.StatusNotFound, "Trash with provided Id does not exist")
 	}
 
-	comment.message = request.message
-	comment, err = s.trashAccess.UpdateTrashComment(comment)
+	trash, err = s.trashAccess.UpdateTrash(trash)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error updating trash")
 	}
 
-	return c.JSON(http.StatusOK, comment)
+	return c.JSON(http.StatusOK, trash)
 }
 
 func (s *trashService) DeleteTrash(c echo.Context) error {
@@ -85,6 +81,7 @@ func (s *trashService) DeleteTrash(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
 
+//
 //
 //
 //	TRASH COMMENT
@@ -101,7 +98,6 @@ func (s *trashService) CreateComment(c echo.Context) error {
 
 	comment, err := s.trashAccess.CreateTrashComment(&TrashComment{TrashId: request.TrashId, UserId: userId, message: request.message})
 	if err != nil {
-		fmt.Println(err)
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateComment, err))
 	}
 
@@ -120,25 +116,44 @@ func (s *trashService) GetTrashComments(c echo.Context) error {
 }
 
 func (s *trashService) UpdateComment(c echo.Context) error {
-	id := c.Param("id")
-
-	trash, err := s.trashAccess.GetTrash(id)
-	if err != nil {
-		return c.String(http.StatusNotFound, "Trash with id does not exist")
+	request := new(TrashCommentRequest)
+	if err := c.Bind(TrashCommentRequest{}); err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	return c.JSON(http.StatusOK, trash)
+	comment, err := s.trashAccess.GetTrashComment(request.TrashId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetComment, err))
+	}
+
+	comment.message = request.Message
+	comment, err = s.trashAccess.UpdateTrashComment(comment)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateComment, err))
+	}
+
+	return c.JSON(http.StatusOK, comment)
 }
 
 func (s *trashService) DeleteComment(c echo.Context) error {
-	id := c.Param("id")
+	userId := c.Get("userId")
+	commentId := c.Param("trashId")
 
-	trash, err := s.trashAccess.GetTrash(id)
+	comment, err := s.trashAccess.GetTrashComment(commentId)
 	if err != nil {
-		return c.String(http.StatusNotFound, "Trash with id does not exist")
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetComment, err))
 	}
 
-	return c.JSON(http.StatusOK, trash)
+	if comment.UserId != userId {
+		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrDeleteComment, fmt.Errorf("You have to be a creator of comment")))
+	}
+
+	err = s.trashAccess.DeleteTrashComment(commentId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteComment, err))
+	}
+
+	return c.String(http.StatusOK, "")
 }
 
 //

@@ -144,7 +144,7 @@ func (u *TrashComment) BeforeUpdate(ctx context.Context) (context.Context, error
 
 type TrashCommentRequest struct {
 	TrashId string
-	message string
+	Message string
 }
 
 type CreateCollectionRandomRequest struct {

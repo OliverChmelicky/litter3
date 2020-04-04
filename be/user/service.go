@@ -126,16 +126,15 @@ func (s *userService) ApplyForFriendship(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
 
-	friendRequest := &FriendRequest{User1Id: requesterId, User2Id: request.Id}
-
-	isMember, err := s.UserAccess.IsFriendRequestSendAlready(friendRequest)
+	isRequestSend, err := s.UserAccess.AreFriends(&Friends{User1Id: requesterId, User2Id: request.Id})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
 	}
-	if isMember {
-		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("USERS ARE FIENDS ALREADY")))
+	if isRequestSend {
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("YOU ARE FIENDS ALREADY")))
 	}
 
+	friendRequest := &FriendRequest{User1Id: requesterId, User2Id: request.Id}
 	applicant, err := s.UserAccess.AddFriendshipRequest(friendRequest)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
@@ -160,14 +159,19 @@ func (s *userService) RemoveApplicationForFriendship(c echo.Context) error {
 
 func (s *userService) AcceptFriendship(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
-	user1Id := c.Param("user1Id")
-	user2Id := c.Param("user2Id")
 
-	if requesterId != user1Id || requesterId != user2Id {
+	request := new(FriendRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	if requesterId != request.User1Id && requesterId != request.User2Id {
+		fmt.Println(request)
+		fmt.Println(requesterId)
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are not in this relation")))
 	}
 
-	friendship := &Friends{User1Id: user1Id, User2Id: user2Id}
+	friendship := &Friends{User1Id: request.User1Id, User2Id: request.User2Id}
 	areFriends, err := s.UserAccess.AreFriends(friendship)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
@@ -175,10 +179,10 @@ func (s *userService) AcceptFriendship(c echo.Context) error {
 	if areFriends {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are friends already")))
 	}
-
-	newMember, err := s.UserAccess.ConfirmFriendship(user1Id, user2Id)
+	fmt.Println("Pred Confirm")
+	newMember, err := s.UserAccess.ConfirmFriendship(request.User1Id, request.User2Id)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
 	}
 
 	return c.JSON(http.StatusCreated, newMember)
@@ -265,20 +269,30 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 func (s *userService) AcceptApplicant(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	newMemberId := c.Param("userId")
-	societyId := c.Param("societyId")
+	request := new(UserGroupRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
 
-	isMember, err := s.UserAccess.IsMember(userId, societyId)
+	isAdmin, _, err := s.isUserSocietyAdmin(userId, request.SocietyId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, err))
+	}
+	if !isAdmin {
+		return c.JSON(http.StatusUnauthorized, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, errors.New("You are not an admin")))
+	}
+
+	isMember, err := s.UserAccess.IsMember(request.UserId, request.SocietyId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, err))
 	}
 	if isMember {
-		return c.String(http.StatusConflict, "You are already a member of society")
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, errors.New("You are already a member of society")))
 	}
 
-	newMember, err := s.UserAccess.AcceptApplicant(newMemberId, societyId)
+	newMember, err := s.UserAccess.AcceptApplicant(request.UserId, request.SocietyId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, err))
 	}
 
 	return c.JSON(http.StatusCreated, newMember)

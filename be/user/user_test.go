@@ -2,9 +2,11 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
 	"github.com/labstack/echo"
+	custom_errors "github.com/olo/litter3/custom-errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http/httptest"
@@ -47,11 +49,12 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		peterAsks       *User
 		applicationForm *IdMessage
 		friendship      *FriendRequest
-		err             string
+		err             *custom_errors.ErrorModel
 	}{
 		{
 			heinrich:  &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
 			peterAsks: &User{FirstName: "Novy", LastName: "Member"},
+			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrApplyForFriendship},
 		},
 	}
 
@@ -75,7 +78,7 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		bytes, err := json.Marshal(candidate.applicationForm)
 		s.Nil(err)
 
-		req := httptest.NewRequest(echo.POST, "/users/friend", strings.NewReader(string(bytes)))
+		req := httptest.NewRequest(echo.POST, "/users/friend/new", strings.NewReader(string(bytes)))
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
@@ -91,6 +94,25 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		candidate.friendship.CreatedAt = resp.CreatedAt
 		s.EqualValues(candidate.friendship, resp)
 
+		//try againg, should throw an error
+		bytes, err = json.Marshal(candidate.applicationForm)
+		s.Nil(err)
+
+		req = httptest.NewRequest(echo.POST, "/users/friend/new", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec = httptest.NewRecorder()
+		c = s.e.NewContext(req, rec)
+		c.Set("userId", candidate.peterAsks.Id)
+
+		s.NoError(s.service.ApplyForFriendship(c))
+
+		respErr := &custom_errors.ErrorModel{}
+		err = json.Unmarshal(rec.Body.Bytes(), respErr)
+		s.Nil(err)
+		candidate.err.Message = respErr.Message
+		s.EqualValues(candidate.err, respErr)
+
 		//remove application
 		req = httptest.NewRequest(echo.DELETE, "/users/remove/friend/"+candidate.peterAsks.Id, nil)
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -103,127 +125,126 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 
 		s.NoError(s.service.RemoveApplicationForFriendship(c))
 		s.EqualValues("", rec.Body.String())
+
+		rq := &FriendRequest{}
+		err = s.db.Model(rq).Where("user1_id = ? and user2_id = ?", candidate.friendship.User1Id, candidate.friendship.User2Id).Select()
+		s.EqualValues(pg.ErrNoRows, err)
 	}
 }
 
-//
-//func (s *UserSuite) Test_RequestFriendshipExistingFriendship() {
-//	candidates := []struct {
-//		heinrich        *User
-//		society         *Society
-//		peterAsks       *User
-//		applicationForm *UserGroupRequest
-//		finalApplicant  *Applicant
-//		err             string
-//	}{
-//		{
-//			heinrich:  &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
-//			society:   &Society{Name: "TestApplyFormMembershipExistingMember"},
-//			peterAsks: &User{FirstName: "Novy", LastName: "Member", Email: "blbost@peterAsks.com"},
-//		},
-//	}
-//
-//	var err error
-//	for i, _ := range candidates {
-//		candidates[i].heinrich, err = s.service.UserAccess.CreateUser(candidates[i].heinrich)
-//		s.Nil(err)
-//		candidates[i].peterAsks, err = s.service.UserAccess.CreateUser(candidates[i].peterAsks)
-//		s.Nil(err)
-//
-//		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].heinrich.Id)
-//		s.Nil(err)
-//
-//		peterAsks := &Member{UserId: candidates[i].peterAsks.Id, SocietyId: candidates[i].society.Id, Permission: membership("member")}
-//		err := s.service.UserAccess.Db.Insert(peterAsks)
-//		s.Nil(err)
-//
-//		testExistence := new(Member)
-//		err = s.db.Model(testExistence).Where("user_id = ?", candidates[i].peterAsks.Id).Select()
-//		if err != nil {
-//			s.Nil(err) //end test
-//		}
-//		if errors.Is(err, pg.ErrNoRows) {
-//			fmt.Println("Should be found something")
-//			s.Error(nil) //throw error in test
-//		}
-//
-//		//for filling request structure
-//		candidates[i].applicationForm = &UserGroupRequest{UserId: candidates[i].peterAsks.Id, SocietyId: candidates[i].society.Id}
-//		candidates[i].finalApplicant = &Applicant{UserId: candidates[i].peterAsks.Id, SocietyId: candidates[i].society.Id}
-//	}
-//
-//	for _, candidate := range candidates {
-//		bytes, err := json.Marshal(candidate.applicationForm)
-//		s.Nil(err)
-//
-//		req := httptest.NewRequest(echo.POST, "/societies/apply", strings.NewReader(string(bytes)))
-//
-//		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-//		rec := httptest.NewRecorder()
-//		c := s.e.NewContext(req, rec)
-//		c.Set("userId", candidate.peterAsks.Id)
-//
-//		s.Nil(s.service.ApplyForMembership(c))
-//
-//		resp := &Applicant{}
-//		err = json.Unmarshal(rec.Body.Bytes(), resp)
-//		s.NotNil(err)
-//
-//		s.EqualValues("User is already a member", rec.Body.String())
-//	}
-//}
-//
-//func (s *UserSuite) Test_DismissFriendshipRequest() {
-//	candidates := []struct {
-//		heinrich    *User
-//		society     *Society
-//		peterAsks   *User
-//		application *Applicant
-//	}{
-//		{
-//			heinrich:  &User{Id: "2", FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
-//			society:   &Society{Name: "More members than one"},
-//			peterAsks: &User{FirstName: "Hello", LastName: "Flowup"},
-//		},
-//	}
-//
-//	var err error
-//	for i, _ := range candidates {
-//		candidates[i].heinrich, err = s.service.UserAccess.CreateUser(candidates[i].heinrich)
-//		s.Nil(err)
-//		candidates[i].peterAsks, err = s.service.UserAccess.CreateUser(candidates[i].peterAsks)
-//		s.Nil(err)
-//
-//		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].heinrich.Id)
-//		s.Nil(err)
-//
-//		//for filling request structure
-//		candidates[i].application = &Applicant{UserId: candidates[i].peterAsks.Id, SocietyId: candidates[i].society.Id}
-//		_, err = s.service.UserAccess.AddApplicant(candidates[i].application)
-//		s.Nil(err)
-//	}
-//
-//	for _, cand := range candidates {
-//		req := httptest.NewRequest(echo.DELETE, "/societies/dismiss/"+cand.society.Id+"/"+cand.peterAsks.Id, nil)
-//
-//		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-//		rec := httptest.NewRecorder()
-//		c := s.e.NewContext(req, rec)
-//
-//		c.Set("userId", cand.heinrich.Id)
-//
-//		c.SetPath("/societies/dismiss/:societyId/:userId")
-//		c.SetParamNames("societyId", "userId")
-//		c.SetParamValues(cand.society.Id, cand.peterAsks.Id)
-//
-//		s.NoError(s.service.DismissApplicant(c))
-//
-//		s.EqualValues("", rec.Body.String())
-//	}
-//
-//}
-//
-//func (s *UserSuite) Test_AddFriend() {
+func (s *UserSuite) Test_RequestFriendshipExistingFriendship() {
+	candidates := []struct {
+		heinrich        *User
+		peterAsks       *User
+		applicationForm *IdMessage
+		err             *custom_errors.ErrorModel
+	}{
+		{
+			heinrich:  &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
+			peterAsks: &User{FirstName: "Novy", LastName: "Member", Email: "blbost@peterAsks.com"},
+			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrConflict, Message: "YOU ARE FIENDS ALREADY"},
+		},
+	}
+
+	var err error
+	for i, _ := range candidates {
+		candidates[i].heinrich, err = s.service.UserAccess.CreateUser(candidates[i].heinrich)
+		s.Nil(err)
+		candidates[i].peterAsks, err = s.service.UserAccess.CreateUser(candidates[i].peterAsks)
+		s.Nil(err)
+		candidates[i].applicationForm = &IdMessage{Id: candidates[i].heinrich.Id}
+
+		//creating friendship
+		existingFriendship := &Friends{User1Id: candidates[i].peterAsks.Id, User2Id: candidates[i].heinrich.Id}
+		correctIdOrderFriend(existingFriendship)
+
+		err := s.service.UserAccess.Db.Insert(existingFriendship)
+		s.Nil(err)
+
+		testExistence := new(Friends)
+		err = s.db.Model(testExistence).Where("user1_id = ? and user2_id = ?", existingFriendship.User1Id, existingFriendship.User2Id).Select()
+		if err != nil {
+			s.Nil(err) //end test
+		}
+		if errors.Is(err, pg.ErrNoRows) {
+			s.Error(nil) //throw error in test
+		}
+	}
+
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(candidate.applicationForm)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/users/friend/new", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.peterAsks.Id)
+
+		s.Nil(s.service.ApplyForFriendship(c))
+
+		resp := &custom_errors.ErrorModel{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		s.EqualValues(candidate.err, resp)
+	}
+}
+
+func (s *UserSuite) Test_AddFriend() {
+	candidates := []struct {
+		heinrich  *User
+		peterAsks *User
+		request   *FriendRequest
+		response  *Friends
+	}{
+		{
+			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
+			peterAsks: &User{FirstName: "Hello", LastName: "Flowup"},
+		},
+	}
+
+	var err error
+	for i := range candidates {
+		candidates[i].heinrich, err = s.service.UserAccess.CreateUser(candidates[i].heinrich)
+		s.Nil(err)
+		candidates[i].peterAsks, err = s.service.UserAccess.CreateUser(candidates[i].peterAsks)
+		s.Nil(err)
+
+		//for filling request structure
+		candidates[i].request = &FriendRequest{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
+		_, err = s.service.UserAccess.AddFriendshipRequest(candidates[i].request)
+		s.Nil(err)
+		//fir filling final answer
+		candidates[i].response = &Friends{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
+		correctIdOrderFriend(candidates[i].response)
+	}
+
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(candidate.request)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/users/friend/accept", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.Set("userId", candidate.heinrich.Id)
+
+		s.Nil(s.service.AcceptFriendship(c))
+
+		resp := &Friends{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		candidate.response.CreatedAt = resp.CreatedAt
+		s.EqualValues(candidate.response, resp)
+	}
+}
+
+//func (s *UserSuite) Test_RemoveFriend() {
 //	candidates := []struct {
 //		heinrich    *User
 //		society     *Society

@@ -143,7 +143,6 @@ func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 
 		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
 		s.Nil(err)
-		fmt.Println(candidates[i].society)
 
 		//for filling request structure
 		candidates[i].applicationForm = &IdMessage{Id: candidates[i].society.Id}
@@ -336,7 +335,10 @@ func (s *SocietySuite) Test_AddMember() {
 	}
 
 	for _, candidate := range candidates {
-		req := httptest.NewRequest(echo.POST, "/societies/"+candidate.application.SocietyId+"/"+candidate.application.UserId+"/approve", nil)
+		body, err := json.Marshal(candidate.application)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/societies//approve", strings.NewReader(string(body)))
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
@@ -398,7 +400,8 @@ func (s *SocietySuite) Test_ChangeRights() {
 		s.Nil(err)
 		err := s.db.Select(candidates[i].oldMembership)
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err)
+			s.Nil(err)
 		}
 
 		candidates[i].newMembership.UserId = candidates[i].friend.Id

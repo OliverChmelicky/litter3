@@ -127,11 +127,15 @@ func (s *trashAccess) UpdateTrashComment(in *TrashComment) (*TrashComment, error
 	return in, s.db.Update(in)
 }
 
-func (s *trashAccess) DeleteTrashComment(id string) (interface{}, interface{}) {
-
+func (s *trashAccess) DeleteTrashComment(id string) error {
+	comment := new(TrashComment)
+	_, err := s.db.Model(comment).Where("id = ?", id).Delete()
+	return err
 }
 
 //will I need it?
-func (s *trashAccess) DeleteTrashComments(id string) (interface{}, interface{}) {
-
+func (s *trashAccess) DeleteTrashComments(trashId string) error {
+	comment := new(TrashComment)
+	_, err := s.db.Model(comment).Where("trash_id = ?", trashId).Delete()
+	return err
 }
