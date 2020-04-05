@@ -184,13 +184,12 @@ create table friend_requests
 
 create table trash_comments
 (
-    Id         varchar PRIMARY KEY,
-    UserId     varchar     not null,
-    TrashId    varchar     not null,
+    id         varchar PRIMARY KEY,
+    user_id     varchar     not null,
+    trash_id    varchar     not null,
     message    varchar     not null,
-    user1_id   VARCHAR REFERENCES users (id),
-    user2_id   VARCHAR REFERENCES users (id),
-    created_at timestamptz NOT NULL
+    created_at timestamptz NOT NULL,
+    updated_at timestamptz NOT NULL
 );
 
 --not possible before create

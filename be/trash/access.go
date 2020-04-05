@@ -31,12 +31,12 @@ func (s *trashAccess) GetTrash(in string) (*Trash, error) {
 
 func (s *trashAccess) GetTrashInRange(request *RangeRequest) ([]Trash, error) {
 	//https://postgis.net/docs/PostGIS_FAQ.html#idm1368
-	var trash []Trash
+	trash := &[]Trash{}
 	err := s.db.Model(trash).Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).Select()
 	if err != nil {
 		return nil, err
 	}
-	return trash, nil
+	return *trash, nil
 }
 
 func (s *trashAccess) UpdateTrash(in *Trash) (*Trash, error) {
@@ -105,7 +105,16 @@ func (s *trashAccess) CreateTrashComment(in *TrashComment) (*TrashComment, error
 	return in, nil
 }
 
-func (s *trashAccess) GetTrashComment(trashId string) (*TrashComment, error) {
+func (s *trashAccess) GetTrashCommentById(trashId string) (*TrashComment, error) {
+	comment := new(TrashComment)
+	err := s.db.Model(comment).Where("id = ?", trashId).Select()
+	if err != nil {
+		return nil, fmt.Errorf("GET TRASH COMMENT: %w", err)
+	}
+	return comment, nil
+}
+
+func (s *trashAccess) GetTrashCommentByTrashId(trashId string) (*TrashComment, error) {
 	comment := new(TrashComment)
 	err := s.db.Model(comment).Where("trash_id = ?", trashId).Select()
 	if err != nil {
@@ -116,7 +125,7 @@ func (s *trashAccess) GetTrashComment(trashId string) (*TrashComment, error) {
 
 func (s *trashAccess) GetTrashComments(trashId string) ([]TrashComment, error) {
 	var comments []TrashComment
-	err := s.db.Model(comments).Where("trash_id = ?", trashId).Select()
+	err := s.db.Model(&comments).Where("trash_id = ?", trashId).Select()
 	if err != nil {
 		return nil, fmt.Errorf("GET TRASH COMMENTS: %w", err)
 	}

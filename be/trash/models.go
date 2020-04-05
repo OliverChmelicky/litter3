@@ -120,7 +120,7 @@ type TrashComment struct {
 	Id        string   `pg:",pk"`
 	UserId    string
 	TrashId   string
-	message   string
+	Message   string
 	CreatedAt time.Time `pg:"default:now()"`
 	UpdatedAt time.Time `pg:"default:now()"`
 }
@@ -128,10 +128,11 @@ type TrashComment struct {
 var _ pg.BeforeInsertHook = (*TrashComment)(nil)
 
 func (u *TrashComment) BeforeInsert(ctx context.Context) (context.Context, error) {
-	if u.CreatedAt.IsZero() {
-		u.CreatedAt = time.Now()
+	if u.Id == "" {
+		u.Id = uuid.NewV4().String()
 	}
-	u.UpdatedAt = time.Time{}
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = u.CreatedAt
 	return ctx, nil
 }
 
@@ -143,7 +144,7 @@ func (u *TrashComment) BeforeUpdate(ctx context.Context) (context.Context, error
 }
 
 type TrashCommentRequest struct {
-	TrashId string
+	Id      string
 	Message string
 }
 

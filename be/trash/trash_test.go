@@ -139,19 +139,142 @@ func (s *TrashSuite) Test_GetAround() {
 
 		s.NoError(s.service.GetTrashInRange(c))
 
-		resp := &Trash{}
-		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		var resp []Trash
+		err = json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
 
-		candidates[i].trash.Id = resp.Id
-		candidates[i].trash.CreatedAt = resp.CreatedAt
-		s.EqualValues(candidates[i].trash, resp)
+		s.EqualValues(candidates[i].trash.Location, resp[0].Location)
 	}
 }
 
 //test create collection random
 //test get collections of user
+
 //create comment trash (user only)
+func (s *TrashSuite) Test_CreateCommentOnTrash() {
+	candidates := []struct {
+		creator         *user.User
+		trash           *Trash
+		commentRequest  *TrashCommentRequest
+		updatingRequest *TrashCommentRequest
+		actualComment   *TrashComment
+		trashComments   []TrashComment
+	}{
+		{
+			creator:         &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:           &Trash{Location: Point{20, 30}},
+			commentRequest:  &TrashCommentRequest{Message: "prva message"},
+			actualComment:   &TrashComment{Message: "prva message"},
+			updatingRequest: &TrashCommentRequest{Message: "DRUHA message"},
+			trashComments:   []TrashComment{{Message: "DRUHA message"}},
+		},
+	}
+
+	for i, _ := range candidates {
+		var err error
+		candidates[i].creator, err = s.userAccess.CreateUser(candidates[i].creator)
+		s.Nil(err)
+		candidates[i].trash, err = s.service.trashAccess.CreateTrash(candidates[i].trash)
+		s.Nil(err)
+
+		candidates[i].commentRequest.Id = candidates[i].trash.Id
+
+		bytes, err := json.Marshal(candidates[i].commentRequest)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/trash/comment/new", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidates[i].creator.Id)
+
+		s.NoError(s.service.CreateTrashComment(c))
+
+		resp := &TrashComment{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		fillActualComment(candidates[i].actualComment, resp, candidates[i].creator.Id, candidates[i].trash.Id)
+		s.EqualValues(candidates[i].actualComment, resp)
+	}
+
+	//test update trash
+	for i, candidate := range candidates {
+		candidates[i].updatingRequest.Id = candidates[i].actualComment.Id
+		bytes, err := json.Marshal(candidate.updatingRequest)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.PUT, "/trash/comment/update", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.creator.Id)
+
+		s.NoError(s.service.UpdateTrashComment(c))
+
+		resp := &TrashComment{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		fillActualComment(candidates[i].actualComment, resp, candidates[i].creator.Id, candidates[i].trash.Id)
+		candidates[i].actualComment.Message = candidate.updatingRequest.Message
+		s.EqualValues(candidates[i].actualComment, resp)
+		candidates[i].updatingRequest.Id = resp.Id
+	}
+
+	//test get trash
+	for _, candidate := range candidates {
+		req := httptest.NewRequest(echo.GET, "/trash/comment/", nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.SetParamNames("trashId")
+		c.SetParamValues(candidate.trash.Id)
+
+		s.NoError(s.service.GetTrashComments(c))
+
+		var resp []TrashComment
+		err := json.Unmarshal(rec.Body.Bytes(), &resp)
+		s.Nil(err)
+		arr := candidate.trashComments
+
+		s.EqualValues(len(candidate.trashComments), len(resp))
+		for i, comment := range resp {
+			s.EqualValues(arr[i].Message, comment.Message)
+		}
+	}
+
+	//test delete trash
+	for _, candidate := range candidates {
+		req := httptest.NewRequest(echo.DELETE, "/trash/comment/", nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.Set("userId", candidate.creator.Id)
+
+		c.SetParamNames("commentId")
+		c.SetParamValues(candidate.actualComment.Id)
+
+		s.NoError(s.service.DeleteTrashComment(c))
+
+		s.EqualValues("", rec.Body.String())
+	}
+}
+
+func fillActualComment(comment *TrashComment, resp *TrashComment, creatorId, trashId string) {
+	comment.UserId = creatorId
+	comment.TrashId = trashId
+	comment.CreatedAt = resp.CreatedAt
+	comment.UpdatedAt = resp.UpdatedAt
+	comment.Id = resp.Id
+}
+
 //get comment trash
 //update comment
 //delete comment

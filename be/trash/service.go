@@ -87,7 +87,7 @@ func (s *trashService) DeleteTrash(c echo.Context) error {
 //
 //
 
-func (s *trashService) CreateComment(c echo.Context) error {
+func (s *trashService) CreateTrashComment(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
 	request := new(TrashCommentRequest)
@@ -95,7 +95,7 @@ func (s *trashService) CreateComment(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	comment, err := s.trashAccess.CreateTrashComment(&TrashComment{TrashId: request.TrashId, UserId: userId, message: request.message})
+	comment, err := s.trashAccess.CreateTrashComment(&TrashComment{TrashId: request.Id, UserId: userId, Message: request.Message})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateComment, err))
 	}
@@ -104,7 +104,7 @@ func (s *trashService) CreateComment(c echo.Context) error {
 }
 
 func (s *trashService) GetTrashComments(c echo.Context) error {
-	trashId := c.Param("id")
+	trashId := c.Param("trashId")
 
 	comments, err := s.trashAccess.GetTrashComments(trashId)
 	if err != nil {
@@ -114,18 +114,18 @@ func (s *trashService) GetTrashComments(c echo.Context) error {
 	return c.JSON(http.StatusOK, comments)
 }
 
-func (s *trashService) UpdateComment(c echo.Context) error {
+func (s *trashService) UpdateTrashComment(c echo.Context) error {
 	request := new(TrashCommentRequest)
-	if err := c.Bind(TrashCommentRequest{}); err != nil {
+	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	comment, err := s.trashAccess.GetTrashComment(request.TrashId)
+	comment, err := s.trashAccess.GetTrashCommentById(request.Id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetComment, err))
 	}
 
-	comment.message = request.Message
+	comment.Message = request.Message
 	comment, err = s.trashAccess.UpdateTrashComment(comment)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateComment, err))
@@ -134,11 +134,11 @@ func (s *trashService) UpdateComment(c echo.Context) error {
 	return c.JSON(http.StatusOK, comment)
 }
 
-func (s *trashService) DeleteComment(c echo.Context) error {
+func (s *trashService) DeleteTrashComment(c echo.Context) error {
 	userId := c.Get("userId")
-	commentId := c.Param("trashId")
-
-	comment, err := s.trashAccess.GetTrashComment(commentId)
+	commentId := c.Param("commentId")
+	fmt.Println(commentId)
+	comment, err := s.trashAccess.GetTrashCommentById(commentId)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetComment, err))
 	}
