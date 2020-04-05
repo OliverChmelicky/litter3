@@ -15,6 +15,9 @@ func WrapError(errorType string, err error) ErrorModel {
 var (
 	ErrBindingRequest = "ERROR BINDING REQUEST"
 
+	ErrGetUser        = "ERROR GET USER"
+	ErrGetCurrentUser = "ERROR GET CURRENT USER"
+
 	ErrApplyForMembership             = "ERROR APPLY FOR MEMBERSHIP"
 	ErrRemoveApplicationForMembership = "ERROR REMOVE APPLICATION FOR MEMBERSHIP"
 	ErrAcceptApplicant                = "ERROR ACCEPT APPLICANT"

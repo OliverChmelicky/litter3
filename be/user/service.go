@@ -36,7 +36,7 @@ func (s *userService) GetUser(c echo.Context) error {
 
 	user, err := s.UserAccess.GetUser(id)
 	if err != nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("User with id %s does not exist", id))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUser, err))
 	}
 
 	return c.JSON(http.StatusOK, user)
@@ -47,7 +47,7 @@ func (s *userService) GetCurrentUser(c echo.Context) error {
 
 	user, err := s.UserAccess.GetUser(id)
 	if err != nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("User with id %s does not exist", id))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetCurrentUser, err))
 	}
 
 	return c.JSON(http.StatusOK, user)
@@ -114,7 +114,7 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 //
 //
 //
-//	FRIENDSHIP PART
+//	FRIENDS PART
 //
 //
 

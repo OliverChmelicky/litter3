@@ -57,16 +57,16 @@ func (p Point) Value() (driver.Value, error) {
 	return p.String(), nil
 }
 
-type size string
-type accessibility string
-type trashType string
+type Size string
+type Accessibility string
+type TrashType string
 type Trash struct {
 	tableName     struct{} `pg:"trash"json:"-"`
 	Id            string   `pg:",pk"`
 	Cleaned       bool
-	Size          size
-	Accessibility accessibility
-	trashType     trashType
+	Size          Size
+	Accessibility Accessibility
+	TrashType     TrashType
 	Location      Point `pg:"type:geometry"`
 	Description   string
 	FinderId      string
@@ -102,17 +102,10 @@ func (u *Collection) BeforeInsert(ctx context.Context) (context.Context, error) 
 }
 
 type UserCollection struct {
-	tableName    struct{}  `pg:"user_collection"json:"-"`
+	tableName    struct{}  `pg:"users_collections"json:"-"`
 	UserId       string    `pg:",pk"`
 	CollectionId string    `pg:",pk"`
 	CreatedAt    time.Time `pg:"default:now()"`
-}
-
-var _ pg.BeforeInsertHook = (*UserCollection)(nil)
-
-func (u *UserCollection) BeforeInsert(ctx context.Context) (context.Context, error) {
-	u.CreatedAt = time.Now()
-	return ctx, nil
 }
 
 type TrashComment struct {

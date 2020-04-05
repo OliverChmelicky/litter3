@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/go-pg/pg/v9"
 	uuid "github.com/satori/go.uuid"
-	"strings"
 	"time"
 )
 
@@ -53,6 +52,7 @@ type UserGroupRequest struct {
 	SocietyId string
 }
 
+//middlewares are down
 type Member struct {
 	tableName  struct{} `pg:"societies_members"json:"-"`
 	UserId     string   `pg:",pk"`
@@ -82,13 +82,23 @@ type FriendRequest struct {
 	CreatedAt time.Time `pg:"default:now()"`
 }
 
+var _ pg.BeforeInsertHook = (*Member)(nil)
+
+func (u *Member) BeforeInsert(ctx context.Context) (context.Context, error) {
+	u.CreatedAt = time.Now()
+	return ctx, nil
+}
+
+var _ pg.BeforeInsertHook = (*Applicant)(nil)
+
+func (u *Applicant) BeforeInsert(ctx context.Context) (context.Context, error) {
+	u.CreatedAt = time.Now()
+	return ctx, nil
+}
+
 var _ pg.BeforeInsertHook = (*Friends)(nil)
 
 func (u *Friends) BeforeInsert(ctx context.Context) (context.Context, error) {
-	cmp := strings.Compare(u.User1Id, u.User2Id)
-	if cmp == 1 {
-		swapUsersFriendsStruct(u)
-	}
 	u.CreatedAt = time.Now()
 	return ctx, nil
 }
@@ -96,10 +106,6 @@ func (u *Friends) BeforeInsert(ctx context.Context) (context.Context, error) {
 var _ pg.BeforeUpdateHook = (*Friends)(nil)
 
 func (u *Friends) BeforeUpdate(ctx context.Context) (context.Context, error) {
-	cmp := strings.Compare(u.User1Id, u.User2Id)
-	if cmp == 1 {
-		swapUsersFriendsStruct(u)
-	}
 	u.CreatedAt = time.Now()
 	return ctx, nil
 }
@@ -107,20 +113,12 @@ func (u *Friends) BeforeUpdate(ctx context.Context) (context.Context, error) {
 var _ pg.BeforeDeleteHook = (*Friends)(nil)
 
 func (u *Friends) BeforeDelete(ctx context.Context) (context.Context, error) {
-	cmp := strings.Compare(u.User1Id, u.User2Id)
-	if cmp == 1 {
-		swapUsersFriendsStruct(u)
-	}
 	return ctx, nil
 }
 
 var _ pg.BeforeInsertHook = (*FriendRequest)(nil)
 
 func (u *FriendRequest) BeforeInsert(ctx context.Context) (context.Context, error) {
-	cmp := strings.Compare(u.User1Id, u.User2Id)
-	if cmp == 1 {
-		swapUsersFriendRequest(u)
-	}
 	u.CreatedAt = time.Now()
 	return ctx, nil
 }
@@ -128,10 +126,6 @@ func (u *FriendRequest) BeforeInsert(ctx context.Context) (context.Context, erro
 var _ pg.BeforeUpdateHook = (*FriendRequest)(nil)
 
 func (u *FriendRequest) BeforeUpdate(ctx context.Context) (context.Context, error) {
-	cmp := strings.Compare(u.User1Id, u.User2Id)
-	if cmp == 1 {
-		swapUsersFriendRequest(u)
-	}
 	u.CreatedAt = time.Now()
 	return ctx, nil
 }
@@ -139,21 +133,5 @@ func (u *FriendRequest) BeforeUpdate(ctx context.Context) (context.Context, erro
 var _ pg.BeforeDeleteHook = (*FriendRequest)(nil)
 
 func (u *FriendRequest) BeforeDelete(ctx context.Context) (context.Context, error) {
-	cmp := strings.Compare(u.User1Id, u.User2Id)
-	if cmp == 1 {
-		swapUsersFriendRequest(u)
-	}
 	return ctx, nil
-}
-
-func swapUsersFriendsStruct(u *Friends) {
-	tmp := u.User1Id
-	u.User1Id = u.User2Id
-	u.User2Id = tmp
-}
-
-func swapUsersFriendRequest(u *FriendRequest) {
-	tmp := u.User1Id
-	u.User1Id = u.User2Id
-	u.User2Id = tmp
 }

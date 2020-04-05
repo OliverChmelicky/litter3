@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	log "github.com/sirupsen/logrus"
@@ -130,7 +129,7 @@ func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 		{
 			admin:     &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
 			society:   &Society{Name: "Dake meno"},
-			newMember: &User{FirstName: "Novy", LastName: "Member"},
+			newMember: &User{FirstName: "Novy", LastName: "Member", Email: "dakto@novy.cz"},
 		},
 	}
 
@@ -260,7 +259,7 @@ func (s *SocietySuite) Test_DismissApplicant() {
 		{
 			admin:     &User{Id: "2", FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
 			society:   &Society{Name: "More members than one"},
-			newMember: &User{FirstName: "Hello", LastName: "Flowup"},
+			newMember: &User{FirstName: "Hello", LastName: "Flowup", Email: "me@mew.cz"},
 		},
 	}
 
@@ -311,7 +310,7 @@ func (s *SocietySuite) Test_AddMember() {
 		{
 			admin:     &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
 			society:   &Society{Name: "More members than one"},
-			newMember: &User{FirstName: "Hello", LastName: "Flowup"},
+			newMember: &User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Janovutbr.com"},
 			response:  &Member{Permission: "member"},
 		},
 	}
@@ -372,14 +371,14 @@ func (s *SocietySuite) Test_ChangeRights() {
 		{
 			admin:         &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
 			society:       &Society{Name: "Dake meno"},
-			friend:        &User{FirstName: "Novy", LastName: "Member"},
+			friend:        &User{FirstName: "Novy", LastName: "Member", Email: "me@me.cz"},
 			oldMembership: &Member{Permission: membership("member")},
 			newMembership: &Member{Permission: membership("admin")},
 		},
 		{
 			admin:         &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
 			society:       &Society{Name: "Dake meno"},
-			friend:        &User{FirstName: "Novy", LastName: "Member"},
+			friend:        &User{FirstName: "Novy", LastName: "Member", Email: "me@me.cz"},
 			oldMembership: &Member{Permission: membership("admin")},
 			newMembership: &Member{Permission: membership("member")},
 		},
@@ -443,19 +442,36 @@ func (s *SocietySuite) TearDownSuite() {
 }
 
 func (s *SocietySuite) SetupTest() {
-	s.Nil(s.db.DropTable((*User)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Society)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*FriendRequest)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Friends)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Applicant)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Member)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
+	var tableInfo []struct {
+		Table string
+	}
+	query := `SELECT table_name "table"
+				FROM information_schema.tables WHERE table_schema='public'
+					AND table_type='BASE TABLE' AND table_name!= 'gopg_migrations';`
+	_, err := s.db.Query(&tableInfo, query)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 
-	s.Nil(s.db.CreateTable((*User)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Society)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*FriendRequest)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Friends)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Applicant)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Member)(nil), &orm.CreateTableOptions{IfNotExists: true}))
+	truncateQueries := make([]string, len(tableInfo))
+
+	for i, info := range tableInfo {
+		if info.Table == "spatial_ref_sys" {
+			continue
+		}
+		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
+	}
+
+	err = s.db.RunInTransaction(func(tx *pg.Tx) error {
+		for _, query := range truncateQueries {
+			_, err = tx.Exec(query)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func TestSocietyServiceSuite(t *testing.T) {

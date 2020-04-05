@@ -31,12 +31,12 @@ func (s *trashAccess) GetTrash(in string) (*Trash, error) {
 
 func (s *trashAccess) GetTrashInRange(request *RangeRequest) ([]Trash, error) {
 	//https://postgis.net/docs/PostGIS_FAQ.html#idm1368
-	trash := &[]Trash{}
-	err := s.db.Model(trash).Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).Select()
+	trash := []Trash{}
+	err := s.db.Model(&trash).Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).Select()
 	if err != nil {
 		return nil, err
 	}
-	return *trash, nil
+	return trash, nil
 }
 
 func (s *trashAccess) UpdateTrash(in *Trash) (*Trash, error) {
