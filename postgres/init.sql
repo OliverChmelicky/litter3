@@ -185,28 +185,36 @@ create table friend_requests
 create table trash_comments
 (
     id         varchar PRIMARY KEY,
-    user_id     varchar     not null,
-    trash_id    varchar     not null,
+    user_id    varchar     not null,
+    trash_id   varchar     not null,
     message    varchar     not null,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL
 );
 
---not possible before create
--- CREATE OR REPLACE FUNCTION correct_create_friends()
---     RETURNS trigger AS
--- $BODY$
--- BEGIN
---     IF  1 = STRCMP(NEW.user1_id, NEW.user2_id) THEN
+
+
+-- CREATE OR REPLACE FUNCTION swap_users() RETURNS trigger AS
+-- $correct_user_order$
+--     DECLARE
 --         tmp varchar;
---         tmp = new.user1_id;
---     END IF;
+-- BEGIN
+--     tmp = NEW.user1_id;
+--     new.user1_id = new.user2_id;
+--     new.user2_id = tmp;
+-- END
+-- $correct_user_order$
+--     LANGUAGE plpgsql;
+
+
+-- CREATE TRIGGER correct_user_order
+--     BEFORE INSERT OR UPDATE OR DELETE
+--     ON friend_requests
+--     when ( NEW.user1_id > NEW.user2_id )
+-- execute procedure swap_users();
 --
---     RETURN NEW;
--- END;
--- $BODY$
---
--- CREATE TRIGGER correctCreateFriendRequest
---     BEFORE UPDATE ON friend_requests
---     FOR EACH ROW
--- EXECUTE PROCEDURE correct_create_friends();
+-- CREATE TRIGGER correct_user_order
+--     BEFORE INSERT OR UPDATE OR DELETE
+--     ON friends
+--     when ( NEW.user1_id > NEW.user2_id )
+-- execute procedure swap_users();

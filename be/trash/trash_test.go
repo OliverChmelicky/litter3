@@ -3,7 +3,6 @@ package trash
 import (
 	"encoding/json"
 	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
 	"github.com/labstack/echo"
 	"github.com/olo/litter3/user"
 	log "github.com/sirupsen/logrus"
@@ -147,10 +146,9 @@ func (s *TrashSuite) Test_GetAround() {
 	}
 }
 
-//test create collection random
-//test get collections of user
+//TODO test create collection random
+//TODO test get collections of user
 
-//create comment trash (user only)
 func (s *TrashSuite) Test_CreateCommentOnTrash() {
 	candidates := []struct {
 		creator         *user.User
@@ -275,16 +273,34 @@ func fillActualComment(comment *TrashComment, resp *TrashComment, creatorId, tra
 	comment.Id = resp.Id
 }
 
-//get comment trash
-//update comment
-//delete comment
-
 func (s *TrashSuite) SetupTest() {
-	s.Nil(s.db.DropTable((*user.User)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Trash)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
+	var tableInfo []struct {
+		Table string
+	}
+	query := `SELECT table_name "table"
+				FROM information_schema.tables WHERE table_schema='public'
+					AND table_type='BASE TABLE' AND table_name!= 'gopg_migrations';`
+	_, err := s.db.Query(&tableInfo, query)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 
-	s.Nil(s.db.CreateTable((*user.User)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Trash)(nil), &orm.CreateTableOptions{IfNotExists: true}))
+	truncateQueries := make([]string, len(tableInfo))
+
+	for i, info := range tableInfo {
+		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
+	}
+
+	err = s.db.RunInTransaction(func(tx *pg.Tx) error {
+		for _, query := range truncateQueries {
+			_, err = tx.Exec(query)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func TestUserServiceSuite(t *testing.T) {

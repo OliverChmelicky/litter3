@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	log "github.com/sirupsen/logrus"
@@ -295,19 +294,33 @@ func (s *UserSuite) TearDownSuite() {
 }
 
 func (s *UserSuite) SetupTest() {
-	s.Nil(s.db.DropTable((*User)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Society)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*FriendRequest)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Friends)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Applicant)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
-	s.Nil(s.db.DropTable((*Member)(nil), &orm.DropTableOptions{IfExists: true, Cascade: true}))
+	var tableInfo []struct {
+		Table string
+	}
+	query := `SELECT table_name "table"
+				FROM information_schema.tables WHERE table_schema='public'
+					AND table_type='BASE TABLE' AND table_name!= 'gopg_migrations';`
+	_, err := s.db.Query(&tableInfo, query)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 
-	s.Nil(s.db.CreateTable((*User)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Society)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*FriendRequest)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Friends)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Applicant)(nil), &orm.CreateTableOptions{IfNotExists: true}))
-	s.Nil(s.db.CreateTable((*Member)(nil), &orm.CreateTableOptions{IfNotExists: true}))
+	truncateQueries := make([]string, len(tableInfo))
+
+	for i, info := range tableInfo {
+		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
+	}
+
+	err = s.db.RunInTransaction(func(tx *pg.Tx) error {
+		for _, query := range truncateQueries {
+			_, err = tx.Exec(query)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func TestUserServiceSuite(t *testing.T) {
