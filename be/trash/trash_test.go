@@ -52,8 +52,8 @@ func (s *TrashSuite) Test_CreateTrash() {
 	}{
 		{
 			creator:  &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:    &Trash{Location: Point{20, 30}, Cleaned: false, Size: size("bag"), Accessibility: accessibility("car"), TrashType: trashType("organic")},
-			updating: &Trash{Location: Point{99, 69}, Cleaned: true, Size: size("bag"), Accessibility: accessibility("unknown"), TrashType: trashType("organic")},
+			trash:    &Trash{Location: Point{20, 30}, Cleaned: false, Size: Size("bag"), Accessibility: Accessibility("car"), TrashType: TrashType("organic")},
+			updating: &Trash{Location: Point{99, 69}, Cleaned: true, Size: Size("bag"), Accessibility: Accessibility("unknown"), TrashType: TrashType("organic")},
 		},
 	}
 
@@ -116,7 +116,7 @@ func (s *TrashSuite) Test_GetAround() {
 	}{
 		{
 			creator:      &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:        &Trash{Location: Point{20, 30}, Cleaned: false, Size: size("bag"), Accessibility: accessibility("car"), TrashType: trashType("organic")},
+			trash:        &Trash{Location: Point{20, 30}, Cleaned: false, Size: Size("bag"), Accessibility: Accessibility("car"), TrashType: TrashType("organic")},
 			rangeRequest: &RangeRequest{Location: Point{20, 29.99}, Radius: 5000.0},
 		},
 	}

@@ -57,16 +57,16 @@ func (p Point) Value() (driver.Value, error) {
 	return p.String(), nil
 }
 
-type size string
-type accessibility string
-type trashType string
+type Size string
+type Accessibility string
+type TrashType string
 type Trash struct {
 	tableName     struct{} `pg:"trash"json:"-"`
 	Id            string   `pg:",pk"`
 	Cleaned       bool
-	Size          size
-	Accessibility accessibility
-	TrashType     trashType
+	Size          Size
+	Accessibility Accessibility
+	TrashType     TrashType
 	Location      Point `pg:"type:geometry"`
 	Description   string
 	FinderId      string

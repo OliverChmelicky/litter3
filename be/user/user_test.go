@@ -43,6 +43,12 @@ func (s *UserSuite) SetupSuite() {
 	s.e = echo.New()
 }
 
+//
+//
+//
+//	FRIENDSHIP
+//
+//
 func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 	candidates := []struct {
 		heinrich        *User
@@ -52,7 +58,7 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			heinrich:  &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			heinrich:  &User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
 			peterAsks: &User{FirstName: "Novy", LastName: "Member", Email: "Ja@Janovutbr.cz"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrApplyForFriendship},
 		},
@@ -141,7 +147,7 @@ func (s *UserSuite) Test_RequestFriendshipExistingFriendship() {
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			heinrich:  &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
+			heinrich:  &User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
 			peterAsks: &User{FirstName: "Novy", LastName: "Member", Email: "blbost@peterAsks.com"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrConflict, Message: "YOU ARE FIENDS ALREADY"},
 		},
@@ -307,6 +313,9 @@ func (s *UserSuite) SetupTest() {
 	truncateQueries := make([]string, len(tableInfo))
 
 	for i, info := range tableInfo {
+		if info.Table == "spatial_ref_sys" {
+			continue
+		}
 		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
 	}
 

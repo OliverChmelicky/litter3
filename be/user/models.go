@@ -52,6 +52,7 @@ type UserGroupRequest struct {
 	SocietyId string
 }
 
+//middlewares are down
 type Member struct {
 	tableName  struct{} `pg:"societies_members"json:"-"`
 	UserId     string   `pg:",pk"`
@@ -79,6 +80,20 @@ type FriendRequest struct {
 	User1Id   string    `pg:",pk"`
 	User2Id   string    `pg:",pk"`
 	CreatedAt time.Time `pg:"default:now()"`
+}
+
+var _ pg.BeforeInsertHook = (*Member)(nil)
+
+func (u *Member) BeforeInsert(ctx context.Context) (context.Context, error) {
+	u.CreatedAt = time.Now()
+	return ctx, nil
+}
+
+var _ pg.BeforeInsertHook = (*Applicant)(nil)
+
+func (u *Applicant) BeforeInsert(ctx context.Context) (context.Context, error) {
+	u.CreatedAt = time.Now()
+	return ctx, nil
 }
 
 var _ pg.BeforeInsertHook = (*Friends)(nil)
