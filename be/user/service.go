@@ -114,7 +114,7 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 //
 //
 //
-//	FRIENDSHIP PART
+//	FRIENDS PART
 //
 //
 

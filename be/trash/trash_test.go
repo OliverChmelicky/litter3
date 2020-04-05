@@ -2,6 +2,7 @@ package trash
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	"github.com/olo/litter3/user"
@@ -51,8 +52,8 @@ func (s *TrashSuite) Test_CreateTrash() {
 	}{
 		{
 			creator:  &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:    &Trash{Location: Point{20, 30}},
-			updating: &Trash{Location: Point{99, 69}},
+			trash:    &Trash{Location: Point{20, 30}, Cleaned: false, Size: size("bag"), Accessibility: accessibility("car"), TrashType: trashType("organic")},
+			updating: &Trash{Location: Point{99, 69}, Cleaned: true, Size: size("bag"), Accessibility: accessibility("unknown"), TrashType: trashType("organic")},
 		},
 	}
 
@@ -115,8 +116,8 @@ func (s *TrashSuite) Test_GetAround() {
 	}{
 		{
 			creator:      &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:        &Trash{Location: Point{20, 30}},
-			rangeRequest: &RangeRequest{Location: Point{20, 29.99}, Radius: 50000.0},
+			trash:        &Trash{Location: Point{20, 30}, Cleaned: false, Size: size("bag"), Accessibility: accessibility("car"), TrashType: trashType("organic")},
+			rangeRequest: &RangeRequest{Location: Point{20, 29.99}, Radius: 5000.0},
 		},
 	}
 
@@ -141,6 +142,7 @@ func (s *TrashSuite) Test_GetAround() {
 		var resp []Trash
 		err = json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
+		fmt.Println(rec.Body.String())
 
 		s.EqualValues(candidates[i].trash.Location, resp[0].Location)
 	}
@@ -289,6 +291,9 @@ func (s *TrashSuite) SetupTest() {
 	truncateQueries := make([]string, len(tableInfo))
 
 	for i, info := range tableInfo {
+		if info.Table == "spatial_ref_sys" {
+			continue
+		}
 		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
 	}
 

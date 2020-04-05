@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-pg/pg/v9"
-	"strings"
 )
 
 type UserAccess struct {
@@ -221,9 +220,7 @@ func (s *UserAccess) DeleteSociety(in string) error {
 //
 
 func (s *UserAccess) AreFriends(friendship *Friends) (bool, error) {
-	correctIdOrderFriend(friendship)
-
-	err := s.Db.Model(friendship).Where("user1_id = ? and user2_id = ?", friendship.User1Id, friendship.User2Id).Select()
+	err := s.Db.Model(friendship).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", friendship.User1Id, friendship.User2Id, friendship.User2Id, friendship.User1Id).Select()
 	if err == pg.ErrNoRows { //record was not found
 		return false, nil
 	}
@@ -235,9 +232,7 @@ func (s *UserAccess) AreFriends(friendship *Friends) (bool, error) {
 }
 
 func (s *UserAccess) IsFriendRequestSendAlready(request *FriendRequest) (bool, error) {
-	correctIdOrderFriendRequest(request)
-
-	err := s.Db.Model(request).Where("user1_id = ? and user2_id = ?", request.User1Id, request.User2Id).Select()
+	err := s.Db.Model(request).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", request.User1Id, request.User2Id, request.User2Id, request.User1Id).Select()
 	if err == pg.ErrNoRows { //record was not found
 		return false, nil
 	}
@@ -249,7 +244,6 @@ func (s *UserAccess) IsFriendRequestSendAlready(request *FriendRequest) (bool, e
 }
 
 func (s *UserAccess) AddFriendshipRequest(request *FriendRequest) (*FriendRequest, error) {
-	//Ids will be sorted ascending by Hook or trigger in DB
 	err := s.Db.Insert(request)
 	if err != nil {
 		return &FriendRequest{}, err
@@ -258,15 +252,19 @@ func (s *UserAccess) AddFriendshipRequest(request *FriendRequest) (*FriendReques
 }
 
 func (s *UserAccess) RemoveApplicationForFriendship(request *FriendRequest) error {
-	//correctIdOrderFriendRequest(request)
-	err := s.Db.Delete(request)
+	application := new(FriendRequest)
+	res, err := s.Db.Model(application).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", request.User1Id, request.User2Id, request.User2Id, request.User1Id).Delete()
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return errors.New("REMOVE APPLICATION FOR FRIENDSHIP: NO ROWS WERE AFFECTED")
+	}
 	return err
 }
 
 func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*Friends, error) {
-	//Ids will be sorted ascending by Hook or trigger in DB
 	request := &FriendRequest{User1Id: user1Id, User2Id: user2Id}
-	correctIdOrderFriendRequest(request)
 
 	tx, err := s.Db.Begin()
 	if err != nil {
@@ -274,7 +272,7 @@ func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*Friends, error
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Model(request).Where("user1_id = ? and user2_id = ?", request.User1Id, request.User2Id).Delete()
+	_, err = tx.Model(request).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", request.User1Id, request.User2Id, request.User2Id, request.User1Id).Delete()
 	if err != nil {
 		return &Friends{}, fmt.Errorf("Error deleting Friendship request %w", err)
 	}
@@ -288,23 +286,13 @@ func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*Friends, error
 }
 
 func (s *UserAccess) RemoveFriend(friendship *Friends) error {
-	err := s.Db.Delete(friendship)
+	application := new(Friends)
+	res, err := s.Db.Model(application).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", friendship.User1Id, friendship.User2Id, friendship.User2Id, friendship.User1Id).Delete()
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return errors.New("REMOVE FRIEND: NO ROWS WERE AFFECTED")
+	}
 	return err
-}
-
-func correctIdOrderFriend(request *Friends) {
-	order := strings.Compare(request.User1Id, request.User2Id)
-	if order == 1 {
-		tmp := request.User1Id
-		request.User1Id = request.User2Id
-		request.User2Id = tmp
-	}
-}
-func correctIdOrderFriendRequest(request *FriendRequest) {
-	order := strings.Compare(request.User1Id, request.User2Id)
-	if order == 1 {
-		tmp := request.User1Id
-		request.User1Id = request.User2Id
-		request.User2Id = tmp
-	}
 }
