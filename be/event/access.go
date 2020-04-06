@@ -37,9 +37,6 @@ func (s *eventAccess) CreateEvent(request *EventRequest) (*Event, error) {
 	}
 
 	err = tx.Select(event)
-	fmt.Println(err)
-	fmt.Println("pici je")
-	fmt.Println(event)
 
 	if request.AsSociety {
 		creator := &EventSociety{
@@ -65,13 +62,9 @@ func (s *eventAccess) CreateEvent(request *EventRequest) (*Event, error) {
 			return &Event{}, fmt.Errorf("Error inserting user creator: %w", err)
 		}
 		event.UsersIds = append(event.UsersIds, request.UserId)
-		fmt.Println("A tu preslo....")
 	}
 
 	event.TrashIds = request.Trash
-	//event.TrashIds = append(event.TrashIds, trashId)
-	fmt.Println("Som tu?")
-	fmt.Println(event.TrashIds)
 	err = s.AssignTrashToEvent(tx, event)
 	if err != nil {
 		tx.Rollback()

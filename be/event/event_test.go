@@ -51,16 +51,23 @@ func (s *TrashSuite) SetupSuite() {
 //create event --> hard
 func (s *TrashSuite) Test_CreateTrash_User() {
 	candidates := []struct {
-		creatorUser  *user.User
-		eventRequest *EventRequest
-		trash        []trash.Trash
-		event        *Event
+		creatorUser   *user.User
+		eventRequest  *EventRequest
+		trash         []trash.Trash
+		updatingTrash []trash.Trash
+		event         *Event
+		updatingEvent *EventRequest
 	}{
 		{
 			creatorUser:  &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
 			eventRequest: &EventRequest{UserId: "1", AsSociety: false, Date: time.Now(), Publc: true},
 			trash:        []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
-			event:        &Event{Date: time.Now(), Publc: true},
+			updatingTrash: []trash.Trash{
+				{Id: "9", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			},
+			event:         &Event{Date: time.Now(), Publc: true},
+			updatingEvent: &EventRequest{Date: time.Now(), Publc: false},
 		},
 		{
 			creatorUser:  &user.User{Id: "2", FirstName: "Damian", LastName: "Zelenina", Email: "On@friend.com", CreatedAt: time.Now()},
@@ -69,7 +76,9 @@ func (s *TrashSuite) Test_CreateTrash_User() {
 				{Id: "9", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
 				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
 			},
-			event: &Event{Date: time.Now(), Publc: true},
+			updatingTrash: []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
+			event:         &Event{Date: time.Now(), Publc: true},
+			updatingEvent: &EventRequest{Date: time.Now(), Publc: false},
 		},
 	}
 
@@ -113,6 +122,14 @@ func (s *TrashSuite) Test_CreateTrash_User() {
 	//TODO
 	//test update trash
 	//for _, candidate := range candidates {
+	//candidates[i].eventRequest.Trash = []string{}
+	//candidates[i].event.TrashIds = []string{}
+	//for _, x := range candidates[i].updatingTrash {
+	//	newTrash, err := s.trashAccess.CreateTrash(&x)
+	//	s.Nil(err)
+	//	candidates[i].eventRequest.Trash = append(candidates[i].eventRequest.Trash, newTrash.Id)
+	//	candidates[i].event.TrashIds = append(candidates[i].event.TrashIds, newTrash.Id)
+	//}
 	//	bytes, err := json.Marshal(candidate.updating)
 	//	s.Nil(err)
 	//
@@ -135,7 +152,80 @@ func (s *TrashSuite) Test_CreateTrash_User() {
 }
 
 func (s *TrashSuite) Test_CreateTrash_Society() {
+	candidates := []struct {
+		admin          *user.User
+		creatorSociety *user.Society
+		eventRequest   *EventRequest
+		trash          []trash.Trash
+		updatingTrash  []trash.Trash
+		event          *Event
+		updatingEvent  *EventRequest
+	}{
+		{
+			admin:          &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			creatorSociety: &user.Society{Name: "Original", CreatedAt: time.Now()},
+			eventRequest:   &EventRequest{AsSociety: true, Date: time.Now(), Publc: true},
+			trash:          []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
+			updatingTrash: []trash.Trash{
+				{Id: "9", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			},
+			event:         &Event{Date: time.Now(), Publc: true},
+			updatingEvent: &EventRequest{Date: time.Now(), Publc: false},
+		},
+		{
+			admin:          &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			creatorSociety: &user.Society{Name: "company", CreatedAt: time.Now()},
+			eventRequest:   &EventRequest{AsSociety: true, Date: time.Now(), Publc: true},
+			trash: []trash.Trash{
+				{Id: "9", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			},
+			updatingTrash: []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
+			event:         &Event{Date: time.Now(), Publc: true},
+			updatingEvent: &EventRequest{Date: time.Now(), Publc: false},
+		},
+	}
 
+	for i, _ := range candidates {
+		admin, err := s.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		society, err := s.userAccess.CreateSocietyWithAdmin(candidates[i].creatorSociety, admin.Id)
+		s.Nil(err)
+		candidates[i].creatorSociety = society
+		candidates[i].eventRequest.SocietyId = society.Id
+		candidates[i].event.SocietiesIds = append(candidates[i].event.SocietiesIds, society.Id)
+
+		for _, x := range candidates[i].trash {
+			newTrash, err := s.trashAccess.CreateTrash(&x)
+			s.Nil(err)
+			candidates[i].eventRequest.Trash = append(candidates[i].eventRequest.Trash, newTrash.Id)
+			candidates[i].event.TrashIds = append(candidates[i].event.TrashIds, newTrash.Id)
+		}
+
+		bytes, err := json.Marshal(candidates[i].eventRequest)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/event/new", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidates[i].admin.Id)
+
+		s.NoError(s.service.CreateEvent(c))
+
+		resp := &Event{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		fmt.Println(rec.Body.String())
+
+		candidates[i].event.Id = resp.Id
+		candidates[i].event.Date = resp.Date
+		candidates[i].event.CreatedAt = resp.CreatedAt
+		s.EqualValues(candidates[i].event, resp)
+	}
 }
 
 //getEvent

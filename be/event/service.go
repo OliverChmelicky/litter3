@@ -1,7 +1,6 @@
 package event
 
 import (
-	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
@@ -39,7 +38,7 @@ func (s *EventService) CreateEvent(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	}
-	fmt.Println("Ideme do create")
+
 	request.UserId = userId
 	newTrash, err := s.eventAccess.CreateEvent(request)
 	if err != nil {
