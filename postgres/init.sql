@@ -56,7 +56,7 @@ create table users
     id         VARCHAR PRIMARY KEY,
     first_name VARCHAR     NOT NULL,
     last_name  VARCHAR     NOT NULL,
-    email      VARCHAR     NOT NULL,
+    email      VARCHAR     NOT NULL unique,
     CONSTRAINT proper_email CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
     created_at timestamptz NOT NULL
 );
@@ -81,23 +81,20 @@ create table trash
     created_at    timestamptz            NOT NULL
 );
 
-create table comments
+create table trash_comments
 (
-    id           VARCHAR PRIMARY KEY,
-    description  VARCHAR,
-    trash_exists boolean,
-    trash_id     VARCHAR REFERENCES trash (id),
-    "user_id"    VARCHAR REFERENCES users (id), /*user is a keyword and should be quoted*/
-    society_id   VARCHAR REFERENCES societies (id),
-    CONSTRAINT exclusive_writer CHECK ( ("user_id" is null and society_id is not null) or
-                                        ("user_id" is not null and society_id is null)),
-    created_at   timestamptz NOT NULL
+    id         varchar PRIMARY KEY,
+    trash_id   VARCHAR REFERENCES trash (id),
+    user_id    VARCHAR REFERENCES users (id), /*user is a keyword and should be quoted*/
+    message    varchar     not null,
+    created_at timestamptz NOT NULL,
+    updated_at timestamptz NOT NULL
 );
 
 create table events
 (
     id         VARCHAR PRIMARY KEY,
-    date       BIGINT      NOT NULL,
+    date       timestamptz      NOT NULL,
     publc      boolean     NOT NULL,
     user_id    VARCHAR REFERENCES users (id),
     society_id VARCHAR REFERENCES societies (id),
@@ -146,8 +143,7 @@ CREATE TYPE eventRights AS ENUM (
     'viewer'
     );
 
-/*mozno zjednot societies_events a users_events*/
-create table societies_events
+create table events_societies
 (
     society_id VARCHAR REFERENCES societies (id),
     event_id   VARCHAR REFERENCES events (id),
@@ -156,13 +152,20 @@ create table societies_events
     PRIMARY KEY (society_id, event_id)
 );
 
-create table users_events
+create table events_users
 (
-    "user_id"  VARCHAR REFERENCES users (id),
+    user_id  VARCHAR REFERENCES users (id),
     event_id   VARCHAR REFERENCES events (id),
     permission eventRights not null,
     created_at timestamptz NOT NULL,
     PRIMARY KEY ("user_id", event_id)
+);
+
+create table events_trash
+(
+    trash_id  VARCHAR REFERENCES trash (id),
+    event_id   VARCHAR REFERENCES events (id),
+    PRIMARY KEY (trash_id, event_id)
 );
 
 
@@ -180,16 +183,6 @@ create table friend_requests
     user2_id   VARCHAR REFERENCES users (id),
     created_at timestamptz NOT NULL,
     PRIMARY KEY (user1_id, user2_id)
-);
-
-create table trash_comments
-(
-    id         varchar PRIMARY KEY,
-    user_id    varchar     not null,
-    trash_id   varchar     not null,
-    message    varchar     not null,
-    created_at timestamptz NOT NULL,
-    updated_at timestamptz NOT NULL
 );
 
 

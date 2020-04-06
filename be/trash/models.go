@@ -88,6 +88,7 @@ type Collection struct {
 	Id           string   `pg:",pk"`
 	TrashId      string
 	CleanedTrash bool
+	EventId      string
 	CreatedAt    time.Time `pg:"default:now()"`
 }
 
