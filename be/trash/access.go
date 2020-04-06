@@ -6,13 +6,13 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type trashAccess struct {
-	db *pg.DB
+type TrashAccess struct {
+	Db *pg.DB
 }
 
-func (s *trashAccess) CreateTrash(in *Trash) (*Trash, error) {
+func (s *TrashAccess) CreateTrash(in *Trash) (*Trash, error) {
 	in.Id = uuid.NewV4().String()
-	err := s.db.Insert(in)
+	err := s.Db.Insert(in)
 	if err != nil {
 		return &Trash{}, err
 	}
@@ -20,30 +20,30 @@ func (s *trashAccess) CreateTrash(in *Trash) (*Trash, error) {
 	return in, nil
 }
 
-func (s *trashAccess) GetTrash(in string) (*Trash, error) {
+func (s *TrashAccess) GetTrash(in string) (*Trash, error) {
 	trash := &Trash{Id: in}
-	err := s.db.Select(trash)
+	err := s.Db.Select(trash)
 	if err != nil {
 		return &Trash{}, err
 	}
 	return trash, nil
 }
 
-func (s *trashAccess) GetTrashInRange(request *RangeRequest) ([]Trash, error) {
+func (s *TrashAccess) GetTrashInRange(request *RangeRequest) ([]Trash, error) {
 	//https://postgis.net/docs/PostGIS_FAQ.html#idm1368
 	trash := []Trash{}
-	err := s.db.Model(&trash).Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).Select()
+	err := s.Db.Model(&trash).Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).Select()
 	if err != nil {
 		return nil, err
 	}
 	return trash, nil
 }
 
-func (s *trashAccess) UpdateTrash(in *Trash) (*Trash, error) {
-	return in, s.db.Update(in)
+func (s *TrashAccess) UpdateTrash(in *Trash) (*Trash, error) {
+	return in, s.Db.Update(in)
 }
 
-func (s *trashAccess) DeleteTrash(in string) error {
+func (s *TrashAccess) DeleteTrash(in string) error {
 	return nil
 }
 
@@ -53,8 +53,8 @@ func (s *trashAccess) DeleteTrash(in string) error {
 //
 //
 
-func (s *trashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) (*Collection, error) {
-	tx, err := s.db.Begin()
+func (s *TrashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) (*Collection, error) {
+	tx, err := s.Db.Begin()
 	if err != nil {
 		return &Collection{}, err
 	}
@@ -80,9 +80,9 @@ func (s *trashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) 
 }
 
 //from event
-func (s *trashAccess) CreateCollectionOrganized(in *Collection) (*Collection, error) {
+func (s *TrashAccess) CreateCollectionOrganized(in *Collection) (*Collection, error) {
 	in.Id = uuid.NewV4().String()
-	err := s.db.Insert(in)
+	err := s.Db.Insert(in)
 	if err != nil {
 		return &Collection{}, err
 	}
@@ -97,54 +97,54 @@ func (s *trashAccess) CreateCollectionOrganized(in *Collection) (*Collection, er
 //
 //
 
-func (s *trashAccess) CreateTrashComment(in *TrashComment) (*TrashComment, error) {
-	err := s.db.Insert(in)
+func (s *TrashAccess) CreateTrashComment(in *TrashComment) (*TrashComment, error) {
+	err := s.Db.Insert(in)
 	if err != nil {
 		return &TrashComment{}, fmt.Errorf("CREATE TRASH COMMENT: %w", err)
 	}
 	return in, nil
 }
 
-func (s *trashAccess) GetTrashCommentById(trashId string) (*TrashComment, error) {
+func (s *TrashAccess) GetTrashCommentById(trashId string) (*TrashComment, error) {
 	comment := new(TrashComment)
-	err := s.db.Model(comment).Where("id = ?", trashId).Select()
+	err := s.Db.Model(comment).Where("id = ?", trashId).Select()
 	if err != nil {
 		return nil, fmt.Errorf("GET TRASH COMMENT: %w", err)
 	}
 	return comment, nil
 }
 
-func (s *trashAccess) GetTrashCommentByTrashId(trashId string) (*TrashComment, error) {
+func (s *TrashAccess) GetTrashCommentByTrashId(trashId string) (*TrashComment, error) {
 	comment := new(TrashComment)
-	err := s.db.Model(comment).Where("trash_id = ?", trashId).Select()
+	err := s.Db.Model(comment).Where("trash_id = ?", trashId).Select()
 	if err != nil {
 		return nil, fmt.Errorf("GET TRASH COMMENT: %w", err)
 	}
 	return comment, nil
 }
 
-func (s *trashAccess) GetTrashComments(trashId string) ([]TrashComment, error) {
+func (s *TrashAccess) GetTrashComments(trashId string) ([]TrashComment, error) {
 	var comments []TrashComment
-	err := s.db.Model(&comments).Where("trash_id = ?", trashId).Select()
+	err := s.Db.Model(&comments).Where("trash_id = ?", trashId).Select()
 	if err != nil {
 		return nil, fmt.Errorf("GET TRASH COMMENTS: %w", err)
 	}
 	return comments, nil
 }
 
-func (s *trashAccess) UpdateTrashComment(in *TrashComment) (*TrashComment, error) {
-	return in, s.db.Update(in)
+func (s *TrashAccess) UpdateTrashComment(in *TrashComment) (*TrashComment, error) {
+	return in, s.Db.Update(in)
 }
 
-func (s *trashAccess) DeleteTrashComment(id string) error {
+func (s *TrashAccess) DeleteTrashComment(id string) error {
 	comment := new(TrashComment)
-	_, err := s.db.Model(comment).Where("id = ?", id).Delete()
+	_, err := s.Db.Model(comment).Where("id = ?", id).Delete()
 	return err
 }
 
 //will I need it?
-func (s *trashAccess) DeleteTrashComments(trashId string) error {
+func (s *TrashAccess) DeleteTrashComments(trashId string) error {
 	comment := new(TrashComment)
-	_, err := s.db.Model(comment).Where("trash_id = ?", trashId).Delete()
+	_, err := s.Db.Model(comment).Where("trash_id = ?", trashId).Delete()
 	return err
 }

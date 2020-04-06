@@ -251,7 +251,7 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 		return c.String(http.StatusNotFound, "Society with provided Id does not exist")
 	}
 
-	admin, _, _ := s.isUserSocietyAdmin(userId, society.Id)
+	admin, _, _ := s.UserAccess.IsUserSocietyAdmin(userId, society.Id)
 	if !admin {
 		return c.String(http.StatusForbidden, "You have no right to update society")
 	}
@@ -272,7 +272,7 @@ func (s *userService) AcceptApplicant(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	isAdmin, _, err := s.isUserSocietyAdmin(userId, request.SocietyId)
+	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, err))
 	}
@@ -301,7 +301,7 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 	societyId := c.Param("societyId")
 	removingUserId := c.Param("userId")
 
-	isAdmin, _, err := s.isUserSocietyAdmin(admin, societyId)
+	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(admin, societyId)
 	if err != nil {
 		return c.String(http.StatusNotFound, err.Error())
 	}
@@ -327,7 +327,7 @@ func (s *userService) ChangeMemberRights(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	isAdmin, numOfAdmins, err := s.isUserSocietyAdmin(id, request.SocietyId)
+	isAdmin, numOfAdmins, err := s.UserAccess.IsUserSocietyAdmin(id, request.SocietyId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -356,7 +356,7 @@ func (s *userService) RemoveMember(c echo.Context) error {
 	if err := c.Bind(request); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
-	admin, adminNumber, err := s.isUserSocietyAdmin(requesterId, request.SocietyId)
+	admin, adminNumber, err := s.UserAccess.IsUserSocietyAdmin(requesterId, request.SocietyId)
 	if err != nil {
 		return c.String(http.StatusNotFound, err.Error())
 	}
@@ -399,7 +399,7 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 	userId := fmt.Sprintf("%v", id)
 	societyId := c.Param("id")
 
-	admin, _, err := s.isUserSocietyAdmin(userId, societyId)
+	admin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, societyId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -414,22 +414,4 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "Implement me")
-}
-
-func (s *userService) isUserSocietyAdmin(userId, societyId string) (bool, int, error) {
-	admins, err := s.UserAccess.GetSocietyAdmins(societyId)
-	if err != nil {
-		return false, 0, err
-	}
-	if len(admins) == 0 {
-		return false, 0, err
-	}
-
-	for _, adminId := range admins {
-		if adminId == userId {
-			return true, len(admins), nil
-		}
-	}
-
-	return false, len(admins), nil
 }

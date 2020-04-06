@@ -96,10 +96,10 @@ create table events
     id         VARCHAR PRIMARY KEY,
     date       timestamptz      NOT NULL,
     publc      boolean     NOT NULL,
-    user_id    VARCHAR REFERENCES users (id),
-    society_id VARCHAR REFERENCES societies (id),
-    CONSTRAINT exclusive_creator CHECK ( (user_id is null and society_id is not null) or
-                                         (user_id is not null and society_id is null)),
+--     user_id    VARCHAR REFERENCES users (id),
+--     society_id VARCHAR REFERENCES societies (id),
+--     CONSTRAINT exclusive_creator CHECK ( (user_id is null and society_id is not null) or
+--                                          (user_id is not null and society_id is null)),
     created_at timestamptz NOT NULL
 );
 
@@ -139,7 +139,8 @@ create table users_collections
 
 
 CREATE TYPE eventRights AS ENUM (
-    'admin',
+    'creator',
+    'editor',
     'viewer'
     );
 

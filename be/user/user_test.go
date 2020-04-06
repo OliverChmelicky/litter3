@@ -313,7 +313,7 @@ func (s *UserSuite) SetupTest() {
 	truncateQueries := make([]string, len(tableInfo))
 
 	for i, info := range tableInfo {
-		if info.Table == "spatial_ref_sys" {
+		if info.Table == "spatial_ref_sys" { //postgis extension
 			continue
 		}
 		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"

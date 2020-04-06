@@ -296,3 +296,21 @@ func (s *UserAccess) RemoveFriend(friendship *Friends) error {
 	}
 	return err
 }
+
+func (s *UserAccess) IsUserSocietyAdmin(userId, societyId string) (bool, int, error) {
+	admins, err := s.GetSocietyAdmins(societyId)
+	if err != nil {
+		return false, 0, err
+	}
+	if len(admins) == 0 {
+		return false, 0, err
+	}
+
+	for _, adminId := range admins {
+		if adminId == userId {
+			return true, len(admins), nil
+		}
+	}
+
+	return false, len(admins), nil
+}

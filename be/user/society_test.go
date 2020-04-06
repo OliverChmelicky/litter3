@@ -87,7 +87,7 @@ func (s *SocietySuite) Test_CRUsociety() {
 
 		//oprav acces admina
 
-		isAdmin, numAdmins, err := s.service.isUserSocietyAdmin(candidates[i].user.Id, resp.Id)
+		isAdmin, numAdmins, err := s.service.UserAccess.IsUserSocietyAdmin(candidates[i].user.Id, resp.Id)
 		s.Nil(err)
 		s.True(isAdmin)
 		s.EqualValues(candidates[i].numOfAdmins, numAdmins)
@@ -457,7 +457,7 @@ func (s *SocietySuite) SetupTest() {
 	truncateQueries := make([]string, len(tableInfo))
 
 	for i, info := range tableInfo {
-		if info.Table == "spatial_ref_sys" {
+		if info.Table == "spatial_ref_sys" { //postgis extension
 			continue
 		}
 		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"

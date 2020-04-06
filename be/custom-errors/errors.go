@@ -13,7 +13,9 @@ func WrapError(errorType string, err error) ErrorModel {
 }
 
 var (
-	ErrBindingRequest = "ERROR BINDING REQUEST"
+	ErrBindingRequest         = "ERROR BINDING REQUEST"
+	ErrConflict               = "CONFLICT"
+	ErrInsufficientPermission = "INSUFFICIENT PERMISSION"
 
 	ErrGetUser        = "ERROR GET USER"
 	ErrGetCurrentUser = "ERROR GET CURRENT USER"
@@ -37,5 +39,8 @@ var (
 	ErrUpdateTrash = "ERROR UPDATE TRASH"
 	ErrDeleteTrash = "ERROR DELETE TRASH"
 
-	ErrConflict = "CONFLICT"
+	ErrCreateEvent = "ERROR CREATE EVENT"
+	ErrGetEvent    = "ERROR GET EVENT"
+	ErrUpdateEvent = "ERROR UPDATE EVENT"
+	ErrDeleteEvent = "ERROR DELETE EVENT"
 )

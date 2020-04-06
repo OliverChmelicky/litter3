@@ -125,7 +125,7 @@ func (s *TrashSuite) Test_GetAround() {
 		var err error
 		candidates[i].creator, err = s.userAccess.CreateUser(candidates[i].creator)
 		s.Nil(err)
-		candidates[i].trash, err = s.service.trashAccess.CreateTrash(candidates[i].trash)
+		candidates[i].trash, err = s.service.TrashAccess.CreateTrash(candidates[i].trash)
 		s.Nil(err)
 
 		bytes, err := json.Marshal(candidates[i].rangeRequest)
@@ -174,7 +174,7 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 		var err error
 		candidates[i].creator, err = s.userAccess.CreateUser(candidates[i].creator)
 		s.Nil(err)
-		candidates[i].trash, err = s.service.trashAccess.CreateTrash(candidates[i].trash)
+		candidates[i].trash, err = s.service.TrashAccess.CreateTrash(candidates[i].trash)
 		s.Nil(err)
 
 		candidates[i].commentRequest.Id = candidates[i].trash.Id
@@ -291,7 +291,7 @@ func (s *TrashSuite) SetupTest() {
 	truncateQueries := make([]string, len(tableInfo))
 
 	for i, info := range tableInfo {
-		if info.Table == "spatial_ref_sys" {
+		if info.Table == "spatial_ref_sys" { //postgis extension
 			continue
 		}
 		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
