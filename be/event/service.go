@@ -236,5 +236,26 @@ func (s *EventService) GetUserEvents(c echo.Context) error {
 }
 
 func (s *EventService) CreateCollection(c echo.Context) error {
+	userId := c.Get("userId").(string)
 
+	request := new(trash.CreateCollectionFromEventRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
+	}
+	if !isAdmin {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+	}
+
+	events, err := s.eventAccess.CreateCollections(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
+	}
+
+	return c.JSON(http.StatusOK, events)
 }

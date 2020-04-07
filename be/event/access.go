@@ -353,12 +353,12 @@ func (s *eventAccess) GetUserEvents(societyId string) ([]EventUser, error) {
 	return model, nil
 }
 
-func (s *eventAccess) CreateCollections(collectionRequests []trash.CreateCollectionFromEventRequest) ([]trash.Collection, []error) {
+func (s *eventAccess) CreateCollections(collectionRequests trash.CreateCollectionFromEventRequest) ([]trash.Collection, []error) {
 	var errs []error
 	var collections []trash.Collection
 
 	collection := &trash.Collection{}
-	for _, request := range collectionRequests {
+	for _, request := range collectionRequests.Trash {
 		collection.EventId = request.EventId
 		collection.TrashId = request.TrashId
 		collection.CleanedTrash = request.CleanedTrash

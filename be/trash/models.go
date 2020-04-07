@@ -151,9 +151,10 @@ type CreateCollectionRandomRequest struct {
 
 type CreateCollectionFromEventRequest struct {
 	//veci z collection + users a vsetci budu moct upravovat! Da sa spatne upravovat a odstranit sameho seba odtial
-	EventId      string
-	TrashId      string
-	CleanedTrash bool
+	EventId   string
+	Trash     []Collection
+	AsSociety bool
+	SocietyId string
 }
 
 type RangeRequest struct {
