@@ -191,6 +191,6 @@ func (s *trashService) UpdateCollection(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }
 
-func (s *trashService) DeleteCollection(c echo.Context) error {
+func (s *trashService) DeleteCollectionFromUser(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, "Implement me")
 }

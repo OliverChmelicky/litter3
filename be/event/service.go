@@ -61,7 +61,7 @@ func (s *EventService) GetEvent(c echo.Context) error {
 func (s *EventService) AttendEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(EventAttendanceRequest)
+	request := new(EventPickerRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -89,7 +89,7 @@ func (s *EventService) AttendEvent(c echo.Context) error {
 func (s *EventService) CannotAttendEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(EventAttendanceRequest)
+	request := new(EventPickerRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -134,31 +134,107 @@ func (s *EventService) EditEvent(c echo.Context) error {
 	}
 
 	request.UserId = userId
-	newTrash, err := s.eventAccess.EditEvent(request, userId)
+	newTrash, err := s.eventAccess.UpdateEvent(request, userId)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
 	}
 
 	return c.JSON(http.StatusOK, newTrash)
 }
 
 func (s *EventService) EditEventRights(c echo.Context) error {
+	userId := c.Get("userId").(string)
 
+	request := new(EventPermissionRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	if request.AsSociety {
+		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrEditEventRights, err))
+		}
+		if !isAdmin {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+		}
+	}
+
+	newTrash, err := s.eventAccess.EditEventRights(request, userId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
+	}
+
+	return c.JSON(http.StatusOK, newTrash)
 }
 
-//
-//func(s *EventService) DeleteEvent(c echo.Context) error{
-//
-//}
-//
-//func(s *EventService) GetSocietyEvents(c echo.Context) error{
-//
-//}
-//
-//func(s *EventService) GetUserEvents(c echo.Context) error{
-//
-//}
-//
-//func(s *EventService) CreateCollection(c echo.Context) error{
-//
-//}
+func (s *EventService) DeleteEvent(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	request := new(EventPickerRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	if request.AsSociety {
+		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrDeleteEvent, err))
+		}
+		if !isAdmin {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+		}
+	}
+
+	err = s.eventAccess.DeleteEvent(request, userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
+	}
+
+	return c.JSON(http.StatusOK, "")
+}
+
+//If I will need
+//func (s *EventService) GetMyEvents(c echo.Context) error{}
+
+func (s *EventService) GetSocietyEvents(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	request := new(EventPickerRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrGetSocietyEvent, err))
+	}
+	if !isAdmin {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+	}
+
+	events, err := s.eventAccess.GetSocietyEvents(request.PickerId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrGetSocietyEvent, err))
+	}
+
+	return c.JSON(http.StatusOK, events)
+}
+
+func (s *EventService) GetUserEvents(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	events, err := s.eventAccess.GetUserEvents(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrGetSocietyEvent, err))
+	}
+
+	return c.JSON(http.StatusOK, events)
+}
+
+func (s *EventService) CreateCollection(c echo.Context) error {
+
+}

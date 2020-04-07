@@ -17,8 +17,11 @@ var (
 	ErrConflict               = "CONFLICT"
 	ErrInsufficientPermission = "INSUFFICIENT PERMISSION"
 
+	ErrCreateUser     = "ERROR CREATE USER"
 	ErrGetUser        = "ERROR GET USER"
 	ErrGetCurrentUser = "ERROR GET CURRENT USER"
+	ErrUpdateUser     = "ERR UPDATE USER"
+	ErrDeleteUser     = "ERROR DELETE USER"
 
 	ErrApplyForMembership             = "ERROR APPLY FOR MEMBERSHIP"
 	ErrRemoveApplicationForMembership = "ERROR REMOVE APPLICATION FOR MEMBERSHIP"
@@ -26,8 +29,7 @@ var (
 
 	ErrApplyForFriendship             = "ERROR APPLY FOR FRIENDSHIP"
 	ErrRemoveApplicationForFriendship = "ERROR REMOVE APPLICATION FOR FRIENDSHIP"
-
-	ErrRemoveFriend = "ERROR REMOVE FRIEND"
+	ErrRemoveFriend                   = "ERROR REMOVE FRIEND"
 
 	ErrCreateComment = "ERROR CREATE COMMENT"
 	ErrGetComment    = "ERROR GET COMMENT"
@@ -41,6 +43,9 @@ var (
 
 	ErrCreateEvent       = "ERROR CREATE EVENT"
 	ErrGetEvent          = "ERROR GET EVENT"
+	ErrGetSocietyEvent   = "ERROR GET SOCIETY EVENTS"
+	ErrGetUserEvent      = "ERROR GET USER EVENTS"
+	ErrEditEventRights   = "ERROR EDIT EVENT RIGHTS"
 	ErrAttendEvent       = "ERROR ATTEND EVENT"
 	ErrCannotAttendEvent = "ERROR CANNOT EVENT"
 	ErrUpdateEvent       = "ERROR UPDATE EVENT"

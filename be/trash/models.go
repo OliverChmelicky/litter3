@@ -149,6 +149,13 @@ type CreateCollectionRandomRequest struct {
 	UsersIds     []string
 }
 
+type CreateCollectionFromEventRequest struct {
+	//veci z collection + users a vsetci budu moct upravovat! Da sa spatne upravovat a odstranit sameho seba odtial
+	EventId      string
+	TrashId      string
+	CleanedTrash bool
+}
+
 type RangeRequest struct {
 	Location Point
 	Radius   float64

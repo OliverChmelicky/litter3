@@ -17,10 +17,23 @@ type EventRequest struct {
 	Trash     []string
 }
 
-type EventAttendanceRequest struct {
+type EventPickerRequest struct {
 	PickerId  string
 	EventId   string
 	AsSociety bool
+}
+
+type GetEventsRequest struct {
+	PickerId string
+	Paging   int
+}
+
+type EventPermissionRequest struct {
+	ChangingRightsTo string
+	EventId          string
+	Permission       eventPermission
+	AsSociety        bool
+	SocietyId        string
 }
 
 type Event struct {
