@@ -8,12 +8,13 @@ import (
 )
 
 type EventRequest struct {
+	Id        string
 	UserId    string
 	SocietyId string
 	AsSociety bool
 	Date      time.Time
 	Publc     bool
-	Trash     []string `pg:"-"`
+	Trash     []string
 }
 
 type EventAttendanceRequest struct {
@@ -41,13 +42,13 @@ func (u *Event) BeforeInsert(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-type attendaceLevel string
+type eventPermission string
 
 type EventSociety struct {
 	tableName  struct{} `pg:"events_societies"json:"-"`
 	SocietyId  string   `pg:",pk"`
 	EventId    string   `pg:",pk"`
-	Permission attendaceLevel
+	Permission eventPermission
 	CreatedAt  time.Time
 }
 
@@ -62,7 +63,7 @@ type EventUser struct {
 	tableName  struct{} `pg:"events_users"json:"-"`
 	UserId     string   `pg:",pk"`
 	EventId    string   `pg:",pk"`
-	Permission attendaceLevel
+	Permission eventPermission
 	CreatedAt  time.Time
 }
 

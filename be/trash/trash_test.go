@@ -2,7 +2,6 @@ package trash
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	"github.com/olo/litter3/user"
@@ -142,7 +141,6 @@ func (s *TrashSuite) Test_GetAround() {
 		var resp []Trash
 		err = json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
-		fmt.Println(rec.Body.String())
 
 		s.EqualValues(candidates[i].trash.Location, resp[0].Location)
 	}

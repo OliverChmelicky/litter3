@@ -42,7 +42,7 @@ func (s *EventService) CreateEvent(c echo.Context) error {
 	request.UserId = userId
 	newTrash, err := s.eventAccess.CreateEvent(request)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateTrash, err))
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
 	}
 
 	return c.JSON(http.StatusOK, newTrash)
@@ -70,7 +70,7 @@ func (s *EventService) AttendEvent(c echo.Context) error {
 	if request.AsSociety {
 		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrAttendEvent, err))
 		}
 		if !isAdmin {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
@@ -80,7 +80,7 @@ func (s *EventService) AttendEvent(c echo.Context) error {
 	request.PickerId = userId
 	trash, err := s.eventAccess.AttendEvent(request)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateTrash, err))
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrAttendEvent, err))
 	}
 
 	return c.JSON(http.StatusOK, trash)
@@ -98,7 +98,7 @@ func (s *EventService) CannotAttendEvent(c echo.Context) error {
 	if request.AsSociety {
 		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCannotAttendEvent, err))
 		}
 		if !isAdmin {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
@@ -108,19 +108,44 @@ func (s *EventService) CannotAttendEvent(c echo.Context) error {
 	request.PickerId = userId
 	trash, err := s.eventAccess.CannotAttendEvent(request)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateTrash, err))
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCannotAttendEvent, err))
 	}
 
 	return c.JSON(http.StatusOK, trash)
 }
 
-//func(s *EventService) EditEvent(c echo.Context) error{
-//
-//}
-//
-//func(s *EventService) EditEventRights(c echo.Context) error{
-//
-//}
+func (s *EventService) EditEvent(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	request := new(EventRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	if request.AsSociety {
+		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
+		}
+		if !isAdmin {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+		}
+	}
+
+	request.UserId = userId
+	newTrash, err := s.eventAccess.EditEvent(request, userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
+	}
+
+	return c.JSON(http.StatusOK, newTrash)
+}
+
+func (s *EventService) EditEventRights(c echo.Context) error {
+
+}
+
 //
 //func(s *EventService) DeleteEvent(c echo.Context) error{
 //

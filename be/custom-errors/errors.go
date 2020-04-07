@@ -39,8 +39,10 @@ var (
 	ErrUpdateTrash = "ERROR UPDATE TRASH"
 	ErrDeleteTrash = "ERROR DELETE TRASH"
 
-	ErrCreateEvent = "ERROR CREATE EVENT"
-	ErrGetEvent    = "ERROR GET EVENT"
-	ErrUpdateEvent = "ERROR UPDATE EVENT"
-	ErrDeleteEvent = "ERROR DELETE EVENT"
+	ErrCreateEvent       = "ERROR CREATE EVENT"
+	ErrGetEvent          = "ERROR GET EVENT"
+	ErrAttendEvent       = "ERROR ATTEND EVENT"
+	ErrCannotAttendEvent = "ERROR CANNOT EVENT"
+	ErrUpdateEvent       = "ERROR UPDATE EVENT"
+	ErrDeleteEvent       = "ERROR DELETE EVENT"
 )

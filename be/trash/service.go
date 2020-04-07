@@ -64,12 +64,12 @@ func (s *trashService) UpdateTrash(c echo.Context) error {
 
 	_, err := s.TrashAccess.GetTrash(trash.Id)
 	if err != nil {
-		return c.String(http.StatusNotFound, "Trash with provided Id does not exist")
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError("Trash with provided Id does not exist", err))
 	}
 
 	trash, err = s.TrashAccess.UpdateTrash(trash)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "Error updating trash")
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateTrash, err))
 	}
 
 	return c.JSON(http.StatusOK, trash)
@@ -137,7 +137,7 @@ func (s *trashService) UpdateTrashComment(c echo.Context) error {
 func (s *trashService) DeleteTrashComment(c echo.Context) error {
 	userId := c.Get("userId")
 	commentId := c.Param("commentId")
-	fmt.Println(commentId)
+
 	comment, err := s.TrashAccess.GetTrashCommentById(commentId)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetComment, err))
@@ -158,7 +158,7 @@ func (s *trashService) DeleteTrashComment(c echo.Context) error {
 //
 //
 //
-//
+//	COLLECTION
 //
 //
 
