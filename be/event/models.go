@@ -40,7 +40,7 @@ type Event struct {
 	tableName    struct{} `pg:"events"json:"-"`
 	Id           string   `pg:",pk"`
 	Date         time.Time
-	Publc        bool
+	Publc        bool `pg:",use_zero"`
 	CreatedAt    time.Time
 	TrashIds     []string `pg:"-"`
 	UsersIds     []string `pg:"-"`

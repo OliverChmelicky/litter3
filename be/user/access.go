@@ -113,6 +113,9 @@ func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(admins) == 0 {
+		return nil, pg.ErrNoRows
+	}
 
 	return admins, nil
 }
@@ -303,7 +306,7 @@ func (s *UserAccess) IsUserSocietyAdmin(userId, societyId string) (bool, int, er
 		return false, 0, err
 	}
 	if len(admins) == 0 {
-		return false, 0, err
+		return false, 0, pg.ErrNoRows
 	}
 
 	for _, adminId := range admins {
@@ -311,6 +314,5 @@ func (s *UserAccess) IsUserSocietyAdmin(userId, societyId string) (bool, int, er
 			return true, len(admins), nil
 		}
 	}
-
 	return false, len(admins), nil
 }

@@ -79,13 +79,22 @@ func (s *TrashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) 
 	return collection, tx.Commit()
 }
 
-func (s *TrashAccess) UpdateCollection(request *Collection, id string) (*Collection, error) {
-
-}
-
-func (s *TrashAccess) AddPickerToCollection(request *UserCollection, id string) (*UserCollection, error) {
-
-}
+//
+//func (s *TrashAccess) GetCollection(id string) (interface{}, interface{}) {
+//
+//}
+//
+//func (s *TrashAccess) GetCollectionsOfUser(id string) (interface{}, interface{}) {
+//
+//}
+//
+//func (s *TrashAccess) UpdateCollection(request *Collection, id string) (*Collection, error) {
+//
+//}
+//
+//func (s *TrashAccess) AddPickerToCollection(request *UserCollection, id string) (*UserCollection, error) {
+//
+//}
 
 //
 //
@@ -146,10 +155,8 @@ func (s *TrashAccess) DeleteTrashComments(trashId string) error {
 	return err
 }
 
-func (s *TrashAccess) GetCollection(id string) (interface{}, interface{}) {
-
-}
-
-func (s *TrashAccess) GetCollectionsOfUser(id string) (interface{}, interface{}) {
-
+func (s *TrashAccess) DeleteUserComments(userId string) error {
+	comment := new(TrashComment)
+	_, err := s.Db.Model(comment).Where("user_id = ?", userId).Delete()
+	return err
 }

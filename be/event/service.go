@@ -7,6 +7,7 @@ import (
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
 	"net/http"
+	"strconv"
 )
 
 type EventService struct {
@@ -45,7 +46,7 @@ func (s *EventService) CreateEvent(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
 	}
 
-	return c.JSON(http.StatusOK, newTrash)
+	return c.JSON(http.StatusCreated, newTrash)
 }
 func (s *EventService) GetEvent(c echo.Context) error {
 	eventId := c.Param("eventId")
@@ -75,25 +76,31 @@ func (s *EventService) AttendEvent(c echo.Context) error {
 		if !isAdmin {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
+	} else {
+		request.PickerId = userId
 	}
 
-	request.PickerId = userId
-	trash, err := s.eventAccess.AttendEvent(request)
+	attendeeRelation, err := s.eventAccess.AttendEvent(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrAttendEvent, err))
 	}
 
-	return c.JSON(http.StatusOK, trash)
+	return c.JSON(http.StatusCreated, attendeeRelation)
 }
 
 func (s *EventService) CannotAttendEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
 	request := new(EventPickerRequest)
-	err := c.Bind(request)
+	eventId := c.QueryParam("event")
+	pickerId := c.QueryParam("picker")
+	asSociety, err := strconv.ParseBool(c.QueryParam("asSociety"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
+	request.EventId = eventId
+	request.PickerId = pickerId
+	request.AsSociety = asSociety
 
 	if request.AsSociety {
 		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
@@ -103,18 +110,19 @@ func (s *EventService) CannotAttendEvent(c echo.Context) error {
 		if !isAdmin {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
+	} else {
+		request.PickerId = userId
 	}
 
-	request.PickerId = userId
-	trash, err := s.eventAccess.CannotAttendEvent(request)
+	_, err = s.eventAccess.CannotAttendEvent(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCannotAttendEvent, err))
 	}
 
-	return c.JSON(http.StatusOK, trash)
+	return c.JSON(http.StatusOK, "")
 }
 
-func (s *EventService) EditEvent(c echo.Context) error {
+func (s *EventService) UpdateEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
 	request := new(EventRequest)
@@ -134,12 +142,12 @@ func (s *EventService) EditEvent(c echo.Context) error {
 	}
 
 	request.UserId = userId
-	newTrash, err := s.eventAccess.UpdateEvent(request, userId)
+	updatedEvent, err := s.eventAccess.UpdateEvent(request, userId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
 	}
 
-	return c.JSON(http.StatusOK, newTrash)
+	return c.JSON(http.StatusOK, updatedEvent)
 }
 
 func (s *EventService) EditEventRights(c echo.Context) error {
@@ -242,8 +250,8 @@ func (s *EventService) CreateCollection(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 	}
 
-	events, err := s.eventAccess.CreateCollections(request)
-	if err != nil {
+	events, errs := s.eventAccess.CreateCollections(request)
+	if len(errs) != 0 {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
 	}
 

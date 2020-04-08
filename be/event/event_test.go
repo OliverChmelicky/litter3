@@ -8,7 +8,9 @@ import (
 	"github.com/olo/litter3/user"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
+	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -175,7 +177,6 @@ func (s *TrashSuite) Test_CreateTrash_Society() {
 	}
 }
 
-//getEvent
 func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 	candidates := []struct {
 		creatorUser   *user.User
@@ -194,7 +195,7 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
 			},
 			event:         &Event{Date: time.Now(), Publc: true},
-			updatingEvent: &EventRequest{Date: time.Now(), Publc: false},
+			updatingEvent: &EventRequest{Date: time.Now(), Publc: true},
 		},
 		{
 			creatorUser:  &user.User{Email: "ja@he.cpe", FirstName: "Big", LastName: "Rocky"},
@@ -205,7 +206,7 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 			},
 			updatingTrash: []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
 			event:         &Event{Date: time.Now(), Publc: true},
-			updatingEvent: &EventRequest{Date: time.Now(), Publc: false},
+			updatingEvent: &EventRequest{Date: time.Now(), Publc: true},
 		},
 	}
 
@@ -223,6 +224,12 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 			candidates[i].event.TrashIds = append(candidates[i].event.TrashIds, newTrash.Id)
 		}
 
+		for _, x := range candidates[i].updatingTrash {
+			newTrash, err := s.trashAccess.CreateTrash(&x)
+			s.Nil(err)
+			candidates[i].updatingEvent.Trash = append(candidates[i].updatingEvent.Trash, newTrash.Id)
+		}
+
 		candidates[i].eventRequest.UserId = usr.Id
 		event, err := s.service.eventAccess.CreateEvent(candidates[i].eventRequest)
 		s.Nil(err)
@@ -231,11 +238,45 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 		candidates[i].event.UsersIds = event.UsersIds
 		candidates[i].event.TrashIds = event.TrashIds
 	}
-	//TODO update
 
-	//get
+	//UPDATE
 	for i, candidate := range candidates {
-		req := httptest.NewRequest(echo.GET, "/events"+candidate.event.Id, nil)
+		updatingRequest := &EventRequest{
+			Id:        candidate.event.Id,
+			UserId:    candidate.updatingEvent.UserId,
+			SocietyId: candidate.updatingEvent.SocietyId,
+			AsSociety: candidate.updatingEvent.AsSociety,
+			Date:      candidate.updatingEvent.Date,
+			Publc:     candidate.updatingEvent.Publc,
+			Trash:     candidate.updatingEvent.Trash,
+		}
+		bytes, err := json.Marshal(updatingRequest)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.PUT, "/events/"+candidate.event.Id, strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.creatorUser.Id)
+
+		s.NoError(s.service.UpdateEvent(c))
+
+		resp := &Event{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		s.EqualValues(len(candidates[i].updatingEvent.Trash), len(resp.TrashIds))
+
+		candidates[i].event.Date = resp.Date
+		candidates[i].event.CreatedAt = resp.CreatedAt
+		candidates[i].event.TrashIds = resp.TrashIds
+		s.EqualValues(candidates[i].event, resp)
+	}
+
+	//GET
+	for i, candidate := range candidates {
+		req := httptest.NewRequest(echo.GET, "/events/"+candidate.event.Id, nil)
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
@@ -252,12 +293,131 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 
 		candidates[i].event.Date = resp.Date
 		candidates[i].event.CreatedAt = resp.CreatedAt
+		s.EqualValues(len(candidates[i].event.TrashIds), len(resp.TrashIds))
+
+		candidates[i].event.TrashIds = resp.TrashIds
 		s.EqualValues(candidates[i].event, resp)
 	}
 }
 
-//attend event
-//don`t attend
+func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
+	candidates := []struct {
+		admin         *user.User
+		eventRequest  *EventRequest
+		wantsToAttend *user.User
+		trash         []trash.Trash
+
+		attendRequest EventPickerRequest
+		event         *Event
+	}{
+		{
+			admin:         &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			eventRequest:  &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash:         []trash.Trash{{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
+			wantsToAttend: &user.User{Email: "attends@first.com", FirstName: "joshua", LastName: "Bosh"},
+			event:         &Event{Date: time.Now(), Publc: true},
+		},
+		{
+			admin:        &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash: []trash.Trash{
+				{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+				{Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			},
+			wantsToAttend: &user.User{Email: "attends@second.com", FirstName: "joshua", LastName: "Bosh"},
+			event:         &Event{Date: time.Now(), Publc: true},
+		},
+	}
+
+	for i, _ := range candidates {
+		admin, err := s.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].admin = admin
+
+		attendee, err := s.userAccess.CreateUser(candidates[i].wantsToAttend)
+		s.Nil(err)
+		candidates[i].wantsToAttend = attendee
+
+		for _, tr := range candidates[i].trash {
+			newTrash, err := s.trashAccess.CreateTrash(&tr)
+			s.Nil(err)
+			candidates[i].eventRequest.Trash = append(candidates[i].eventRequest.Trash, newTrash.Id)
+			candidates[i].event.TrashIds = append(candidates[i].event.TrashIds, newTrash.Id)
+		}
+
+		candidates[i].eventRequest.UserId = admin.Id
+		candidates[i].event.UsersIds = append(candidates[i].event.UsersIds, admin.Id)
+		bytes, err := json.Marshal(candidates[i].eventRequest)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/event/new", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidates[i].admin.Id)
+
+		s.NoError(s.service.CreateEvent(c))
+
+		resp := &Event{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		candidates[i].event.Id = resp.Id
+		candidates[i].event.Date = resp.Date
+		candidates[i].event.CreatedAt = resp.CreatedAt
+		s.EqualValues(candidates[i].event, resp)
+
+		candidates[i].attendRequest.EventId = resp.Id
+		candidates[i].attendRequest.PickerId = attendee.Id
+	}
+
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(&candidate.attendRequest)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/event/attend", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.wantsToAttend.Id)
+
+		s.NoError(s.service.AttendEvent(c))
+		s.EqualValues(http.StatusCreated, rec.Code)
+		//Chcek if record exists
+		reality := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
+		err = s.db.Select(reality)
+		s.Nil(err)
+
+		expected := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id, Permission: eventPermission("viewer"), CreatedAt: reality.CreatedAt}
+		s.EqualValues(expected, reality)
+		s.Nil(err)
+
+	}
+
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(&candidate.attendRequest)
+		s.Nil(err)
+		queryParams := "picker=" + candidate.attendRequest.PickerId + "&event=" + candidate.attendRequest.EventId + "&asSociety=" + strconv.FormatBool(candidate.attendRequest.AsSociety)
+
+		req := httptest.NewRequest(echo.DELETE, "/event/cannot/attend?"+queryParams, strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.wantsToAttend.Id)
+
+		s.NoError(s.service.CannotAttendEvent(c))
+		s.EqualValues(http.StatusOK, rec.Code)
+
+		reality := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
+		err = s.db.Select(reality)
+		s.EqualValues(pg.ErrNoRows, err)
+	}
+
+}
+
 //preved prava
 //get society events
 //get user events
