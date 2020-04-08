@@ -79,15 +79,12 @@ func (s *TrashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) 
 	return collection, tx.Commit()
 }
 
-//from event
-func (s *TrashAccess) CreateCollectionOrganized(in *Collection) (*Collection, error) {
-	in.Id = uuid.NewV4().String()
-	err := s.Db.Insert(in)
-	if err != nil {
-		return &Collection{}, err
-	}
+func (s *TrashAccess) UpdateCollection(request *Collection, id string) (*Collection, error) {
 
-	return in, nil
+}
+
+func (s *TrashAccess) AddPickerToCollection(request *UserCollection, id string) (*UserCollection, error) {
+
 }
 
 //
@@ -147,4 +144,12 @@ func (s *TrashAccess) DeleteTrashComments(trashId string) error {
 	comment := new(TrashComment)
 	_, err := s.Db.Model(comment).Where("trash_id = ?", trashId).Delete()
 	return err
+}
+
+func (s *TrashAccess) GetCollection(id string) (interface{}, interface{}) {
+
+}
+
+func (s *TrashAccess) GetCollectionsOfUser(id string) (interface{}, interface{}) {
+
 }

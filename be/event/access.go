@@ -335,22 +335,45 @@ func (s *eventAccess) DeleteEvent(request *EventPickerRequest, userWhoDoesOperat
 	return tx.Commit()
 }
 
-func (s *eventAccess) GetSocietyEvents(societyId string) ([]EventSociety, error) {
-	var model []EventSociety
-	err := s.db.Model(&model).Where("society_id = ?", societyId).Select()
+func (s *eventAccess) GetSocietyEvents(societyId string) ([]Event, error) {
+	var allActivities []EventSociety
+	err := s.db.Model(&allActivities).Where("society_id = ?", societyId).Select()
+	if err != nil {
+		return nil, fmt.Errorf("Error get society participation: %w ", err)
+	}
+
+	var eventsArr []string
+	for _, activity := range allActivities {
+		eventsArr = append(eventsArr, activity.EventId)
+	}
+
+	var events []Event
+	err = s.db.Model(&events).Where("id IN (?)", eventsArr).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society events: %w ", err)
 	}
-	return model, nil
+
+	return events, nil
 }
 
-func (s *eventAccess) GetUserEvents(societyId string) ([]EventUser, error) {
-	var model []EventUser
-	err := s.db.Model(&model).Where("society_id = ?", societyId).Select()
+func (s *eventAccess) GetUserEvents(userId string) ([]Event, error) {
+	var allActivities []EventUser
+	err := s.db.Model(&allActivities).Where("user_id = ?", userId).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society events: %w ", err)
 	}
-	return model, nil
+
+	var eventsArr []string
+	for _, activity := range allActivities {
+		eventsArr = append(eventsArr, activity.EventId)
+	}
+
+	var events []Event
+	err = s.db.Model(&events).Where("id IN (?)", eventsArr).Select()
+	if err != nil {
+		return nil, fmt.Errorf("Error get society events: %w ", err)
+	}
+	return events, nil
 }
 
 func (s *eventAccess) CreateCollections(collectionRequests trash.CreateCollectionFromEventRequest) ([]trash.Collection, []error) {

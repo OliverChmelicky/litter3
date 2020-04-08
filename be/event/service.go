@@ -200,20 +200,10 @@ func (s *EventService) DeleteEvent(c echo.Context) error {
 //func (s *EventService) GetMyEvents(c echo.Context) error{}
 
 func (s *EventService) GetSocietyEvents(c echo.Context) error {
-	userId := c.Get("userId").(string)
-
 	request := new(EventPickerRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
-	}
-
-	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrGetSocietyEvent, err))
-	}
-	if !isAdmin {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 	}
 
 	events, err := s.eventAccess.GetSocietyEvents(request.PickerId)

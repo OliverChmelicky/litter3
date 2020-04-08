@@ -32,6 +32,7 @@ func (s *trashService) CreateTrash(c echo.Context) error {
 }
 
 func (s *trashService) GetTrashById(c echo.Context) error {
+	//TODO relational mapping s collections
 	id := c.Param("id")
 
 	trash, err := s.TrashAccess.GetTrash(id)
@@ -165,30 +166,69 @@ func (s *trashService) DeleteTrashComment(c echo.Context) error {
 func (s *trashService) CreateCollection(c echo.Context) error {
 	request := new(CreateCollectionRandomRequest)
 	if err := c.Bind(request); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
 	collection, err := s.TrashAccess.CreateCollectionRandom(request)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
 	}
-	return c.JSON(http.StatusNotImplemented, collection)
+
+	return c.JSON(http.StatusOK, collection)
 }
 
 func (s *trashService) GetCollection(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+	//TODO object relational mapping na id-cka userov
+	collectionId := c.Param("collectionId")
+
+	collection, err := s.TrashAccess.GetCollection(collectionId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
+	}
+
+	return c.JSON(http.StatusOK, collection)
 }
 
-func (s *trashService) GetCollectionOfUser(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, "Implement me")
-}
+func (s *trashService) GetCollectionsOfUser(c echo.Context) error {
+	userId := c.Param("userId")
 
-func (s *trashService) GetCollectionOfSociety(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+	collection, err := s.TrashAccess.GetCollectionsOfUser(userId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
+	}
+
+	return c.JSON(http.StatusOK, collection)
 }
 
 func (s *trashService) UpdateCollection(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, "Implement me")
+	userId := c.Get("userId").(string)
+
+	request := new(Collection)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	collection, err := s.TrashAccess.UpdateCollection(request, userId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateCollection, err))
+	}
+
+	return c.JSON(http.StatusOK, collection)
+}
+
+func (s *trashService) AddPickerToCollection(c echo.Context) error {
+	userId := c.Get("userId").(string)
+	request := new(UserCollection)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	collection, err := s.TrashAccess.AddPickerToCollection(request, userId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
+	}
+
+	return c.JSON(http.StatusOK, collection)
 }
 
 func (s *trashService) DeleteCollectionFromUser(c echo.Context) error {

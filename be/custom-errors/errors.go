@@ -41,6 +41,9 @@ var (
 	ErrUpdateTrash = "ERROR UPDATE TRASH"
 	ErrDeleteTrash = "ERROR DELETE TRASH"
 
+	ErrCreateCollectionRaw = "CREATE RAW COLLECTION"
+	ErrUpdateCollection    = "UPDATE COLLECTION"
+
 	ErrCreateEvent               = "ERROR CREATE EVENT"
 	ErrCreateCollectionFromEvent = "CREATE COLLECTION FROM EVENT"
 	ErrGetEvent                  = "ERROR GET EVENT"

@@ -143,7 +143,6 @@ type TrashCommentRequest struct {
 }
 
 type CreateCollectionRandomRequest struct {
-	//veci z collection + users a vsetci budu moct upravovat! Da sa spatne upravovat a odstranit sameho seba odtial
 	TrashId      string
 	CleanedTrash bool
 	UsersIds     []string
