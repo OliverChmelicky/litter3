@@ -418,12 +418,80 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 
 }
 
-//preved prava
 //get society events
 //get user events
 //create collection from event
-//delete event --> hard
+func (s *TrashSuite) Test_CreateCollectionFromEvents() {
+	candidates := []struct {
+		admin        *user.User
+		eventRequest *EventRequest
+		trash        []trash.Trash
 
+		event      *Event
+		collection []*trash.Collection
+	}{
+		{
+			admin:        &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash:        []trash.Trash{{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
+			collection:   []*trash.Collection{{CleanedTrash: false, Weight: 622.642}},
+		},
+		{
+			admin:        &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash: []trash.Trash{
+				{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+				{Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			},
+			collection: []*trash.Collection{{CleanedTrash: false, Weight: 622.31}, {CleanedTrash: false, Weight: 63.74}},
+		},
+	}
+
+	for i, _ := range candidates {
+		admin, err := s.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].admin = admin
+
+		for _, tr := range candidates[i].trash {
+			newTrash, err := s.trashAccess.CreateTrash(&tr)
+			s.Nil(err)
+			candidates[i].eventRequest.Trash = append(candidates[i].eventRequest.Trash, newTrash.Id)
+		}
+
+		candidates[i].eventRequest.UserId = admin.Id
+		event, err := s.service.eventAccess.CreateEvent(candidates[i].eventRequest)
+		s.Nil(err)
+		candidates[i].event = event
+	}
+
+	for _, candidate := range candidates {
+		bytes, err := json.Marshal(&candidate.attendRequest)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/event/attend", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidate.wantsToAttend.Id)
+
+		s.NoError(s.service.AttendEvent(c))
+		s.EqualValues(http.StatusCreated, rec.Code)
+		//Chcek if record exists
+		reality := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
+		err = s.db.Select(reality)
+		s.Nil(err)
+
+		expected := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id, Permission: eventPermission("viewer"), CreatedAt: reality.CreatedAt}
+		s.EqualValues(expected, reality)
+		s.Nil(err)
+
+	}
+
+}
+
+//delete event
+//TODO preved prava nova featura a nebude to
 func (s *TrashSuite) SetupTest() {
 	referencerTables := []string{
 		"events_societies",

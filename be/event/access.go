@@ -5,7 +5,6 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
-	log "github.com/sirupsen/logrus"
 )
 
 type eventAccess struct {
@@ -147,7 +146,14 @@ func (s *eventAccess) CannotAttendEvent(request *EventPickerRequest) (*EventPick
 			SocietyId: request.PickerId,
 			EventId:   request.EventId,
 		}
-		err := s.db.Delete(attendee)
+		err := s.db.Select(attendee)
+		if err != nil {
+			return &EventPickerRequest{}, fmt.Errorf("Error finding society for event: %w ", err)
+		}
+		if attendee.Permission == eventPermission("creator") {
+			return &EventPickerRequest{}, fmt.Errorf("You are an organizer ")
+		}
+		err = s.db.Delete(attendee)
 		if err != nil {
 			return &EventPickerRequest{}, fmt.Errorf("Error deleting society attendee: %w", err)
 		}
@@ -156,7 +162,14 @@ func (s *eventAccess) CannotAttendEvent(request *EventPickerRequest) (*EventPick
 			UserId:  request.PickerId,
 			EventId: request.EventId,
 		}
-		err := s.db.Delete(attendee)
+		err := s.db.Select(attendee)
+		if err != nil {
+			return &EventPickerRequest{}, fmt.Errorf("Error finding user for event: %w ", err)
+		}
+		if attendee.Permission == eventPermission("creator") {
+			return &EventPickerRequest{}, fmt.Errorf("You are an organizer ")
+		}
+		err = s.db.Delete(attendee)
 		if err != nil {
 			return &EventPickerRequest{}, fmt.Errorf("Error deleting user attendee: %w", err)
 		}
@@ -190,10 +203,11 @@ func (s *eventAccess) UpdateEvent(request *EventRequest, userId string) (*Event,
 	}
 	defer tx.Rollback()
 
-	event := &Event{
-		Id:    request.Id,
-		Publc: request.Publc,
-		Date:  request.Date,
+	var event = new(Event)
+	event.Id = request.Id
+	err = s.db.Select(event)
+	if err != nil {
+		return &Event{}, fmt.Errorf("Error selecting event for update: %w ", err)
 	}
 
 	err = tx.Update(event)
@@ -376,7 +390,7 @@ func (s *eventAccess) GetUserEvents(userId string) ([]Event, error) {
 	return events, nil
 }
 
-func (s *eventAccess) CreateCollections(collectionRequests trash.CreateCollectionFromEventRequest) ([]trash.Collection, []error) {
+func (s *eventAccess) CreateCollections(collectionRequests *trash.CreateCollectionFromEventRequest) ([]trash.Collection, []error) {
 	var errs []error
 	var collections []trash.Collection
 
@@ -387,7 +401,7 @@ func (s *eventAccess) CreateCollections(collectionRequests trash.CreateCollectio
 		collection.CleanedTrash = request.CleanedTrash
 		err := s.db.Insert(collection)
 		if err != nil {
-			log.Error("Error insert collection:\nTrashId: %s\n EventId: %s\n Err: %s ", request.TrashId, request.EventId, err)
+			//log.Error("Error insert collection:\nTrashId: %s\n EventId: %s\n Err: %s ", request.TrashId, request.EventId, err)
 			errs = append(errs, err)
 			continue
 		}
@@ -401,7 +415,7 @@ func (s *eventAccess) HasUserEventPermission(userId, eventId string, editPermiss
 	relation := new(EventUser)
 	relation.UserId = userId
 	relation.EventId = eventId
-	err := s.db.Model(relation).Select(relation)
+	err := s.db.Select(relation)
 	if err != nil {
 		return false, fmt.Errorf("Error get user-event relation: %w", err)
 	}
