@@ -177,17 +177,17 @@ func (s *trashService) CreateCollection(c echo.Context) error {
 	return c.JSON(http.StatusOK, collection)
 }
 
-//func (s *trashService) GetCollection(c echo.Context) error {
-//	//TODO object relational mapping na id-cka userov
-//	collectionId := c.Param("collectionId")
-//
-//	collection, err := s.TrashAccess.GetCollection(collectionId)
-//	if err != nil {
-//		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
-//	}
-//
-//	return c.JSON(http.StatusOK, collection)
-//}
+func (s *trashService) GetCollection(c echo.Context) error {
+	collectionId := c.Param("collectionId")
+
+	collection, err := s.TrashAccess.GetCollection(collectionId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
+	}
+
+	return c.JSON(http.StatusOK, collection)
+}
+
 //
 //func (s *trashService) GetCollectionsOfUser(c echo.Context) error {
 //	userId := c.Param("userId")

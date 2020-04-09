@@ -146,9 +146,6 @@ func (s *TrashSuite) Test_GetAround() {
 	}
 }
 
-//TODO test create collection random
-//TODO test get collections of user
-
 func (s *TrashSuite) Test_CreateCommentOnTrash() {
 	candidates := []struct {
 		creator         *user.User
@@ -265,13 +262,55 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 	}
 }
 
-func fillActualComment(comment *TrashComment, resp *TrashComment, creatorId, trashId string) {
-	comment.UserId = creatorId
-	comment.TrashId = trashId
-	comment.CreatedAt = resp.CreatedAt
-	comment.UpdatedAt = resp.UpdatedAt
-	comment.Id = resp.Id
+//TODO test create collection random
+func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
+	candidates := []struct {
+		creator    *user.User
+		trash      *Trash
+		request    *CreateCollectionRandomRequest
+		collection *Collection
+	}{
+		{
+			creator:    &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:      &Trash{Location: Point{20, 30}},
+			request:    &CreateCollectionRandomRequest{Weight: 369.7, CleanedTrash: false},
+			collection: &Collection{CleanedTrash: false, Weight: 369.7},
+		},
+	}
+
+	for i, _ := range candidates {
+		var err error
+		candidates[i].creator, err = s.userAccess.CreateUser(candidates[i].creator)
+		s.Nil(err)
+		candidates[i].trash, err = s.service.TrashAccess.CreateTrash(candidates[i].trash)
+		s.Nil(err)
+
+		candidates[i].request.TrashId = candidates[i].trash.Id
+		candidates[i].request.UsersIds = []string{candidates[i].creator.Id}
+
+		candidates[i].collection.TrashId = candidates[i].trash.Id
+
+		bytes, err := json.Marshal(candidates[i].request)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/trash/collection/new", strings.NewReader(string(bytes)))
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidates[i].creator.Id)
+
+		s.NoError(s.service.CreateCollection(c))
+
+		resp := &Collection{}
+		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		s.Nil(err)
+
+		s.EqualValues(candidates[i].collection, resp)
+	}
 }
+
+//TODO test get collections of user
 
 func (s *TrashSuite) SetupTest() {
 	var tableInfo []struct {
@@ -308,4 +347,12 @@ func (s *TrashSuite) SetupTest() {
 
 func TestUserServiceSuite(t *testing.T) {
 	suite.Run(t, &TrashSuite{})
+}
+
+func fillActualComment(comment *TrashComment, resp *TrashComment, creatorId, trashId string) {
+	comment.UserId = creatorId
+	comment.TrashId = trashId
+	comment.CreatedAt = resp.CreatedAt
+	comment.UpdatedAt = resp.UpdatedAt
+	comment.Id = resp.Id
 }

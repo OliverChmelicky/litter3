@@ -89,6 +89,8 @@ func (u *EventUser) BeforeInsert(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
+//prehod do trash
+
 type EventTrash struct {
 	tableName struct{} `pg:"events_trash"json:"-"`
 	EventId   string   `pg:",pk"`

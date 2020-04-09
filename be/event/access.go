@@ -413,6 +413,16 @@ func (s *eventAccess) CreateCollections(collectionRequests *trash.CreateCollecti
 			continue
 		}
 		collections = append(collections, *collection)
+		if request.CleanedTrash {
+			updating := new(trash.Trash)
+			updating.Id = request.TrashId
+			_, err = s.db.Model(updating).Column("cleaned").Where("id = ?", request.TrashId).Update()
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
+		}
+
 		*collection = trash.Collection{}
 	}
 

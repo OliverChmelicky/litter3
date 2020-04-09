@@ -3,6 +3,8 @@ package trash
 import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v9/orm"
+	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/satori/go.uuid"
 )
 
@@ -76,13 +78,34 @@ func (s *TrashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) 
 		}
 	}
 
+	if in.CleanedTrash {
+		trash := new(Trash)
+		trash.Id = in.TrashId
+		_, err = s.Db.Model(trash).Column("cleaned").Where("id = ?", in.TrashId).Update()
+		if err != nil {
+			return &Collection{}, err
+		}
+	}
+
 	return collection, tx.Commit()
 }
 
-//
-//func (s *TrashAccess) GetCollection(id string) (interface{}, interface{}) {
-//
-//}
+func (s *TrashAccess) GetCollection(id string) (*CollectionDetail, error) {
+	//TODO object relational mapping na id-cka userov --> mozno to pojde z trashu z tohto asi nie
+	s.Db.AddQueryHook(middlewareService.DbMiddleware{})
+	collection := new(CollectionDetail)
+	collection.Id = id
+	err := s.Db.Model(collection).
+		Column("*").
+		Relation("trash_id", func(q *orm.Query) (query *orm.Query, err error) {
+			return q.Where(" id = ?", id), nil
+		}).First()
+	if err != nil {
+		return &CollectionDetail{}, err
+	}
+	return collection, nil
+}
+
 //
 //func (s *TrashAccess) GetCollectionsOfUser(id string) (interface{}, interface{}) {
 //
@@ -93,6 +116,10 @@ func (s *TrashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) 
 //}
 //
 //func (s *TrashAccess) AddPickerToCollection(request *UserCollection, id string) (*UserCollection, error) {
+//
+//}
+
+//func (s *TrashAccess) DeleteCollection(request *UserCollection, id string) (*UserCollection, error) {
 //
 //}
 
