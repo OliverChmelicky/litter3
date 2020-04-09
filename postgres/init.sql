@@ -77,7 +77,7 @@ create table trash
     trash_type    trashType     default 'unknown',
     location      GEOGRAPHY(POINT, 4326) NOT NULL,
     description   VARCHAR,
-    finder_id     VARCHAR                REFERENCES users on delete set null,
+    finder_id     VARCHAR                REFERENCES users(id) on delete set null,
     created_at    timestamptz            NOT NULL
 );
 
