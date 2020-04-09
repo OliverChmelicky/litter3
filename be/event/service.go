@@ -209,10 +209,16 @@ func (s *EventService) DeleteEvent(c echo.Context) error {
 
 func (s *EventService) GetSocietyEvents(c echo.Context) error {
 	request := new(EventPickerRequest)
-	err := c.Bind(request)
+	eventId := c.QueryParam("event")
+	pickerId := c.QueryParam("picker")
+	asSociety, err := strconv.ParseBool(c.QueryParam("asSociety"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
+
+	request.PickerId = pickerId
+	request.EventId = eventId
+	request.AsSociety = asSociety
 
 	events, err := s.eventAccess.GetSocietyEvents(request.PickerId)
 	if err != nil {
@@ -223,9 +229,9 @@ func (s *EventService) GetSocietyEvents(c echo.Context) error {
 }
 
 func (s *EventService) GetUserEvents(c echo.Context) error {
-	userId := c.Get("userId").(string)
+	searchedUserId := c.QueryParam("picker")
 
-	events, err := s.eventAccess.GetUserEvents(userId)
+	events, err := s.eventAccess.GetUserEvents(searchedUserId)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrGetSocietyEvent, err))
 	}
@@ -242,12 +248,14 @@ func (s *EventService) CreateCollections(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, userId)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
-	}
-	if !isAdmin {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+	if request.AsSociety {
+		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, userId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
+		}
+		if !isAdmin {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+		}
 	}
 
 	collections, errs := s.eventAccess.CreateCollections(request)
@@ -255,7 +263,7 @@ func (s *EventService) CreateCollections(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
 	}
 
-	return c.JSON(http.StatusOK, collections)
+	return c.JSON(http.StatusCreated, collections)
 }
 
 //func (s *EventService) UpdateCollection(c echo.Context) error {}

@@ -274,7 +274,7 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 		s.EqualValues(candidates[i].event, resp)
 	}
 
-	//GET
+	//TODO try ORM GET
 	for i, candidate := range candidates {
 		req := httptest.NewRequest(echo.GET, "/events/"+candidate.event.Id, nil)
 
@@ -397,11 +397,9 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 	}
 
 	for _, candidate := range candidates {
-		bytes, err := json.Marshal(&candidate.attendRequest)
-		s.Nil(err)
 		queryParams := "picker=" + candidate.attendRequest.PickerId + "&event=" + candidate.attendRequest.EventId + "&asSociety=" + strconv.FormatBool(candidate.attendRequest.AsSociety)
 
-		req := httptest.NewRequest(echo.DELETE, "/event/cannot/attend?"+queryParams, strings.NewReader(string(bytes)))
+		req := httptest.NewRequest(echo.DELETE, "/event/cannot/attend?"+queryParams, nil)
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
@@ -412,17 +410,129 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 		s.EqualValues(http.StatusOK, rec.Code)
 
 		reality := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
-		err = s.db.Select(reality)
+		err := s.db.Select(reality)
 		s.EqualValues(pg.ErrNoRows, err)
 	}
 
 }
 
-//TODO get society events
-//TODO get user events
+func (s *TrashSuite) Test_GetSocietyEvents() {
+	candidates := []struct {
+		admin   *user.User
+		society *user.Society
+
+		event   *Event
+		request *EventPickerRequest
+	}{
+		{
+			admin:   &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			society: &user.Society{Name: "Olala"},
+			event:   &Event{Date: time.Now(), Publc: true, Description: "this is my first description"},
+			request: &EventPickerRequest{AsSociety: true},
+		},
+		{
+			admin:   &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			society: &user.Society{Name: "HAHA"},
+			event:   &Event{Date: time.Now(), Publc: true, Description: "this is cool"},
+			request: &EventPickerRequest{AsSociety: true},
+		},
+	}
+
+	for i, _ := range candidates {
+		admin, err := s.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].admin = admin
+
+		society, err := s.userAccess.CreateSocietyWithAdmin(candidates[i].society, admin.Id)
+		s.Nil(err)
+		candidates[i].society = society
+
+		event, err := s.service.eventAccess.CreateEvent(&EventRequest{UserId: admin.Id, AsSociety: true, SocietyId: society.Id, Date: candidates[i].event.Date, Publc: true})
+		candidates[i].event = event
+		s.Nil(err)
+
+		candidates[i].request.EventId = event.Id
+		candidates[i].request.PickerId = society.Id
+	}
+
+	for _, candidate := range candidates {
+		queryParams := "picker=" + candidate.request.PickerId + "&event=" + candidate.request.EventId + "&asSociety=" + strconv.FormatBool(candidate.request.AsSociety)
+
+		req := httptest.NewRequest(echo.GET, "/events/society?"+queryParams, nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		s.NoError(s.service.GetSocietyEvents(c))
+		s.EqualValues(http.StatusOK, rec.Code)
+
+		resp := []Event{}
+		err := json.Unmarshal(rec.Body.Bytes(), &resp)
+		s.Nil(err)
+
+		candidate.event.CreatedAt = resp[0].CreatedAt
+		candidate.event.SocietiesIds = nil
+		candidate.event.Date = resp[0].Date
+		s.EqualValues(*candidate.event, resp[0])
+	}
+}
+
+func (s *TrashSuite) Test_GetUserEvents() {
+	candidates := []struct {
+		admin   *user.User
+		event   *Event
+		request *EventPickerRequest
+	}{
+		{
+			admin:   &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			event:   &Event{Date: time.Now(), Publc: true, Description: "this is my first description"},
+			request: &EventPickerRequest{AsSociety: true},
+		},
+		{
+			admin:   &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			event:   &Event{Date: time.Now(), Publc: true, Description: "this is cool"},
+			request: &EventPickerRequest{AsSociety: true},
+		},
+	}
+
+	for i, _ := range candidates {
+		admin, err := s.userAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].admin = admin
+
+		event, err := s.service.eventAccess.CreateEvent(&EventRequest{UserId: admin.Id, Date: candidates[i].event.Date, Publc: true})
+		candidates[i].event = event
+		s.Nil(err)
+
+		candidates[i].request.EventId = event.Id
+		candidates[i].request.PickerId = admin.Id
+	}
+
+	for _, candidate := range candidates {
+		queryParams := "picker=" + candidate.request.PickerId
+
+		req := httptest.NewRequest(echo.GET, "/events/user?"+queryParams, nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		s.NoError(s.service.GetUserEvents(c))
+		s.EqualValues(http.StatusOK, rec.Code)
+
+		resp := []Event{}
+		err := json.Unmarshal(rec.Body.Bytes(), &resp)
+		s.Nil(err)
+
+		candidate.event.CreatedAt = resp[0].CreatedAt
+		candidate.event.UsersIds = nil
+		candidate.event.Date = resp[0].Date
+		s.EqualValues(*candidate.event, resp[0])
+	}
+}
 
 func (s *TrashSuite) Test_CreateCollectionFromEvents() {
-	//TODO oprav
 	candidates := []struct {
 		admin        *user.User
 		eventRequest *EventRequest
@@ -454,6 +564,7 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 		s.Nil(err)
 		candidates[i].admin = admin
 
+		//I need to have same amount of trash and collection
 		for j, tr := range candidates[i].trash {
 			newTrash, err := s.trashAccess.CreateTrash(&tr)
 			s.Nil(err)
@@ -465,9 +576,10 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 		event, err := s.service.eventAccess.CreateEvent(candidates[i].eventRequest)
 		s.Nil(err)
 		candidates[i].eventId = event.Id
-		candidates[i].requestOrganized.EventId = event.Id
-		candidates[i].requestOrganized.EventId = event.Id
-		candidates[i].requestOrganized.Collections = candidates[i].collections
+		candidates[i].requestOrganized = &trash.CreateCollectionOrganizedRequest{
+			EventId:     event.Id,
+			Collections: candidates[i].collections,
+		}
 	}
 
 	for _, candidate := range candidates {
@@ -494,7 +606,8 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 
 }
 
-//TODO ako to je s updatom tejto kolekcie?
+//TODO ako to je s updatom tejto kolekcie?  --> update je napicu...ale bude sa dat
+
 //TODO delete event
 
 //preved prava nova featura a nebude to

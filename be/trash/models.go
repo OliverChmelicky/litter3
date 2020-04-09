@@ -84,7 +84,7 @@ func (u *Trash) BeforeInsert(ctx context.Context) (context.Context, error) {
 }
 
 type Collection struct {
-	tableName    struct{} `pg:"collection"json:"-"`
+	tableName    struct{} `pg:"collections"json:"-"`
 	Id           string   `pg:",pk"`
 	Weight       float32  `pg:",use_zero"`
 	CleanedTrash bool     `pg:",use_zero"`

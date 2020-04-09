@@ -27,8 +27,9 @@ func (s *eventAccess) CreateEvent(request *EventRequest) (*Event, error) {
 	defer tx.Rollback()
 
 	event := &Event{
-		Publc: request.Publc,
-		Date:  request.Date,
+		Publc:       request.Publc,
+		Date:        request.Date,
+		Description: request.Description,
 	}
 
 	err = tx.Insert(event)
@@ -412,6 +413,7 @@ func (s *eventAccess) CreateCollections(collectionRequests *trash.CreateCollecti
 			continue
 		}
 		collections = append(collections, *collection)
+		*collection = trash.Collection{}
 	}
 
 	return collections, errs
