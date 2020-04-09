@@ -233,10 +233,10 @@ func (s *EventService) GetUserEvents(c echo.Context) error {
 	return c.JSON(http.StatusOK, events)
 }
 
-func (s *EventService) CreateCollection(c echo.Context) error {
+func (s *EventService) CreateCollections(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(trash.CreateCollectionFromEventRequest)
+	request := new(trash.CreateCollectionOrganizedRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -250,10 +250,12 @@ func (s *EventService) CreateCollection(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 	}
 
-	events, errs := s.eventAccess.CreateCollections(request)
+	collections, errs := s.eventAccess.CreateCollections(request)
 	if len(errs) != 0 {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
 	}
 
-	return c.JSON(http.StatusOK, events)
+	return c.JSON(http.StatusOK, collections)
 }
+
+//func (s *EventService) UpdateCollection(c echo.Context) error {}

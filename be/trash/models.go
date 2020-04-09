@@ -63,7 +63,7 @@ type TrashType string
 type Trash struct {
 	tableName     struct{} `pg:"trash"json:"-"`
 	Id            string   `pg:",pk"`
-	Cleaned       bool
+	Cleaned       bool     `pg:",use_zero"`
 	Size          Size
 	Accessibility Accessibility
 	TrashType     TrashType
@@ -86,8 +86,8 @@ func (u *Trash) BeforeInsert(ctx context.Context) (context.Context, error) {
 type Collection struct {
 	tableName    struct{} `pg:"collection"json:"-"`
 	Id           string   `pg:",pk"`
-	Weight       float32
-	CleanedTrash bool
+	Weight       float32  `pg:",use_zero"`
+	CleanedTrash bool     `pg:",use_zero"`
 	TrashId      string
 	EventId      string
 	CreatedAt    time.Time `pg:"default:now()"`
@@ -146,15 +146,21 @@ type TrashCommentRequest struct {
 type CreateCollectionRandomRequest struct {
 	TrashId      string
 	CleanedTrash bool
+	Weight       float32
 	UsersIds     []string
 }
 
-type CreateCollectionFromEventRequest struct {
-	//veci z collection + users a vsetci budu moct upravovat! Da sa spatne upravovat a odstranit sameho seba odtial
-	EventId   string
-	Trash     []Collection
-	AsSociety bool
-	SocietyId string
+type CreateCollectionRequest struct {
+	TrashId      string
+	CleanedTrash bool
+	Weight       float32
+}
+
+type CreateCollectionOrganizedRequest struct {
+	EventId     string
+	AsSociety   bool
+	SocietyId   string
+	Collections []CreateCollectionRequest
 }
 
 type RangeRequest struct {

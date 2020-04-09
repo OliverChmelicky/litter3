@@ -418,23 +418,25 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 
 }
 
-//get society events
-//get user events
-//create collection from event
+//TODO get society events
+//TODO get user events
+
 func (s *TrashSuite) Test_CreateCollectionFromEvents() {
+	//TODO oprav
 	candidates := []struct {
 		admin        *user.User
 		eventRequest *EventRequest
 		trash        []trash.Trash
 
-		event      *Event
-		collection []*trash.Collection
+		eventId          string
+		requestOrganized *trash.CreateCollectionOrganizedRequest
+		collections      []trash.CreateCollectionRequest
 	}{
 		{
 			admin:        &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
 			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
 			trash:        []trash.Trash{{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
-			collection:   []*trash.Collection{{CleanedTrash: false, Weight: 622.642}},
+			collections:  []trash.CreateCollectionRequest{{CleanedTrash: false, Weight: 622.642}},
 		},
 		{
 			admin:        &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
@@ -443,7 +445,7 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 				{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
 				{Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
 			},
-			collection: []*trash.Collection{{CleanedTrash: false, Weight: 622.31}, {CleanedTrash: false, Weight: 63.74}},
+			collections: []trash.CreateCollectionRequest{{CleanedTrash: false, Weight: 622.31}, {CleanedTrash: false, Weight: 63.74}},
 		},
 	}
 
@@ -452,46 +454,50 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 		s.Nil(err)
 		candidates[i].admin = admin
 
-		for _, tr := range candidates[i].trash {
+		for j, tr := range candidates[i].trash {
 			newTrash, err := s.trashAccess.CreateTrash(&tr)
 			s.Nil(err)
 			candidates[i].eventRequest.Trash = append(candidates[i].eventRequest.Trash, newTrash.Id)
+			candidates[i].collections[j].TrashId = newTrash.Id
 		}
 
 		candidates[i].eventRequest.UserId = admin.Id
 		event, err := s.service.eventAccess.CreateEvent(candidates[i].eventRequest)
 		s.Nil(err)
-		candidates[i].event = event
+		candidates[i].eventId = event.Id
+		candidates[i].requestOrganized.EventId = event.Id
+		candidates[i].requestOrganized.EventId = event.Id
+		candidates[i].requestOrganized.Collections = candidates[i].collections
 	}
 
 	for _, candidate := range candidates {
-		bytes, err := json.Marshal(&candidate.attendRequest)
+		bytes, err := json.Marshal(&candidate.requestOrganized)
 		s.Nil(err)
 
-		req := httptest.NewRequest(echo.POST, "/event/attend", strings.NewReader(string(bytes)))
+		req := httptest.NewRequest(echo.POST, "/event/collections/new", strings.NewReader(string(bytes)))
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
 		c := s.e.NewContext(req, rec)
-		c.Set("userId", candidate.wantsToAttend.Id)
+		c.Set("userId", candidate.admin.Id)
 
-		s.NoError(s.service.AttendEvent(c))
+		s.NoError(s.service.CreateCollections(c))
 		s.EqualValues(http.StatusCreated, rec.Code)
-		//Chcek if record exists
-		reality := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
-		err = s.db.Select(reality)
+
+		var newCollections []trash.Collection
+		err = s.db.Model(&newCollections).Where("event_id = ?", candidate.eventId).Select()
 		s.Nil(err)
 
-		expected := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id, Permission: eventPermission("viewer"), CreatedAt: reality.CreatedAt}
-		s.EqualValues(expected, reality)
-		s.Nil(err)
+		s.EqualValues(len(candidate.collections), len(newCollections))
 
 	}
 
 }
 
-//delete event
-//TODO preved prava nova featura a nebude to
+//TODO ako to je s updatom tejto kolekcie?
+//TODO delete event
+
+//preved prava nova featura a nebude to
 func (s *TrashSuite) SetupTest() {
 	referencerTables := []string{
 		"events_societies",

@@ -5,6 +5,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
+	"github.com/sirupsen/logrus"
 )
 
 type eventAccess struct {
@@ -362,7 +363,7 @@ func (s *eventAccess) GetSocietyEvents(societyId string) ([]Event, error) {
 	}
 
 	var events []Event
-	err = s.db.Model(&events).Where("id IN (?)", eventsArr).Select()
+	err = s.db.Model(&events).Where("id IN (?)", pg.In(eventsArr)).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society events: %w ", err)
 	}
@@ -383,25 +384,30 @@ func (s *eventAccess) GetUserEvents(userId string) ([]Event, error) {
 	}
 
 	var events []Event
-	err = s.db.Model(&events).Where("id IN (?)", eventsArr).Select()
+	err = s.db.Model(&events).Where("id IN (?)", pg.In(eventsArr)).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society events: %w ", err)
 	}
 	return events, nil
 }
 
-func (s *eventAccess) CreateCollections(collectionRequests *trash.CreateCollectionFromEventRequest) ([]trash.Collection, []error) {
+func (s *eventAccess) CreateCollections(collectionRequests *trash.CreateCollectionOrganizedRequest) ([]trash.Collection, []error) {
 	var errs []error
 	var collections []trash.Collection
 
 	collection := &trash.Collection{}
-	for _, request := range collectionRequests.Trash {
-		collection.EventId = request.EventId
+	for _, request := range collectionRequests.Collections {
+		collection.EventId = collectionRequests.EventId
 		collection.TrashId = request.TrashId
 		collection.CleanedTrash = request.CleanedTrash
+		collection.Weight = request.Weight
 		err := s.db.Insert(collection)
 		if err != nil {
-			//log.Error("Error insert collection:\nTrashId: %s\n EventId: %s\n Err: %s ", request.TrashId, request.EventId, err)
+			logrus.WithFields(logrus.Fields{
+				"trashId": request.TrashId,
+				"eventId": collectionRequests.EventId,
+				"error":   err.Error(),
+			}).Error("Error inserting new collection")
 			errs = append(errs, err)
 			continue
 		}

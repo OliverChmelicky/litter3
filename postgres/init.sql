@@ -188,13 +188,3 @@ create table friend_requests
     PRIMARY KEY (user1_id, user2_id)
 );
 
--- CREATE TRIGGER delete_user
---     BEFORE DELETE
---     ON users
---     for each row
--- execute procedure delete_event_if_user_organizer();
---
--- CREATE TRIGGER delete_society
---     BEFORE DELETE
---     ON societies
--- execute procedure delete_event_if_user_organizer();

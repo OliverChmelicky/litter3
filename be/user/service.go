@@ -111,6 +111,11 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 	return c.String(http.StatusOK, "")
 }
 
+//func (s *userService) DeleteUser(c echo.Context) error {
+//	//TODO check ci neorganizuje event a potom vymaz event
+//	//TODO check ci nie je jediny admin skupiny a potom vymaz
+//}
+
 //
 //
 //
@@ -234,6 +239,7 @@ func (s *userService) GetSociety(c echo.Context) error {
 	return c.JSON(http.StatusOK, society)
 }
 
+//TODO
 func (s *userService) GetSocietyMembers(c echo.Context) error {
 	return c.JSON(http.StatusNotImplemented, "IMPLEMENT ME")
 }
@@ -395,6 +401,7 @@ func (s *userService) RemoveMember(c echo.Context) error {
 }
 
 func (s *userService) DeleteSociety(c echo.Context) error {
+	//TODO check pred tym ci nahodou neorganizuje event a vymaz event potom
 	id := c.Get("userId")
 	userId := fmt.Sprintf("%v", id)
 	societyId := c.Param("id")
