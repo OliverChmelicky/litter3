@@ -342,6 +342,12 @@ func (s *eventAccess) DeleteEvent(request *EventPickerRequest, userWhoDoesOperat
 		return fmt.Errorf("Error delete trash from event %w ", err)
 	}
 
+	collection := new(trash.Collection)
+	_, err = tx.Model(collection).Where("event_id = ?", request.EventId).Delete()
+	if err != nil {
+		return fmt.Errorf("Error delete collection from event %w ", err)
+	}
+
 	event := &Event{Id: request.EventId}
 	err = tx.Delete(event)
 	if err != nil {
@@ -392,9 +398,19 @@ func (s *eventAccess) GetUserEvents(userId string) ([]Event, error) {
 	return events, nil
 }
 
-func (s *eventAccess) CreateCollections(collectionRequests *trash.CreateCollectionOrganizedRequest) ([]trash.Collection, []error) {
+func (s *eventAccess) CreateCollectionsOrganized(collectionRequests *trash.CreateCollectionOrganizedRequest) ([]trash.Collection, []error) {
 	var errs []error
 	var collections []trash.Collection
+
+	rights, err := s.CheckPickerRights(collectionRequests.OrganizerId, collectionRequests.EventId, collectionRequests.AsSociety)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("Error verifying rights for creating organized collection: %w ", err))
+		return nil, errs
+	}
+	if !rights {
+		errs = append(errs, fmt.Errorf("No rights for creating organized collection "))
+		return nil, errs
+	}
 
 	collection := &trash.Collection{}
 	for _, request := range collectionRequests.Collections {
@@ -427,6 +443,59 @@ func (s *eventAccess) CreateCollections(collectionRequests *trash.CreateCollecti
 	}
 
 	return collections, errs
+}
+
+func (s *eventAccess) UpdateCollectionOrganized(request *trash.UpdateCollectionOrganizedRequest) (*trash.Collection, error) {
+	rights, err := s.CheckPickerRights(request.OrganizerId, request.EventId, request.AsSociety)
+	if err != nil {
+		return nil, err
+	}
+	if !rights {
+		return nil, err
+	}
+
+	oldCollection := new(trash.Collection)
+	oldCollection.Id = request.Collection.Id
+	if err := s.db.Select(oldCollection); err != nil {
+		return &trash.Collection{}, fmt.Errorf("Couldn`t get old collection: %w ", err)
+	}
+	if oldCollection.TrashId != request.Collection.TrashId {
+		return &trash.Collection{}, fmt.Errorf("Cannot change trashId to collection ")
+	}
+	if oldCollection.EventId != request.Collection.EventId {
+		return &trash.Collection{}, fmt.Errorf("Cannot change trashId to collection ")
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return &trash.Collection{}, fmt.Errorf("Couldn`t create transaction: %w ", err)
+	}
+	defer tx.Rollback()
+
+	updatedCollection := &trash.Collection{
+		Id:           request.Collection.Id,
+		Weight:       request.Collection.Weight,
+		CleanedTrash: request.Collection.CleanedTrash,
+		TrashId:      oldCollection.TrashId,
+		EventId:      oldCollection.EventId,
+		CreatedAt:    oldCollection.CreatedAt,
+	}
+	err = tx.Update(updatedCollection)
+	if err != nil {
+		return &trash.Collection{}, fmt.Errorf("Error update collection: %w ", err)
+	}
+
+	if oldCollection.CleanedTrash != request.Collection.CleanedTrash {
+		updateTrash := new(trash.Trash)
+		updateTrash.Id = request.Collection.TrashId
+		updateTrash.Cleaned = request.Collection.CleanedTrash
+		_, err = tx.Model(updateTrash).Column("cleaned").Where("id = ?", request.Collection.TrashId).Update()
+		if err != nil {
+			return &trash.Collection{}, err
+		}
+	}
+
+	return updatedCollection, tx.Commit()
 }
 
 func (s *eventAccess) HasUserEventPermission(userId, eventId string, editPermission *[]eventPermission) (bool, error) {
@@ -479,4 +548,13 @@ func (s *eventAccess) AssignTrashToEvent(tx *pg.Tx, event *Event) error {
 	}
 
 	return nil
+}
+
+func (s *eventAccess) CheckPickerRights(organizerId string, eventId string, asSociety bool) (bool, error) {
+	if asSociety {
+		return s.HasSocietyEventPermission(organizerId, eventId, &[]eventPermission{"creator", "editor"})
+
+	} else {
+		return s.HasUserEventPermission(organizerId, eventId, &[]eventPermission{"creator", "editor"})
+	}
 }

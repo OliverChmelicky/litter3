@@ -389,7 +389,7 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 		err = s.db.Select(reality)
 		s.Nil(err)
 
-		expected := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id, Permission: eventPermission("viewer"), CreatedAt: reality.CreatedAt}
+		expected := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id, Permission: eventPermission("viewer")}
 		s.EqualValues(expected, reality)
 		s.Nil(err)
 

@@ -146,7 +146,7 @@ type CreateCollectionRandomRequest struct {
 	TrashId      string
 	CleanedTrash bool
 	Weight       float32
-	UsersIds     []string
+	Friends      []string
 }
 
 type CreateCollectionRequest struct {
@@ -158,8 +158,15 @@ type CreateCollectionRequest struct {
 type CreateCollectionOrganizedRequest struct {
 	EventId     string
 	AsSociety   bool
-	SocietyId   string
+	OrganizerId string
 	Collections []CreateCollectionRequest
+}
+
+type UpdateCollectionOrganizedRequest struct {
+	EventId     string
+	AsSociety   bool
+	OrganizerId string
+	Collection  Collection
 }
 
 type RangeRequest struct {

@@ -127,7 +127,7 @@ func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 		err             string
 	}{
 		{
-			admin:     &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			admin:     &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Motyl.cz", CreatedAt: time.Now()},
 			society:   &Society{Name: "Dake meno"},
 			newMember: &User{FirstName: "Novy", LastName: "Member", Email: "dakto@novy.cz"},
 		},
@@ -369,9 +369,9 @@ func (s *SocietySuite) Test_ChangeRights() {
 		err           string
 	}{
 		{
-			admin:         &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			admin:         &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Herrer.cz", CreatedAt: time.Now()},
 			society:       &Society{Name: "Dake meno"},
-			friend:        &User{FirstName: "Novy", LastName: "Member", Email: "me@me.cz"},
+			friend:        &User{FirstName: "Novy", LastName: "Member", Email: "Peter@me.cz"},
 			oldMembership: &Member{Permission: membership("member")},
 			newMembership: &Member{Permission: membership("admin")},
 		},
@@ -442,36 +442,36 @@ func (s *SocietySuite) TearDownSuite() {
 }
 
 func (s *SocietySuite) SetupTest() {
-	var tableInfo []struct {
-		Table string
+	referencerTables := []string{
+		"users",
+		"societies",
+		"societies_members",
+		"societies_applicants",
+		"events_users",
+		"friends",
+		"friend_requests",
 	}
-	query := `SELECT table_name "table"
-				FROM information_schema.tables WHERE table_schema='public'
-					AND table_type='BASE TABLE' AND table_name!= 'gopg_migrations';`
-	_, err := s.db.Query(&tableInfo, query)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	truncateQueries := make([]string, len(tableInfo))
-
-	for i, info := range tableInfo {
-		if info.Table == "spatial_ref_sys" { //postgis extension
+	referencerTableQueries := make([]string, len(referencerTables))
+	for i, table := range referencerTables {
+		if table == "spatial_ref_sys" { //postgis extension
 			continue
 		}
-		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
+		referencerTableQueries[i] = "TRUNCATE " + table + " CASCADE;"
 	}
 
-	err = s.db.RunInTransaction(func(tx *pg.Tx) error {
-		for _, query := range truncateQueries {
-			_, err = tx.Exec(query)
+	err := s.db.RunInTransaction(func(tx *pg.Tx) error {
+		for _, query := range referencerTableQueries {
+			_, err := tx.Exec(query)
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	})
+
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func TestSocietyServiceSuite(t *testing.T) {

@@ -112,7 +112,7 @@ create table collections
     weight        real,
     cleaned_trash boolean     NOT NULL,
     created_at    timestamptz NOT NULL,
-    CONSTRAINT correct_weight CHECK (weight > 0)
+    CONSTRAINT correct_weight CHECK (weight > 0.0)
 );
 
 

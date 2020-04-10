@@ -54,26 +54,33 @@ func (s *TrashAccess) DeleteTrash(in string) error {
 //
 //
 
-func (s *TrashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) (*Collection, error) {
+func (s *TrashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest, creatorId string) (*Collection, error) {
 	tx, err := s.Db.Begin()
 	if err != nil {
 		return &Collection{}, err
 	}
 	defer tx.Rollback()
 
-	collection := &Collection{TrashId: in.TrashId, CleanedTrash: in.CleanedTrash}
+	collection := &Collection{TrashId: in.TrashId, CleanedTrash: in.CleanedTrash, Weight: in.Weight}
 	err = tx.Insert(collection)
 	if err != nil {
-		return &Collection{}, err
+		return &Collection{}, fmt.Errorf("Error creating collection: %w ", err)
 	}
 
 	userCollection := &UserCollection{}
-	for _, picker := range in.UsersIds {
+	userCollection.UserId = creatorId
+	userCollection.CollectionId = collection.Id
+	err = tx.Insert(userCollection)
+	if err != nil {
+		return &Collection{}, fmt.Errorf("Error assigning creator to collection: %w ", err)
+	}
+
+	for _, picker := range in.Friends {
 		userCollection.UserId = picker
 		userCollection.CollectionId = collection.Id
-		err = tx.Insert()
+		err = tx.Insert(userCollection)
 		if err != nil {
-			return &Collection{}, err
+			return &Collection{}, fmt.Errorf("Error assigning friends to collection: %w ", err)
 		}
 	}
 
@@ -111,7 +118,6 @@ func (s *TrashAccess) GetCollectionsOfUser(userId string) (*UserCollection, erro
 }
 
 func (s *TrashAccess) UpdateCollectionRandom(request *Collection, userId string) (*Collection, error) {
-	//neriesi collection z eventu
 	attended, err := s.isUserInCollection(request.Id, userId)
 	if err != nil {
 		return &Collection{}, fmt.Errorf("Error verifying if user is in collection: %w ", err)
@@ -120,21 +126,42 @@ func (s *TrashAccess) UpdateCollectionRandom(request *Collection, userId string)
 		return &Collection{}, fmt.Errorf("You cannot update this collection: %w ", err)
 	}
 
-	err = s.Db.Update(request)
+	oldCollection := new(Collection)
+	oldCollection.Id = request.Id
+	if err := s.Db.Select(oldCollection); err != nil {
+		return &Collection{}, fmt.Errorf("Error getting old collection: %w ", err)
+	}
+
+	if oldCollection.TrashId != request.TrashId {
+		return &Collection{}, fmt.Errorf("You cannot change TrashId: %w ", err)
+	}
+
+	if request.EventId != "" {
+		return &Collection{}, fmt.Errorf("You cannot update EventId ")
+	}
+
+	tx, err := s.Db.Begin()
+	if err != nil {
+		return &Collection{}, fmt.Errorf("Error creating transaction: %w ", err)
+	}
+
+	err = tx.Update(request)
 	if err != nil {
 		return &Collection{}, fmt.Errorf("Error update collection: %w ", err)
 	}
+	defer tx.Rollback()
 
-	if request.CleanedTrash {
+	if request.CleanedTrash != oldCollection.CleanedTrash {
 		trash := new(Trash)
 		trash.Id = request.TrashId
-		_, err = s.Db.Model(trash).Column("cleaned").Where("id = ?", request.TrashId).Update()
+		trash.Cleaned = request.CleanedTrash
+		_, err = tx.Model(trash).Column("cleaned").Where("id = ?", request.TrashId).Update()
 		if err != nil {
 			return &Collection{}, err
 		}
 	}
 
-	return request, nil
+	return request, tx.Commit()
 }
 
 func (s *TrashAccess) AddPickerToCollection(request *UserCollection, givesAnother string) (*UserCollection, error) {

@@ -58,8 +58,8 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			heinrich:  &User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
-			peterAsks: &User{FirstName: "Novy", LastName: "Member", Email: "Ja@Janovutbr.cz"},
+			heinrich:  &User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "Heinrich@Herrer.tibet", CreatedAt: time.Now()},
+			peterAsks: &User{FirstName: "Novy", LastName: "Member", Email: "Ja@Peter.cz"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrApplyForFriendship},
 		},
 	}
@@ -206,8 +206,8 @@ func (s *UserSuite) Test_AddFriend() {
 		response  *Friends
 	}{
 		{
-			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
-			peterAsks: &User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Janovutbr.cz"},
+			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "On@Janovutbr.com"},
+			peterAsks: &User{FirstName: "Hello", LastName: "Flowup", Email: "TY@Janovutbr.cz"},
 		},
 	}
 
@@ -256,8 +256,8 @@ func (s *UserSuite) Test_RemoveFriend() {
 		friendship *Friends
 	}{
 		{
-			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
-			peterAsks: &User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Janovutbr.cz"},
+			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.italy"},
+			peterAsks: &User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Milan.cz"},
 		},
 	}
 
@@ -298,36 +298,36 @@ func (s *UserSuite) TearDownSuite() {
 }
 
 func (s *UserSuite) SetupTest() {
-	var tableInfo []struct {
-		Table string
+	referencerTables := []string{
+		"users",
+		"societies",
+		"societies_members",
+		"societies_applicants",
+		"events_users",
+		"friends",
+		"friend_requests",
 	}
-	query := `SELECT table_name "table"
-				FROM information_schema.tables WHERE table_schema='public'
-					AND table_type='BASE TABLE' AND table_name!= 'gopg_migrations';`
-	_, err := s.db.Query(&tableInfo, query)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	truncateQueries := make([]string, len(tableInfo))
-
-	for i, info := range tableInfo {
-		if info.Table == "spatial_ref_sys" { //postgis extension
+	referencerTableQueries := make([]string, len(referencerTables))
+	for i, table := range referencerTables {
+		if table == "spatial_ref_sys" { //postgis extension
 			continue
 		}
-		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
+		referencerTableQueries[i] = "TRUNCATE " + table + " CASCADE;"
 	}
 
-	err = s.db.RunInTransaction(func(tx *pg.Tx) error {
-		for _, query := range truncateQueries {
-			_, err = tx.Exec(query)
+	err := s.db.RunInTransaction(func(tx *pg.Tx) error {
+		for _, query := range referencerTableQueries {
+			_, err := tx.Exec(query)
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	})
+
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func TestUserServiceSuite(t *testing.T) {

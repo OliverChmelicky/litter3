@@ -208,7 +208,6 @@ func (s *UserAccess) DeleteSociety(in string) error {
 	//TODO
 	//transaction
 
-	//remove comments
 	//what with events
 	//what with collected trash --> removedSociety
 

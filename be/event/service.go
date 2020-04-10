@@ -204,9 +204,6 @@ func (s *EventService) DeleteEvent(c echo.Context) error {
 	return c.JSON(http.StatusOK, "")
 }
 
-//If I will need
-//func (s *EventService) GetMyEvents(c echo.Context) error{}
-
 func (s *EventService) GetSocietyEvents(c echo.Context) error {
 	request := new(EventPickerRequest)
 	eventId := c.QueryParam("event")
@@ -239,7 +236,7 @@ func (s *EventService) GetUserEvents(c echo.Context) error {
 	return c.JSON(http.StatusOK, events)
 }
 
-func (s *EventService) CreateCollections(c echo.Context) error {
+func (s *EventService) CreateCollectionsOrganized(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
 	request := new(trash.CreateCollectionOrganizedRequest)
@@ -249,21 +246,52 @@ func (s *EventService) CreateCollections(c echo.Context) error {
 	}
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, userId)
+		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.OrganizerId)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
 		}
 		if !isAdmin {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
+	} else {
+		request.OrganizerId = userId
 	}
 
-	collections, errs := s.eventAccess.CreateCollections(request)
+	collections, errs := s.eventAccess.CreateCollectionsOrganized(request)
 	if len(errs) != 0 {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
 	}
 
 	return c.JSON(http.StatusCreated, collections)
 }
 
-//func (s *EventService) UpdateCollection(c echo.Context) error {}
+func (s *EventService) UpdateCollectionOrganized(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	request := new(trash.UpdateCollectionOrganizedRequest)
+	err := c.Bind(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	if request.AsSociety {
+		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.OrganizerId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
+		}
+		if !isAdmin {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+		}
+	} else {
+		request.OrganizerId = userId
+	}
+
+	collections, err := s.eventAccess.UpdateCollectionOrganized(request)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
+	}
+
+	return c.JSON(http.StatusCreated, collections)
+}
+
+//func (s *EventService) Deleteollection(c echo.Context) error {}

@@ -164,12 +164,14 @@ func (s *trashService) DeleteTrashComment(c echo.Context) error {
 //
 
 func (s *trashService) CreateCollection(c echo.Context) error {
+	creator := c.Get("userId").(string)
+
 	request := new(CreateCollectionRandomRequest)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	collection, err := s.TrashAccess.CreateCollectionRandom(request)
+	collection, err := s.TrashAccess.CreateCollectionRandom(request, creator)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
 	}

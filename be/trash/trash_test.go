@@ -262,7 +262,6 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 	}
 }
 
-//TODO test create collection random
 func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 	candidates := []struct {
 		creator    *user.User
@@ -286,7 +285,6 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 		s.Nil(err)
 
 		candidates[i].request.TrashId = candidates[i].trash.Id
-		candidates[i].request.UsersIds = []string{candidates[i].creator.Id}
 
 		candidates[i].collection.TrashId = candidates[i].trash.Id
 
@@ -306,6 +304,8 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
+		candidates[i].collection.Id = resp.Id
+		candidates[i].collection.CreatedAt = resp.CreatedAt
 		s.EqualValues(candidates[i].collection, resp)
 	}
 }
@@ -313,36 +313,34 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 //TODO test get collections of user
 
 func (s *TrashSuite) SetupTest() {
-	var tableInfo []struct {
-		Table string
+	referencerTables := []string{
+		"users",
+		"trash",
+		"collections",
+		"users_collections",
+		"trash_comments",
 	}
-	query := `SELECT table_name "table"
-				FROM information_schema.tables WHERE table_schema='public'
-					AND table_type='BASE TABLE' AND table_name!= 'gopg_migrations';`
-	_, err := s.db.Query(&tableInfo, query)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	truncateQueries := make([]string, len(tableInfo))
-
-	for i, info := range tableInfo {
-		if info.Table == "spatial_ref_sys" { //postgis extension
+	referencerTableQueries := make([]string, len(referencerTables))
+	for i, table := range referencerTables {
+		if table == "spatial_ref_sys" { //postgis extension
 			continue
 		}
-		truncateQueries[i] = "TRUNCATE " + info.Table + " CASCADE;"
+		referencerTableQueries[i] = "TRUNCATE " + table + " CASCADE;"
 	}
 
-	err = s.db.RunInTransaction(func(tx *pg.Tx) error {
-		for _, query := range truncateQueries {
-			_, err = tx.Exec(query)
+	err := s.db.RunInTransaction(func(tx *pg.Tx) error {
+		for _, query := range referencerTableQueries {
+			_, err := tx.Exec(query)
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	})
+
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func TestUserServiceSuite(t *testing.T) {

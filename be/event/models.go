@@ -59,6 +59,10 @@ func (u *Event) BeforeInsert(ctx context.Context) (context.Context, error) {
 
 type eventPermission string
 
+//    'creator',
+//    'editor',
+//    'viewer'
+
 type EventSociety struct {
 	tableName  struct{} `pg:"events_societies"json:"-"`
 	SocietyId  string   `pg:",pk"`
