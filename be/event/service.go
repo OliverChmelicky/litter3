@@ -294,4 +294,29 @@ func (s *EventService) UpdateCollectionOrganized(c echo.Context) error {
 	return c.JSON(http.StatusCreated, collections)
 }
 
-//func (s *EventService) Deleteollection(c echo.Context) error {}
+func (s *EventService) Deleteollection(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	request := new(EventPickerRequest)
+	eventId := c.QueryParam("event")
+	pickerId := c.QueryParam("picker")
+	asSociety, err := strconv.ParseBool(c.QueryParam("asSociety"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+	request.EventId = eventId
+	request.PickerId = pickerId
+	request.AsSociety = asSociety
+
+	if request.AsSociety {
+		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCannotAttendEvent, err))
+		}
+		if !isAdmin {
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
+		}
+	} else {
+		request.PickerId = userId
+	}
+}

@@ -190,15 +190,33 @@ func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId strin
 		return fmt.Errorf("You are not in this collection: %w ", err)
 	}
 
+	tx, err := s.Db.Begin()
+	if err != nil {
+		return fmt.Errorf("Couldn`t create transaction for deletion: %w ", err)
+	}
+	defer tx.Rollback()
+
 	userCollection := new(UserCollection)
 	userCollection.CollectionId = collectionId
 	userCollection.UserId = userId
-	err = s.Db.Delete(userCollection)
+	err = tx.Delete(userCollection)
 	if err != nil {
-		return fmt.Errorf("Error deleting from collection: %w ", err)
+		return fmt.Errorf("Error deleting user from collection: %w ", err)
 	}
 
-	return nil
+	//check if user was the last one
+	err = tx.Model(userCollection).Where("collection_id = ?", collectionId).Select()
+	if err == pg.ErrNoRows {
+		collection := &Collection{Id: collectionId}
+		err = tx.Delete(collection)
+		if err != nil {
+			return fmt.Errorf("Error deleting collection: %w ", err)
+		}
+	} else {
+		return fmt.Errorf("Error querry deleting collection: %w ", err)
+	}
+
+	return tx.Commit()
 }
 
 func (s *TrashAccess) isUserInCollection(collectionId string, userId string) (bool, error) {

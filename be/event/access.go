@@ -498,6 +498,49 @@ func (s *eventAccess) UpdateCollectionOrganized(request *trash.UpdateCollectionO
 	return updatedCollection, tx.Commit()
 }
 
+func (s *eventAccess) DeleteCollectionOrganized(request *trash.UpdateCollectionOrganizedRequest) error {
+	rights, err := s.CheckPickerRights(request.OrganizerId, request.EventId, request.AsSociety)
+	if err != nil {
+		return err
+	}
+	if !rights {
+		return err
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return fmt.Errorf("Couldn`t create transaction: %w ", err)
+	}
+	defer tx.Rollback()
+
+	oldCollection := new(trash.Collection)
+	oldCollection.Id = request.Collection.Id
+	if err := tx.Select(oldCollection); err != nil {
+		return fmt.Errorf("Couldn`t get old collection: %w ", err)
+	}
+
+	if oldCollection.EventId != request.EventId {
+		return fmt.Errorf("Collection does not belong to event: %w ", err)
+	}
+
+	if oldCollection.CleanedTrash {
+		updateTrash := new(trash.Trash)
+		updateTrash.Id = request.Collection.TrashId
+		updateTrash.Cleaned = false
+		_, err = tx.Model(updateTrash).Column("cleaned").Where("id = ?", request.Collection.TrashId).Update()
+		if err != nil {
+			return fmt.Errorf("Error updating trash before deleting collection: %w ", err)
+		}
+	}
+
+	err = s.db.Delete(oldCollection)
+	if err != nil {
+		return fmt.Errorf("Error deleting collection: %w ", err)
+	}
+
+	return tx.Commit()
+}
+
 func (s *eventAccess) HasUserEventPermission(userId, eventId string, editPermission *[]eventPermission) (bool, error) {
 	relation := new(EventUser)
 	relation.UserId = userId
