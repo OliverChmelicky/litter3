@@ -23,6 +23,8 @@ var (
 	ErrUpdateUser     = "ERR UPDATE USER"
 	ErrDeleteUser     = "ERROR DELETE USER"
 
+	ErrGetSocietyMembers = "ERROR GET SOCIETY MEMBERS"
+
 	ErrApplyForMembership             = "ERROR APPLY FOR MEMBERSHIP"
 	ErrRemoveApplicationForMembership = "ERROR REMOVE APPLICATION FOR MEMBERSHIP"
 	ErrAcceptApplicant                = "ERROR ACCEPT APPLICANT"

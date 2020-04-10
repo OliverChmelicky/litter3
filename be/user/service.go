@@ -240,9 +240,17 @@ func (s *userService) GetSociety(c echo.Context) error {
 	return c.JSON(http.StatusOK, society)
 }
 
-//TODO
+//TODO testni
 func (s *userService) GetSocietyMembers(c echo.Context) error {
-	return c.JSON(http.StatusNotImplemented, "IMPLEMENT ME")
+	//can call also unregistered user
+	societyId := c.Param("societyId")
+
+	memebers, err := s.UserAccess.GetSocietyMembers(societyId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetSocietyMembers, err))
+	}
+
+	return c.JSON(http.StatusOK, memebers)
 }
 
 func (s *userService) UpdateSociety(c echo.Context) error {

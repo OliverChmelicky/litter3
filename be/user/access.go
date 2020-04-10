@@ -107,6 +107,38 @@ func (s *UserAccess) GetSociety(in string) (*models.Society, error) {
 	return society, nil
 }
 
+func (s *UserAccess) GetSocietyMembers(societyId string) (*models.AllMembers, error) {
+	socMemb := []models.SocietyMemberResponse{}
+	err := s.Db.Model(&socMemb).Column("societies_members.*").Where("society_id = ?", societyId).
+		Relation("UserDetails").
+		Select()
+	if err != nil {
+		return nil, fmt.Errorf("Error querying simple members view: %w ", err)
+	}
+
+	return &models.AllMembers{AllMembers: socMemb, Friends: []string{}, Count: len(socMemb)}, nil
+}
+
+//TODO worht thinking more how to involve my friends who are in the wanted society
+//func (s *UserAccess) getNormalSocietyView(societyId, userId string) (*models.AllMembers, error) {
+//	socMemb := []models.SocietyMemberResponse{}
+//	err := s.Db.Model(&socMemb).Column("societies_members.*").Where("society_id = ?", societyId).
+//		Relation("UserDetails").
+//		Select()
+//	if err != nil {
+//		return nil, fmt.Errorf("Error querying normal members view: %w ", err)
+//	}
+//
+//	friends := []models.SocietyMemberFriends{}
+//	err := s.Db.Model(&friends).Column("societies_members.*").Where("society_id = ?", societyId).
+//		Relation("UserDetails").
+//		Select()
+//	if err != nil {
+//		return nil, fmt.Errorf("Error querying normal members view: %w ", err)
+//	}
+//
+//}
+
 func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	members := new(models.Member)
 	var admins []string

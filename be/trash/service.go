@@ -78,7 +78,7 @@ func (s *trashService) UpdateTrash(c echo.Context) error {
 }
 
 func (s *trashService) DeleteTrash(c echo.Context) error {
-	userId := c.Get("userId")
+	userId := c.Get("userId").(string)
 
 	trashId := c.Param("trashId")
 

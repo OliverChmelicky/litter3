@@ -61,6 +61,19 @@ type Member struct {
 	CreatedAt  time.Time `pg:"default:now()"`
 }
 
+type SocietyMemberResponse struct {
+	tableName   struct{} `pg:"societies_members"json:"-"`
+	UserId      string
+	SocietyId   string
+	Permission  Membership
+	UserDetails *User
+}
+
+type AllMembers struct {
+	AllMembers []SocietyMemberResponse
+	Count      int
+}
+
 type Applicant struct {
 	tableName struct{}  `pg:"societies_applicants"json:"-"`
 	UserId    string    `pg:",pk"`
