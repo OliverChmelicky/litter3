@@ -3,7 +3,6 @@ package trash
 import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
 	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/satori/go.uuid"
 )
@@ -90,38 +89,104 @@ func (s *TrashAccess) CreateCollectionRandom(in *CreateCollectionRandomRequest) 
 	return collection, tx.Commit()
 }
 
-func (s *TrashAccess) GetCollection(id string) (*CollectionDetail, error) {
-	//TODO object relational mapping na id-cka userov --> mozno to pojde z trashu z tohto asi nie
+func (s *TrashAccess) GetCollection(id string) (*Collection, error) {
 	s.Db.AddQueryHook(middlewareService.DbMiddleware{})
-	collection := new(CollectionDetail)
+	collection := new(Collection)
 	collection.Id = id
-	err := s.Db.Model(collection).
-		Column("*").
-		Relation("trash_id", func(q *orm.Query) (query *orm.Query, err error) {
-			return q.Where(" id = ?", id), nil
-		}).First()
+	err := s.Db.Select(collection)
 	if err != nil {
-		return &CollectionDetail{}, err
+		return &Collection{}, err
 	}
 	return collection, nil
 }
 
-//
-//func (s *TrashAccess) GetCollectionsOfUser(id string) (interface{}, interface{}) {
-//
-//}
-//
-//func (s *TrashAccess) UpdateCollection(request *Collection, id string) (*Collection, error) {
-//
-//}
-//
-//func (s *TrashAccess) AddPickerToCollection(request *UserCollection, id string) (*UserCollection, error) {
-//
-//}
+func (s *TrashAccess) GetCollectionsOfUser(userId string) (*UserCollection, error) {
+	userCollection := new(UserCollection)
+	userCollection.UserId = userId
+	err := s.Db.Model(userCollection).Where("user_id = ?", userId).Select()
+	if err != nil {
+		return &UserCollection{}, err
+	}
+	return userCollection, nil
+}
 
-//func (s *TrashAccess) DeleteCollection(request *UserCollection, id string) (*UserCollection, error) {
-//
-//}
+func (s *TrashAccess) UpdateCollectionRandom(request *Collection, userId string) (*Collection, error) {
+	//neriesi collection z eventu
+	attended, err := s.isUserInCollection(request.Id, userId)
+	if err != nil {
+		return &Collection{}, fmt.Errorf("Error verifying if user is in collection: %w ", err)
+	}
+	if !attended {
+		return &Collection{}, fmt.Errorf("You cannot update this collection: %w ", err)
+	}
+
+	err = s.Db.Update(request)
+	if err != nil {
+		return &Collection{}, fmt.Errorf("Error update collection: %w ", err)
+	}
+
+	if request.CleanedTrash {
+		trash := new(Trash)
+		trash.Id = request.TrashId
+		_, err = s.Db.Model(trash).Column("cleaned").Where("id = ?", request.TrashId).Update()
+		if err != nil {
+			return &Collection{}, err
+		}
+	}
+
+	return request, nil
+}
+
+func (s *TrashAccess) AddPickerToCollection(request *UserCollection, givesAnother string) (*UserCollection, error) {
+	attended, err := s.isUserInCollection(request.CollectionId, givesAnother)
+	if err != nil {
+		return &UserCollection{}, fmt.Errorf("Error verifying if user is in collection: %w ", err)
+	}
+	if !attended {
+		return &UserCollection{}, fmt.Errorf("You cannot update this collection: %w ", err)
+	}
+
+	err = s.Db.Insert(request)
+	if err != nil {
+		return &UserCollection{}, fmt.Errorf("Error adding picker to collection: %w ", err)
+	}
+
+	return request, nil
+}
+
+func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId string) error {
+	attended, err := s.isUserInCollection(collectionId, userId)
+	if err != nil {
+		return fmt.Errorf("Error verifying if user is in collection: %w ", err)
+	}
+	if !attended {
+		return fmt.Errorf("You are not in this collection: %w ", err)
+	}
+
+	userCollection := new(UserCollection)
+	userCollection.CollectionId = collectionId
+	userCollection.UserId = userId
+	err = s.Db.Delete(userCollection)
+	if err != nil {
+		return fmt.Errorf("Error deleting from collection: %w ", err)
+	}
+
+	return nil
+}
+
+func (s *TrashAccess) isUserInCollection(collectionId string, userId string) (bool, error) {
+	userCollection := new(UserCollection)
+	userCollection.CollectionId = collectionId
+	userCollection.UserId = userId
+	err := s.Db.Select(userCollection)
+	if err == pg.ErrNoRows {
+		return false, fmt.Errorf("You are not a member of collection")
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
 
 //
 //

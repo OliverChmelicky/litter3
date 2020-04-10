@@ -274,7 +274,6 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 		s.EqualValues(candidates[i].event, resp)
 	}
 
-	//TODO try ORM GET
 	for i, candidate := range candidates {
 		req := httptest.NewRequest(echo.GET, "/events/"+candidate.event.Id, nil)
 
@@ -610,7 +609,6 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 
 //TODO delete event
 
-//preved prava nova featura a nebude to
 func (s *TrashSuite) SetupTest() {
 	referencerTables := []string{
 		"events_societies",

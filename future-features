@@ -1,0 +1,8 @@
+preved prava eventu
+modely do jednej zlozky aby som nemal import cycle ked chcem dostat aj eventy z trashu/zberu
+update collection z eventu
+
+ORM one to many, many to many GET:
+ na get event
+ na get collection
+ na get trash

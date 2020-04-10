@@ -137,7 +137,6 @@ create table users_collections
 (
     "user_id"     VARCHAR REFERENCES users (id) on delete cascade,
     collection_id VARCHAR REFERENCES collections (id) on delete cascade,
-    created_at    timestamptz NOT NULL,
     PRIMARY KEY ("user_id", collection_id)
 );
 
@@ -153,7 +152,6 @@ create table events_societies
     society_id VARCHAR REFERENCES societies (id), --cannot on delete cascade because it can be an organizer --> trigger or in app solution
     event_id   VARCHAR REFERENCES events (id) on delete cascade,
     permission eventRights not null,
-    created_at timestamptz NOT NULL,
     PRIMARY KEY (society_id, event_id)
 );
 
@@ -162,7 +160,6 @@ create table events_users
     user_id    VARCHAR REFERENCES users (id), --cannot on delete cascade because he can be an organizer --> trigger or in app solution
     event_id   VARCHAR REFERENCES events (id) on delete cascade,
     permission eventRights not null,
-    created_at timestamptz NOT NULL,
     PRIMARY KEY ("user_id", event_id)
 );
 

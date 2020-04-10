@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/go-pg/pg/v9"
-	"github.com/olo/litter3/user"
 	uuid "github.com/satori/go.uuid"
 	"time"
 )
@@ -104,22 +103,10 @@ func (u *Collection) BeforeInsert(ctx context.Context) (context.Context, error) 
 	return ctx, nil
 }
 
-type CollectionDetail struct {
-	tableName    struct{} `pg:"collections"json:"-"`
-	Id           string   `pg:",pk"`
-	Weight       float32  `pg:",use_zero"`
-	CleanedTrash bool     `pg:",use_zero"`
-	userIds      []*user.User
-	TrashId      *Trash
-	//EventId      *event.Event
-	CreatedAt time.Time `pg:"default:now()"`
-}
-
 type UserCollection struct {
-	tableName    struct{}  `pg:"users_collections"json:"-"`
-	UserId       string    `pg:",pk"`
-	CollectionId string    `pg:",pk"`
-	CreatedAt    time.Time `pg:"default:now()"`
+	tableName    struct{} `pg:"users_collections"json:"-"`
+	UserId       string   `pg:",pk"`
+	CollectionId string   `pg:",pk"`
 }
 
 type TrashComment struct {

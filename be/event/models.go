@@ -64,14 +64,6 @@ type EventSociety struct {
 	SocietyId  string   `pg:",pk"`
 	EventId    string   `pg:",pk"`
 	Permission eventPermission
-	CreatedAt  time.Time
-}
-
-var _ pg.BeforeInsertHook = (*EventSociety)(nil)
-
-func (u *EventSociety) BeforeInsert(ctx context.Context) (context.Context, error) {
-	u.CreatedAt = time.Now()
-	return ctx, nil
 }
 
 type EventUser struct {
@@ -79,17 +71,7 @@ type EventUser struct {
 	UserId     string   `pg:",pk"`
 	EventId    string   `pg:",pk"`
 	Permission eventPermission
-	CreatedAt  time.Time
 }
-
-var _ pg.BeforeInsertHook = (*EventUser)(nil)
-
-func (u *EventUser) BeforeInsert(ctx context.Context) (context.Context, error) {
-	u.CreatedAt = time.Now()
-	return ctx, nil
-}
-
-//prehod do trash
 
 type EventTrash struct {
 	tableName struct{} `pg:"events_trash"json:"-"`
