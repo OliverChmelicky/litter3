@@ -1,4 +1,4 @@
-package trash
+package models
 
 import (
 	"bytes"

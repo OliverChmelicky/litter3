@@ -7,6 +7,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
+	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http/httptest"
@@ -45,16 +46,16 @@ func (s *SocietySuite) SetupSuite() {
 
 func (s *SocietySuite) Test_CRUsociety() {
 	candidates := []struct {
-		user          *User
-		society       *Society
+		user          *models.User
+		society       *models.Society
 		numOfAdmins   int
-		societyUpdate *Society
+		societyUpdate *models.Society
 	}{
 		{
-			user:          &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			society:       &Society{Name: "Dake meno"},
+			user:          &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			society:       &models.Society{Name: "Dake meno"},
 			numOfAdmins:   1,
-			societyUpdate: &Society{Name: "Nove menicko ako v restauracii"},
+			societyUpdate: &models.Society{Name: "Nove menicko ako v restauracii"},
 		},
 	}
 
@@ -75,7 +76,7 @@ func (s *SocietySuite) Test_CRUsociety() {
 
 		s.NoError(s.service.CreateSociety(c))
 
-		resp := &Society{}
+		resp := &models.Society{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -107,7 +108,7 @@ func (s *SocietySuite) Test_CRUsociety() {
 
 		s.NoError(s.service.UpdateSociety(c))
 
-		resp := &Society{}
+		resp := &models.Society{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -119,17 +120,17 @@ func (s *SocietySuite) Test_CRUsociety() {
 
 func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 	candidates := []struct {
-		admin           *User
-		society         *Society
-		newMember       *User
-		applicationForm *IdMessage
-		finalApplicant  *Applicant
+		admin           *models.User
+		society         *models.Society
+		newMember       *models.User
+		applicationForm *models.IdMessage
+		finalApplicant  *models.Applicant
 		err             string
 	}{
 		{
-			admin:     &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Motyl.cz", CreatedAt: time.Now()},
-			society:   &Society{Name: "Dake meno"},
-			newMember: &User{FirstName: "Novy", LastName: "Member", Email: "dakto@novy.cz"},
+			admin:     &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Motyl.cz", CreatedAt: time.Now()},
+			society:   &models.Society{Name: "Dake meno"},
+			newMember: &models.User{FirstName: "Novy", LastName: "Member", Email: "dakto@novy.cz"},
 		},
 	}
 
@@ -144,8 +145,8 @@ func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 		s.Nil(err)
 
 		//for filling request structure
-		candidates[i].applicationForm = &IdMessage{Id: candidates[i].society.Id}
-		candidates[i].finalApplicant = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		candidates[i].applicationForm = &models.IdMessage{Id: candidates[i].society.Id}
+		candidates[i].finalApplicant = &models.Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
 	}
 
 	for _, candidate := range candidates {
@@ -161,7 +162,7 @@ func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 
 		s.NoError(s.service.ApplyForMembership(c))
 
-		resp := &Applicant{}
+		resp := &models.Applicant{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -185,17 +186,17 @@ func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 
 func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 	candidates := []struct {
-		admin           *User
-		society         *Society
-		newMember       *User
-		applicationForm *IdMessage
-		finalApplicant  *Applicant
+		admin           *models.User
+		society         *models.Society
+		newMember       *models.User
+		applicationForm *models.IdMessage
+		finalApplicant  *models.Applicant
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			admin:     &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
-			society:   &Society{Name: "TestApplyFormMembershipExistingMember"},
-			newMember: &User{FirstName: "Novy", LastName: "Member", Email: "blbost@newMember.com"},
+			admin:     &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
+			society:   &models.Society{Name: "TestApplyFormMembershipExistingMember"},
+			newMember: &models.User{FirstName: "Novy", LastName: "Member", Email: "blbost@newMember.com"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrConflict, Message: "User is already a member"},
 		},
 	}
@@ -210,11 +211,11 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
 		s.Nil(err)
 
-		newMember := &Member{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id, Permission: membership("member")}
+		newMember := &models.Member{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id, Permission: models.Membership("member")}
 		err := s.service.UserAccess.Db.Insert(newMember)
 		s.Nil(err)
 
-		testExistence := new(Member)
+		testExistence := new(models.Member)
 		err = s.db.Model(testExistence).Where("user_id = ?", candidates[i].newMember.Id).Select()
 		if err != nil {
 			s.Nil(err) //end test
@@ -225,8 +226,8 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 		}
 
 		//for filling request structure
-		candidates[i].applicationForm = &IdMessage{Id: candidates[i].society.Id}
-		candidates[i].finalApplicant = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		candidates[i].applicationForm = &models.IdMessage{Id: candidates[i].society.Id}
+		candidates[i].finalApplicant = &models.Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
 	}
 
 	for _, candidate := range candidates {
@@ -251,15 +252,15 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 
 func (s *SocietySuite) Test_DismissApplicant() {
 	candidates := []struct {
-		admin       *User
-		society     *Society
-		newMember   *User
-		application *Applicant
+		admin       *models.User
+		society     *models.Society
+		newMember   *models.User
+		application *models.Applicant
 	}{
 		{
-			admin:     &User{Id: "2", FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
-			society:   &Society{Name: "More members than one"},
-			newMember: &User{FirstName: "Hello", LastName: "Flowup", Email: "me@mew.cz"},
+			admin:     &models.User{Id: "2", FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
+			society:   &models.Society{Name: "More members than one"},
+			newMember: &models.User{FirstName: "Hello", LastName: "Flowup", Email: "me@mew.cz"},
 		},
 	}
 
@@ -274,7 +275,7 @@ func (s *SocietySuite) Test_DismissApplicant() {
 		s.Nil(err)
 
 		//for filling request structure
-		candidates[i].application = &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		candidates[i].application = &models.Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
 		_, err = s.service.UserAccess.AddApplicant(candidates[i].application)
 		s.Nil(err)
 	}
@@ -301,17 +302,17 @@ func (s *SocietySuite) Test_DismissApplicant() {
 
 func (s *SocietySuite) Test_AddMember() {
 	candidates := []struct {
-		admin     *User
-		society   *Society
-		newMember *User
-		request   *UserGroupRequest
-		response  *Member
+		admin     *models.User
+		society   *models.Society
+		newMember *models.User
+		request   *models.UserGroupRequest
+		response  *models.Member
 	}{
 		{
-			admin:     &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
-			society:   &Society{Name: "More members than one"},
-			newMember: &User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Janovutbr.com"},
-			response:  &Member{Permission: "member"},
+			admin:     &models.User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
+			society:   &models.Society{Name: "More members than one"},
+			newMember: &models.User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Janovutbr.com"},
+			response:  &models.Member{Permission: "member"},
 		},
 	}
 
@@ -328,10 +329,10 @@ func (s *SocietySuite) Test_AddMember() {
 		candidates[i].response.SocietyId = candidates[i].society.Id
 
 		//preparing request
-		candidates[i].request = &UserGroupRequest{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		candidates[i].request = &models.UserGroupRequest{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
 
 		//preparing db
-		application := &Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		application := &models.Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
 		_, err = s.service.UserAccess.AddApplicant(application)
 		s.Nil(err)
 	}
@@ -350,7 +351,7 @@ func (s *SocietySuite) Test_AddMember() {
 
 		s.Nil(s.service.AcceptApplicant(c))
 
-		resp := &Member{}
+		resp := &models.Member{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -361,26 +362,26 @@ func (s *SocietySuite) Test_AddMember() {
 
 func (s *SocietySuite) Test_ChangeRights() {
 	candidates := []struct {
-		admin         *User
-		society       *Society
-		friend        *User
-		oldMembership *Member
-		newMembership *Member
+		admin         *models.User
+		society       *models.Society
+		friend        *models.User
+		oldMembership *models.Member
+		newMembership *models.Member
 		err           string
 	}{
 		{
-			admin:         &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Herrer.cz", CreatedAt: time.Now()},
-			society:       &Society{Name: "Dake meno"},
-			friend:        &User{FirstName: "Novy", LastName: "Member", Email: "Peter@me.cz"},
-			oldMembership: &Member{Permission: membership("member")},
-			newMembership: &Member{Permission: membership("admin")},
+			admin:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Herrer.cz", CreatedAt: time.Now()},
+			society:       &models.Society{Name: "Dake meno"},
+			friend:        &models.User{FirstName: "Novy", LastName: "Member", Email: "Peter@me.cz"},
+			oldMembership: &models.Member{Permission: models.Membership("member")},
+			newMembership: &models.Member{Permission: models.Membership("admin")},
 		},
 		{
-			admin:         &User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
-			society:       &Society{Name: "Dake meno"},
-			friend:        &User{FirstName: "Novy", LastName: "Member", Email: "me@me.cz"},
-			oldMembership: &Member{Permission: membership("admin")},
-			newMembership: &Member{Permission: membership("member")},
+			admin:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			society:       &models.Society{Name: "Dake meno"},
+			friend:        &models.User{FirstName: "Novy", LastName: "Member", Email: "me@me.cz"},
+			oldMembership: &models.Member{Permission: models.Membership("admin")},
+			newMembership: &models.Member{Permission: models.Membership("member")},
 		},
 	}
 
@@ -421,7 +422,7 @@ func (s *SocietySuite) Test_ChangeRights() {
 
 		s.NoError(s.service.ChangeMemberRights(c))
 
-		resp := &Member{}
+		resp := &models.Member{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 

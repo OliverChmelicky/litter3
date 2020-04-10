@@ -6,6 +6,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
+	"github.com/olo/litter3/models"
 	"net/http"
 )
 
@@ -19,7 +20,7 @@ func CreateService(db *pg.DB) *userService {
 }
 
 func (s *userService) CreateUser(c echo.Context) error {
-	user := new(User)
+	user := new(models.User)
 	if err := c.Bind(user); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
@@ -56,7 +57,7 @@ func (s *userService) GetCurrentUser(c echo.Context) error {
 func (s *userService) UpdateUser(c echo.Context) error {
 	updatorId := c.Get("userId").(string)
 
-	user := new(User)
+	user := new(models.User)
 	if err := c.Bind(user); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
@@ -78,7 +79,7 @@ func (s *userService) UpdateUser(c echo.Context) error {
 func (s *userService) ApplyForMembership(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 
-	request := new(IdMessage)
+	request := new(models.IdMessage)
 	if err := c.Bind(request); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
@@ -91,7 +92,7 @@ func (s *userService) ApplyForMembership(c echo.Context) error {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("User is already a member")))
 	}
 
-	applicant, err := s.UserAccess.AddApplicant(&Applicant{SocietyId: request.Id, UserId: requesterId})
+	applicant, err := s.UserAccess.AddApplicant(&models.Applicant{SocietyId: request.Id, UserId: requesterId})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
 	}
@@ -103,7 +104,7 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 	societyId := c.Param("societyId")
 
-	err := s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: requesterId, SocietyId: societyId})
+	err := s.UserAccess.RemoveApplicationForMembership(&models.Applicant{UserId: requesterId, SocietyId: societyId})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveApplicationForMembership, err))
 	}
@@ -126,12 +127,12 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 func (s *userService) ApplyForFriendship(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 
-	request := new(IdMessage)
+	request := new(models.IdMessage)
 	if err := c.Bind(request); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
 
-	isRequestSend, err := s.UserAccess.AreFriends(&Friends{User1Id: requesterId, User2Id: request.Id})
+	isRequestSend, err := s.UserAccess.AreFriends(&models.Friends{User1Id: requesterId, User2Id: request.Id})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
 	}
@@ -139,7 +140,7 @@ func (s *userService) ApplyForFriendship(c echo.Context) error {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("YOU ARE FIENDS ALREADY")))
 	}
 
-	friendRequest := &FriendRequest{User1Id: requesterId, User2Id: request.Id}
+	friendRequest := &models.FriendRequest{User1Id: requesterId, User2Id: request.Id}
 	applicant, err := s.UserAccess.AddFriendshipRequest(friendRequest)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
@@ -152,7 +153,7 @@ func (s *userService) RemoveApplicationForFriendship(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 	notWanted := c.Param("unfriendId")
 
-	application := &FriendRequest{User1Id: notWanted, User2Id: requesterId}
+	application := &models.FriendRequest{User1Id: notWanted, User2Id: requesterId}
 
 	err := s.UserAccess.RemoveApplicationForFriendship(application)
 	if err != nil {
@@ -165,7 +166,7 @@ func (s *userService) RemoveApplicationForFriendship(c echo.Context) error {
 func (s *userService) AcceptFriendship(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 
-	request := new(FriendRequest)
+	request := new(models.FriendRequest)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -174,7 +175,7 @@ func (s *userService) AcceptFriendship(c echo.Context) error {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are not in this relation")))
 	}
 
-	friendship := &Friends{User1Id: request.User1Id, User2Id: request.User2Id}
+	friendship := &models.Friends{User1Id: request.User1Id, User2Id: request.User2Id}
 	areFriends, err := s.UserAccess.AreFriends(friendship)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
@@ -195,7 +196,7 @@ func (s *userService) RemoveFriend(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 	unfriend := c.Param("unfriendId")
 
-	friendship := &Friends{User1Id: requesterId, User2Id: unfriend}
+	friendship := &models.Friends{User1Id: requesterId, User2Id: unfriend}
 
 	err := s.UserAccess.RemoveFriend(friendship)
 	if err != nil {
@@ -215,7 +216,7 @@ func (s *userService) RemoveFriend(c echo.Context) error {
 func (s *userService) CreateSociety(c echo.Context) error {
 	creatorId := c.Get("userId").(string)
 
-	society := new(Society)
+	society := new(models.Society)
 	if err := c.Bind(society); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
@@ -247,7 +248,7 @@ func (s *userService) GetSocietyMembers(c echo.Context) error {
 func (s *userService) UpdateSociety(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	society := new(Society)
+	society := new(models.Society)
 	if err := c.Bind(society); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
@@ -273,7 +274,7 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 func (s *userService) AcceptApplicant(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(UserGroupRequest)
+	request := new(models.UserGroupRequest)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -316,7 +317,7 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "You are not an admin")
 	}
 
-	err = s.UserAccess.RemoveApplicationForMembership(&Applicant{UserId: removingUserId, SocietyId: societyId})
+	err = s.UserAccess.RemoveApplicationForMembership(&models.Applicant{UserId: removingUserId, SocietyId: societyId})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
@@ -327,7 +328,7 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 func (s *userService) ChangeMemberRights(c echo.Context) error {
 	id := c.Get("userId").(string)
 
-	request := new(Member)
+	request := new(models.Member)
 	err := c.Bind(request)
 	if err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
@@ -341,7 +342,7 @@ func (s *userService) ChangeMemberRights(c echo.Context) error {
 		return c.String(http.StatusForbidden, "You are not an admin")
 	}
 
-	if numOfAdmins == 1 && request.UserId == id && request.Permission == membership("member") {
+	if numOfAdmins == 1 && request.UserId == id && request.Permission == models.Membership("member") {
 		return c.String(http.StatusConflict, "You are the only one admin in group")
 	}
 
@@ -358,7 +359,7 @@ func (s *userService) RemoveMember(c echo.Context) error {
 	id := c.Get("userId")
 	requesterId := fmt.Sprintf("%v", id)
 
-	request := new(UserGroupRequest)
+	request := new(models.UserGroupRequest)
 	if err := c.Bind(request); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}

@@ -6,6 +6,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
+	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
@@ -51,15 +52,15 @@ func (s *UserSuite) SetupSuite() {
 //
 func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 	candidates := []struct {
-		heinrich        *User
-		peterAsks       *User
-		applicationForm *IdMessage
-		friendship      *FriendRequest
+		heinrich        *models.User
+		peterAsks       *models.User
+		applicationForm *models.IdMessage
+		friendship      *models.FriendRequest
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			heinrich:  &User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "Heinrich@Herrer.tibet", CreatedAt: time.Now()},
-			peterAsks: &User{FirstName: "Novy", LastName: "Member", Email: "Ja@Peter.cz"},
+			heinrich:  &models.User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "Heinrich@Herrer.tibet", CreatedAt: time.Now()},
+			peterAsks: &models.User{FirstName: "Novy", LastName: "Member", Email: "Ja@Peter.cz"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrApplyForFriendship},
 		},
 	}
@@ -70,13 +71,13 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		s.Nil(err)
 		candidates[i].peterAsks, err = s.service.UserAccess.CreateUser(candidates[i].peterAsks)
 		s.Nil(err)
-		candidates[i].applicationForm = &IdMessage{Id: candidates[i].heinrich.Id}
+		candidates[i].applicationForm = &models.IdMessage{Id: candidates[i].heinrich.Id}
 
 		//filling correct answer
 		if strings.Compare(candidates[i].heinrich.Id, candidates[i].peterAsks.Id) == -1 {
-			candidates[i].friendship = &FriendRequest{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
+			candidates[i].friendship = &models.FriendRequest{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
 		} else {
-			candidates[i].friendship = &FriendRequest{User1Id: candidates[i].peterAsks.Id, User2Id: candidates[i].heinrich.Id}
+			candidates[i].friendship = &models.FriendRequest{User1Id: candidates[i].peterAsks.Id, User2Id: candidates[i].heinrich.Id}
 		}
 	}
 
@@ -93,7 +94,7 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 
 		s.NoError(s.service.ApplyForFriendship(c))
 
-		resp := &FriendRequest{}
+		resp := &models.FriendRequest{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -133,7 +134,7 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		s.NoError(s.service.RemoveApplicationForFriendship(c))
 		s.EqualValues("", rec.Body.String())
 
-		rq := &FriendRequest{}
+		rq := &models.FriendRequest{}
 		err = s.db.Model(rq).Where("user1_id = ? and user2_id = ?", candidate.friendship.User1Id, candidate.friendship.User2Id).Select()
 		s.EqualValues(pg.ErrNoRows, err)
 	}
@@ -141,14 +142,14 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 
 func (s *UserSuite) Test_RequestFriendshipExistingFriendship() {
 	candidates := []struct {
-		heinrich        *User
-		peterAsks       *User
-		applicationForm *IdMessage
+		heinrich        *models.User
+		peterAsks       *models.User
+		applicationForm *models.IdMessage
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			heinrich:  &User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
-			peterAsks: &User{FirstName: "Novy", LastName: "Member", Email: "blbost@peterAsks.com"},
+			heinrich:  &models.User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
+			peterAsks: &models.User{FirstName: "Novy", LastName: "Member", Email: "blbost@peterAsks.com"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrConflict, Message: "YOU ARE FIENDS ALREADY"},
 		},
 	}
@@ -159,15 +160,15 @@ func (s *UserSuite) Test_RequestFriendshipExistingFriendship() {
 		s.Nil(err)
 		candidates[i].peterAsks, err = s.service.UserAccess.CreateUser(candidates[i].peterAsks)
 		s.Nil(err)
-		candidates[i].applicationForm = &IdMessage{Id: candidates[i].heinrich.Id}
+		candidates[i].applicationForm = &models.IdMessage{Id: candidates[i].heinrich.Id}
 
 		//creating friendship
-		existingFriendship := &Friends{User1Id: candidates[i].peterAsks.Id, User2Id: candidates[i].heinrich.Id}
+		existingFriendship := &models.Friends{User1Id: candidates[i].peterAsks.Id, User2Id: candidates[i].heinrich.Id}
 
 		err := s.service.UserAccess.Db.Insert(existingFriendship)
 		s.Nil(err)
 
-		testExistence := new(Friends)
+		testExistence := new(models.Friends)
 		err = s.db.Model(testExistence).Where("user1_id = ? and user2_id = ?", existingFriendship.User1Id, existingFriendship.User2Id).Select()
 		if err != nil {
 			s.Nil(err) //end test
@@ -200,14 +201,14 @@ func (s *UserSuite) Test_RequestFriendshipExistingFriendship() {
 
 func (s *UserSuite) Test_AddFriend() {
 	candidates := []struct {
-		heinrich  *User
-		peterAsks *User
-		request   *FriendRequest
-		response  *Friends
+		heinrich  *models.User
+		peterAsks *models.User
+		request   *models.FriendRequest
+		response  *models.Friends
 	}{
 		{
-			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "On@Janovutbr.com"},
-			peterAsks: &User{FirstName: "Hello", LastName: "Flowup", Email: "TY@Janovutbr.cz"},
+			heinrich:  &models.User{FirstName: "John", LastName: "Modest", Email: "On@Janovutbr.com"},
+			peterAsks: &models.User{FirstName: "Hello", LastName: "Flowup", Email: "TY@Janovutbr.cz"},
 		},
 	}
 
@@ -219,11 +220,11 @@ func (s *UserSuite) Test_AddFriend() {
 		s.Nil(err)
 
 		//for filling request structure
-		candidates[i].request = &FriendRequest{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
+		candidates[i].request = &models.FriendRequest{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
 		_, err = s.service.UserAccess.AddFriendshipRequest(candidates[i].request)
 		s.Nil(err)
 		//fir filling final answer
-		candidates[i].response = &Friends{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
+		candidates[i].response = &models.Friends{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
 	}
 
 	for _, candidate := range candidates {
@@ -240,7 +241,7 @@ func (s *UserSuite) Test_AddFriend() {
 
 		s.Nil(s.service.AcceptFriendship(c))
 
-		resp := &Friends{}
+		resp := &models.Friends{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -251,13 +252,13 @@ func (s *UserSuite) Test_AddFriend() {
 
 func (s *UserSuite) Test_RemoveFriend() {
 	candidates := []struct {
-		heinrich   *User
-		peterAsks  *User
-		friendship *Friends
+		heinrich   *models.User
+		peterAsks  *models.User
+		friendship *models.Friends
 	}{
 		{
-			heinrich:  &User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.italy"},
-			peterAsks: &User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Milan.cz"},
+			heinrich:  &models.User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.italy"},
+			peterAsks: &models.User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Milan.cz"},
 		},
 	}
 
@@ -269,7 +270,7 @@ func (s *UserSuite) Test_RemoveFriend() {
 		s.Nil(err)
 
 		//create friendship
-		candidates[i].friendship = &Friends{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
+		candidates[i].friendship = &models.Friends{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
 		err = s.db.Insert(candidates[i].friendship)
 		s.Nil(err)
 	}
@@ -287,7 +288,7 @@ func (s *UserSuite) Test_RemoveFriend() {
 		s.NoError(s.service.RemoveFriend(c))
 		s.EqualValues(http.StatusOK, rec.Code)
 
-		rq := &Friends{}
+		rq := &models.Friends{}
 		err = s.db.Model(rq).Where("user1_id = ? and user2_id = ?", candidate.friendship.User1Id, candidate.friendship.User2Id).Select()
 		s.EqualValues(pg.ErrNoRows, err)
 	}
@@ -334,7 +335,7 @@ func TestUserServiceSuite(t *testing.T) {
 	suite.Run(t, &UserSuite{})
 }
 
-func correctIdOrderFriend(expected *Friends, tested *Friends) {
+func correctIdOrderFriend(expected *models.Friends, tested *models.Friends) {
 	order := strings.Compare(expected.User1Id, expected.User2Id)
 	if order == 1 {
 		tmp := expected.User1Id
@@ -348,7 +349,7 @@ func correctIdOrderFriend(expected *Friends, tested *Friends) {
 		tested.User2Id = tmp
 	}
 }
-func correctIdOrderFriendRequest(expected *FriendRequest, tested *FriendRequest) {
+func correctIdOrderFriendRequest(expected *models.FriendRequest, tested *models.FriendRequest) {
 	order := strings.Compare(expected.User1Id, expected.User2Id)
 	if order == 1 {
 		tmp := expected.User1Id

@@ -5,6 +5,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
+	"github.com/olo/litter3/models"
 	"net/http"
 )
 
@@ -18,7 +19,7 @@ func CreateService(db *pg.DB) *trashService {
 }
 
 func (s *trashService) CreateTrash(c echo.Context) error {
-	trash := new(Trash)
+	trash := new(models.Trash)
 	if err := c.Bind(trash); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -44,7 +45,7 @@ func (s *trashService) GetTrashById(c echo.Context) error {
 }
 
 func (s *trashService) GetTrashInRange(c echo.Context) error {
-	request := new(RangeRequest)
+	request := new(models.RangeRequest)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -58,7 +59,7 @@ func (s *trashService) GetTrashInRange(c echo.Context) error {
 }
 
 func (s *trashService) UpdateTrash(c echo.Context) error {
-	trash := new(Trash)
+	trash := new(models.Trash)
 	if err := c.Bind(trash); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -76,10 +77,19 @@ func (s *trashService) UpdateTrash(c echo.Context) error {
 	return c.JSON(http.StatusOK, trash)
 }
 
-func (s *trashService) DeleteTrash(c echo.Context) error {
-	//cez param
-	return c.JSON(http.StatusNotImplemented, "Implement me")
-}
+//TODO delete trash
+//func (s *trashService) DeleteTrash(c echo.Context) error {
+//	userId := c.Get("userId")
+//
+//	trashId := c.Param("trashId")
+//
+//	err := s.TrashAccess.DeleteTrash(userId, trashId)
+//	if err != nil {
+//		return c.JSON(http.StatusInternalServerError, err)
+//	}
+//
+//	return c.JSON(http.StatusOK, "")
+//}
 
 //
 //
@@ -91,12 +101,12 @@ func (s *trashService) DeleteTrash(c echo.Context) error {
 func (s *trashService) CreateTrashComment(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(TrashCommentRequest)
+	request := new(models.TrashCommentRequest)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	comment, err := s.TrashAccess.CreateTrashComment(&TrashComment{TrashId: request.Id, UserId: userId, Message: request.Message})
+	comment, err := s.TrashAccess.CreateTrashComment(&models.TrashComment{TrashId: request.Id, UserId: userId, Message: request.Message})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateComment, err))
 	}
@@ -116,7 +126,7 @@ func (s *trashService) GetTrashComments(c echo.Context) error {
 }
 
 func (s *trashService) UpdateTrashComment(c echo.Context) error {
-	request := new(TrashCommentRequest)
+	request := new(models.TrashCommentRequest)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -166,7 +176,7 @@ func (s *trashService) DeleteTrashComment(c echo.Context) error {
 func (s *trashService) CreateCollection(c echo.Context) error {
 	creator := c.Get("userId").(string)
 
-	request := new(CreateCollectionRandomRequest)
+	request := new(models.CreateCollectionRandomRequest)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -204,7 +214,7 @@ func (s *trashService) GetCollectionsOfUser(c echo.Context) error {
 func (s *trashService) UpdateCollectionRandom(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(Collection)
+	request := new(models.Collection)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -219,7 +229,7 @@ func (s *trashService) UpdateCollectionRandom(c echo.Context) error {
 
 func (s *trashService) AddPickerToCollection(c echo.Context) error {
 	userId := c.Get("userId").(string)
-	request := new(UserCollection)
+	request := new(models.UserCollection)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}

@@ -1,4 +1,4 @@
-package user
+package models
 
 import (
 	"context"
@@ -41,7 +41,7 @@ func (u *Society) BeforeInsert(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-type membership string
+type Membership string
 
 type IdMessage struct {
 	Id string
@@ -57,7 +57,7 @@ type Member struct {
 	tableName  struct{} `pg:"societies_members"json:"-"`
 	UserId     string   `pg:",pk"`
 	SocietyId  string   `pg:",pk"`
-	Permission membership
+	Permission Membership
 	CreatedAt  time.Time `pg:"default:now()"`
 }
 

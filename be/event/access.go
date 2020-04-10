@@ -3,8 +3,7 @@ package event
 import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
-	"github.com/olo/litter3/trash"
-	"github.com/olo/litter3/user"
+	"github.com/olo/litter3/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -12,21 +11,21 @@ type eventAccess struct {
 	db *pg.DB
 }
 
-func (s *eventAccess) CreateEvent(request *EventRequest) (*Event, error) {
-	creatorUser := new(user.User)
+func (s *eventAccess) CreateEvent(request *models.EventRequest) (*models.Event, error) {
+	creatorUser := new(models.User)
 	creatorUser.Id = request.UserId
 	err := s.db.Select(creatorUser)
 	if err != nil {
-		return &Event{}, fmt.Errorf("Error select user: %w", err)
+		return &models.Event{}, fmt.Errorf("Error select user: %w", err)
 	}
 
 	tx, err := s.db.Begin()
 	if err != nil {
-		return &Event{}, fmt.Errorf("Error creating transaction: %w", err)
+		return &models.Event{}, fmt.Errorf("Error creating transaction: %w", err)
 	}
 	defer tx.Rollback()
 
-	event := &Event{
+	event := &models.Event{
 		Publc:       request.Publc,
 		Date:        request.Date,
 		Description: request.Description,
@@ -34,29 +33,29 @@ func (s *eventAccess) CreateEvent(request *EventRequest) (*Event, error) {
 
 	err = tx.Insert(event)
 	if err != nil {
-		return &Event{}, fmt.Errorf("Error inserting event: %w", err)
+		return &models.Event{}, fmt.Errorf("Error inserting event: %w", err)
 	}
 
 	if request.AsSociety {
-		creator := &EventSociety{
-			Permission: eventPermission("creator"),
+		creator := &models.EventSociety{
+			Permission: models.EventPermission("creator"),
 			SocietyId:  request.SocietyId,
 			EventId:    event.Id,
 		}
 		err = tx.Insert(creator)
 		if err != nil {
-			return &Event{}, fmt.Errorf("Error inserting society creator: %w", err)
+			return &models.Event{}, fmt.Errorf("Error inserting society creator: %w", err)
 		}
 		event.SocietiesIds = append(event.SocietiesIds, request.SocietyId)
 	} else {
-		creator := &EventUser{
-			Permission: eventPermission("creator"),
+		creator := &models.EventUser{
+			Permission: models.EventPermission("creator"),
 			UserId:     request.UserId,
 			EventId:    event.Id,
 		}
 		err = tx.Insert(creator)
 		if err != nil {
-			return &Event{}, fmt.Errorf("Error inserting user creator: %w", err)
+			return &models.Event{}, fmt.Errorf("Error inserting user creator: %w", err)
 		}
 		event.UsersIds = append(event.UsersIds, request.UserId)
 	}
@@ -64,33 +63,33 @@ func (s *eventAccess) CreateEvent(request *EventRequest) (*Event, error) {
 	event.TrashIds = request.Trash
 	err = s.AssignTrashToEvent(tx, event)
 	if err != nil {
-		return &Event{}, fmt.Errorf("Error assigning trash: %w", err)
+		return &models.Event{}, fmt.Errorf("Error assigning trash: %w", err)
 	}
 
 	return event, tx.Commit()
 }
 
-func (s *eventAccess) GetEvent(eventId string) (*Event, error) {
-	event := new(Event)
+func (s *eventAccess) GetEvent(eventId string) (*models.Event, error) {
+	event := new(models.Event)
 	event.Id = eventId
 	err := s.db.Select(event)
 	if err != nil {
-		return &Event{}, err
+		return &models.Event{}, err
 	}
-	var trash []EventTrash
+	var trash []models.EventTrash
 	err = s.db.Model(&trash).Where("event_id = ?", eventId).Select(&trash)
 	if err != nil {
-		return &Event{}, err
+		return &models.Event{}, err
 	}
-	var users []EventUser
+	var users []models.EventUser
 	err = s.db.Model(&users).Where("event_id = ?", eventId).Select(&users)
 	if err != nil {
-		return &Event{}, err
+		return &models.Event{}, err
 	}
-	var societies []EventSociety
+	var societies []models.EventSociety
 	err = s.db.Model(&societies).Where("event_id = ?", eventId).Select(&societies)
 	if err != nil {
-		return &Event{}, err
+		return &models.Event{}, err
 	}
 
 	mapEvent(event, trash, users, societies)
@@ -98,7 +97,7 @@ func (s *eventAccess) GetEvent(eventId string) (*Event, error) {
 	return event, err
 }
 
-func mapEvent(event *Event, trash []EventTrash, users []EventUser, societies []EventSociety) {
+func mapEvent(event *models.Event, trash []models.EventTrash, users []models.EventUser, societies []models.EventSociety) {
 	if trash != nil {
 		for _, v := range trash {
 			event.TrashIds = append(event.TrashIds, v.TrashId)
@@ -116,105 +115,105 @@ func mapEvent(event *Event, trash []EventTrash, users []EventUser, societies []E
 	}
 }
 
-func (s *eventAccess) AttendEvent(request *EventPickerRequest) (*EventPickerRequest, error) {
+func (s *eventAccess) AttendEvent(request *models.EventPickerRequest) (*models.EventPickerRequest, error) {
 	if request.AsSociety {
-		attendee := &EventSociety{
-			Permission: eventPermission("viewer"),
+		attendee := &models.EventSociety{
+			Permission: models.EventPermission("viewer"),
 			SocietyId:  request.PickerId,
 			EventId:    request.EventId,
 		}
 		err := s.db.Insert(attendee)
 		if err != nil {
-			return &EventPickerRequest{}, fmt.Errorf("Error inserting society attendee: %w", err)
+			return &models.EventPickerRequest{}, fmt.Errorf("Error inserting society attendee: %w", err)
 		}
 	} else {
-		attendee := &EventUser{
-			Permission: eventPermission("viewer"),
+		attendee := &models.EventUser{
+			Permission: models.EventPermission("viewer"),
 			UserId:     request.PickerId,
 			EventId:    request.EventId,
 		}
 		err := s.db.Insert(attendee)
 		if err != nil {
-			return &EventPickerRequest{}, fmt.Errorf("Error inserting user attendee: %w", err)
+			return &models.EventPickerRequest{}, fmt.Errorf("Error inserting user attendee: %w", err)
 		}
 	}
 
 	return request, nil
 }
 
-func (s *eventAccess) CannotAttendEvent(request *EventPickerRequest) (*EventPickerRequest, error) {
+func (s *eventAccess) CannotAttendEvent(request *models.EventPickerRequest) (*models.EventPickerRequest, error) {
 	if request.AsSociety {
-		attendee := &EventSociety{
+		attendee := &models.EventSociety{
 			SocietyId: request.PickerId,
 			EventId:   request.EventId,
 		}
 		err := s.db.Select(attendee)
 		if err != nil {
-			return &EventPickerRequest{}, fmt.Errorf("Error finding society for event: %w ", err)
+			return &models.EventPickerRequest{}, fmt.Errorf("Error finding society for event: %w ", err)
 		}
-		if attendee.Permission == eventPermission("creator") {
-			return &EventPickerRequest{}, fmt.Errorf("You are an organizer ")
+		if attendee.Permission == "creator" {
+			return &models.EventPickerRequest{}, fmt.Errorf("You are an organizer ")
 		}
 		err = s.db.Delete(attendee)
 		if err != nil {
-			return &EventPickerRequest{}, fmt.Errorf("Error deleting society attendee: %w", err)
+			return &models.EventPickerRequest{}, fmt.Errorf("Error deleting society attendee: %w", err)
 		}
 	} else {
-		attendee := &EventUser{
+		attendee := &models.EventUser{
 			UserId:  request.PickerId,
 			EventId: request.EventId,
 		}
 		err := s.db.Select(attendee)
 		if err != nil {
-			return &EventPickerRequest{}, fmt.Errorf("Error finding user for event: %w ", err)
+			return &models.EventPickerRequest{}, fmt.Errorf("Error finding user for event: %w ", err)
 		}
-		if attendee.Permission == eventPermission("creator") {
-			return &EventPickerRequest{}, fmt.Errorf("You are an organizer ")
+		if attendee.Permission == "creator" {
+			return &models.EventPickerRequest{}, fmt.Errorf("You are an organizer ")
 		}
 		err = s.db.Delete(attendee)
 		if err != nil {
-			return &EventPickerRequest{}, fmt.Errorf("Error deleting user attendee: %w", err)
+			return &models.EventPickerRequest{}, fmt.Errorf("Error deleting user attendee: %w", err)
 		}
 	}
 
 	return request, nil
 }
 
-func (s *eventAccess) UpdateEvent(request *EventRequest, userId string) (*Event, error) {
+func (s *eventAccess) UpdateEvent(request *models.EventRequest, userId string) (*models.Event, error) {
 	if request.AsSociety {
-		permission, err := s.HasSocietyEventPermission(request.SocietyId, request.Id, &[]eventPermission{"editor", "creator"})
+		permission, err := s.HasSocietyEventPermission(request.SocietyId, request.Id, &[]models.EventPermission{"editor", "creator"})
 		if err != nil {
-			return &Event{}, fmt.Errorf("Error check permission: %w ", err)
+			return &models.Event{}, fmt.Errorf("Error check permission: %w ", err)
 		}
 		if !permission {
-			return &Event{}, fmt.Errorf("You have no permisssion to edit event ")
+			return &models.Event{}, fmt.Errorf("You have no permisssion to edit event ")
 		}
 	} else {
-		permission, err := s.HasUserEventPermission(userId, request.Id, &[]eventPermission{"editor", "creator"})
+		permission, err := s.HasUserEventPermission(userId, request.Id, &[]models.EventPermission{"editor", "creator"})
 		if err != nil {
-			return &Event{}, fmt.Errorf("Error check permission: %w ", err)
+			return &models.Event{}, fmt.Errorf("Error check permission: %w ", err)
 		}
 		if !permission {
-			return &Event{}, fmt.Errorf("You have no permisssion to edit event ")
+			return &models.Event{}, fmt.Errorf("You have no permisssion to edit event ")
 		}
 	}
 
 	tx, err := s.db.Begin()
 	if err != nil {
-		return &Event{}, fmt.Errorf("Error creating transaction: %w ", err)
+		return &models.Event{}, fmt.Errorf("Error creating transaction: %w ", err)
 	}
 	defer tx.Rollback()
 
-	var event = new(Event)
+	var event = new(models.Event)
 	event.Id = request.Id
 	err = s.db.Select(event)
 	if err != nil {
-		return &Event{}, fmt.Errorf("Error selecting event for update: %w ", err)
+		return &models.Event{}, fmt.Errorf("Error selecting event for update: %w ", err)
 	}
 
 	err = tx.Update(event)
 	if err != nil {
-		return &Event{}, fmt.Errorf("Error updating event: %w ", err)
+		return &models.Event{}, fmt.Errorf("Error updating event: %w ", err)
 	}
 
 	err = tx.Select(event)
@@ -222,18 +221,18 @@ func (s *eventAccess) UpdateEvent(request *EventRequest, userId string) (*Event,
 	event.TrashIds = request.Trash
 	err = s.AssignTrashToEvent(tx, event)
 	if err != nil {
-		return &Event{}, fmt.Errorf("Error assigning trash: %w ", err)
+		return &models.Event{}, fmt.Errorf("Error assigning trash: %w ", err)
 	}
 
-	var users []EventUser
+	var users []models.EventUser
 	err = s.db.Model(&users).Where("event_id = ?", event.Id).Select(&users)
 	if err != nil {
-		return &Event{}, err
+		return &models.Event{}, err
 	}
-	var societies []EventSociety
+	var societies []models.EventSociety
 	err = s.db.Model(&societies).Where("event_id = ?", event.Id).Select(&societies)
 	if err != nil {
-		return &Event{}, err
+		return &models.Event{}, err
 	}
 
 	mapEvent(event, nil, users, societies)
@@ -241,64 +240,64 @@ func (s *eventAccess) UpdateEvent(request *EventRequest, userId string) (*Event,
 	return event, tx.Commit()
 }
 
-func (s *eventAccess) EditEventRights(request *EventPermissionRequest, userWhoDoesOperation string) (*EventPermissionRequest, error) {
+func (s *eventAccess) EditEventRights(request *models.EventPermissionRequest, userWhoDoesOperation string) (*models.EventPermissionRequest, error) {
 	var isCreator bool
 	if request.AsSociety {
-		permission, err := s.HasSocietyEventPermission(request.SocietyId, request.EventId, &[]eventPermission{"editor", "creator"})
+		permission, err := s.HasSocietyEventPermission(request.SocietyId, request.EventId, &[]models.EventPermission{"editor", "creator"})
 		if err != nil {
-			return &EventPermissionRequest{}, fmt.Errorf("Error check permission: %w ", err)
+			return &models.EventPermissionRequest{}, fmt.Errorf("Error check permission: %w ", err)
 		}
 		if !permission {
-			return &EventPermissionRequest{}, fmt.Errorf("You have no permisssion to edit event ")
+			return &models.EventPermissionRequest{}, fmt.Errorf("You have no permisssion to edit event ")
 		}
-		isCreator, err = s.HasSocietyEventPermission(request.SocietyId, request.EventId, &[]eventPermission{"creator"})
+		isCreator, err = s.HasSocietyEventPermission(request.SocietyId, request.EventId, &[]models.EventPermission{"creator"})
 		if err != nil {
-			return &EventPermissionRequest{}, fmt.Errorf("Error check is creator: %w ", err)
+			return &models.EventPermissionRequest{}, fmt.Errorf("Error check is creator: %w ", err)
 		}
 	} else {
-		permission, err := s.HasUserEventPermission(userWhoDoesOperation, request.EventId, &[]eventPermission{"editor", "creator"})
+		permission, err := s.HasUserEventPermission(userWhoDoesOperation, request.EventId, &[]models.EventPermission{"editor", "creator"})
 		if err != nil {
-			return &EventPermissionRequest{}, fmt.Errorf("Error check permission: %w ", err)
+			return &models.EventPermissionRequest{}, fmt.Errorf("Error check permission: %w ", err)
 		}
 		if !permission {
-			return &EventPermissionRequest{}, fmt.Errorf("You have no permisssion to edit event ")
+			return &models.EventPermissionRequest{}, fmt.Errorf("You have no permisssion to edit event ")
 		}
 	}
 
 	if request.ChangingRightsTo == userWhoDoesOperation || request.ChangingRightsTo == request.SocietyId {
-		return &EventPermissionRequest{}, fmt.Errorf("You cannot alter your permission")
+		return &models.EventPermissionRequest{}, fmt.Errorf("You cannot alter your permission")
 	}
 
-	if isCreator && request.Permission == eventPermission("creator") {
-		return &EventPermissionRequest{}, fmt.Errorf("You there can be only one creator of event ")
+	if isCreator && request.Permission == models.EventPermission("creator") {
+		return &models.EventPermissionRequest{}, fmt.Errorf("You there can be only one creator of event ")
 	}
 
 	if request.AsSociety {
-		updating := new(EventSociety)
+		updating := new(models.EventSociety)
 		updating.Permission = request.Permission
 		updating.SocietyId = request.ChangingRightsTo
 		updating.EventId = request.EventId
 		err := s.db.Update(&updating)
 		if err != nil {
-			return &EventPermissionRequest{}, fmt.Errorf("Couldn`t update society ")
+			return &models.EventPermissionRequest{}, fmt.Errorf("Couldn`t update society ")
 		}
 	} else {
-		updating := new(EventUser)
+		updating := new(models.EventUser)
 		updating.Permission = request.Permission
 		updating.UserId = request.ChangingRightsTo
 		updating.EventId = request.EventId
 		err := s.db.Update(&updating)
 		if err != nil {
-			return &EventPermissionRequest{}, fmt.Errorf("Couldn`t update user ")
+			return &models.EventPermissionRequest{}, fmt.Errorf("Couldn`t update user ")
 		}
 	}
 
 	return request, nil
 }
 
-func (s *eventAccess) DeleteEvent(request *EventPickerRequest, userWhoDoesOperation string) error {
+func (s *eventAccess) DeleteEvent(request *models.EventPickerRequest, userWhoDoesOperation string) error {
 	if request.AsSociety {
-		isCreator, err := s.HasSocietyEventPermission(request.PickerId, request.EventId, &[]eventPermission{"creator"})
+		isCreator, err := s.HasSocietyEventPermission(request.PickerId, request.EventId, &[]models.EventPermission{"creator"})
 		if err != nil {
 			return fmt.Errorf("Error check is creator: %w ", err)
 		}
@@ -308,7 +307,7 @@ func (s *eventAccess) DeleteEvent(request *EventPickerRequest, userWhoDoesOperat
 		}
 
 	} else {
-		isCreator, err := s.HasUserEventPermission(userWhoDoesOperation, request.EventId, &[]eventPermission{"creator"})
+		isCreator, err := s.HasUserEventPermission(userWhoDoesOperation, request.EventId, &[]models.EventPermission{"creator"})
 		if err != nil {
 			return fmt.Errorf("Error check is creator: %w ", err)
 		}
@@ -324,31 +323,31 @@ func (s *eventAccess) DeleteEvent(request *EventPickerRequest, userWhoDoesOperat
 	}
 	defer tx.Rollback()
 
-	userEvent := new(EventUser)
+	userEvent := new(models.EventUser)
 	_, err = tx.Model(userEvent).Where("event_id = ?", request.EventId).Delete()
 	if err != nil {
 		return fmt.Errorf("Error delete users from event %w ", err)
 	}
 
-	societyEvent := new(EventSociety)
+	societyEvent := new(models.EventSociety)
 	_, err = tx.Model(societyEvent).Where("event_id = ?", request.EventId).Delete()
 	if err != nil {
 		return fmt.Errorf("Error delete societies from event %w ", err)
 	}
 
-	trashEvent := new(EventTrash)
+	trashEvent := new(models.EventTrash)
 	_, err = tx.Model(trashEvent).Where("event_id = ?", request.EventId).Delete()
 	if err != nil {
 		return fmt.Errorf("Error delete trash from event %w ", err)
 	}
 
-	collection := new(trash.Collection)
+	collection := new(models.Collection)
 	_, err = tx.Model(collection).Where("event_id = ?", request.EventId).Delete()
 	if err != nil {
 		return fmt.Errorf("Error delete collection from event %w ", err)
 	}
 
-	event := &Event{Id: request.EventId}
+	event := &models.Event{Id: request.EventId}
 	err = tx.Delete(event)
 	if err != nil {
 		return fmt.Errorf("Error delete event %w ", err)
@@ -357,8 +356,8 @@ func (s *eventAccess) DeleteEvent(request *EventPickerRequest, userWhoDoesOperat
 	return tx.Commit()
 }
 
-func (s *eventAccess) GetSocietyEvents(societyId string) ([]Event, error) {
-	var allActivities []EventSociety
+func (s *eventAccess) GetSocietyEvents(societyId string) ([]models.Event, error) {
+	var allActivities []models.EventSociety
 	err := s.db.Model(&allActivities).Where("society_id = ?", societyId).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society participation: %w ", err)
@@ -369,7 +368,7 @@ func (s *eventAccess) GetSocietyEvents(societyId string) ([]Event, error) {
 		eventsArr = append(eventsArr, activity.EventId)
 	}
 
-	var events []Event
+	var events []models.Event
 	err = s.db.Model(&events).Where("id IN (?)", pg.In(eventsArr)).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society events: %w ", err)
@@ -378,8 +377,8 @@ func (s *eventAccess) GetSocietyEvents(societyId string) ([]Event, error) {
 	return events, nil
 }
 
-func (s *eventAccess) GetUserEvents(userId string) ([]Event, error) {
-	var allActivities []EventUser
+func (s *eventAccess) GetUserEvents(userId string) ([]models.Event, error) {
+	var allActivities []models.EventUser
 	err := s.db.Model(&allActivities).Where("user_id = ?", userId).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society events: %w ", err)
@@ -390,7 +389,7 @@ func (s *eventAccess) GetUserEvents(userId string) ([]Event, error) {
 		eventsArr = append(eventsArr, activity.EventId)
 	}
 
-	var events []Event
+	var events []models.Event
 	err = s.db.Model(&events).Where("id IN (?)", pg.In(eventsArr)).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society events: %w ", err)
@@ -398,9 +397,9 @@ func (s *eventAccess) GetUserEvents(userId string) ([]Event, error) {
 	return events, nil
 }
 
-func (s *eventAccess) CreateCollectionsOrganized(collectionRequests *trash.CreateCollectionOrganizedRequest) ([]trash.Collection, []error) {
+func (s *eventAccess) CreateCollectionsOrganized(collectionRequests *models.CreateCollectionOrganizedRequest) ([]models.Collection, []error) {
 	var errs []error
-	var collections []trash.Collection
+	var collections []models.Collection
 
 	rights, err := s.CheckPickerRights(collectionRequests.OrganizerId, collectionRequests.EventId, collectionRequests.AsSociety)
 	if err != nil {
@@ -412,7 +411,7 @@ func (s *eventAccess) CreateCollectionsOrganized(collectionRequests *trash.Creat
 		return nil, errs
 	}
 
-	collection := &trash.Collection{}
+	collection := &models.Collection{}
 	for _, request := range collectionRequests.Collections {
 		collection.EventId = collectionRequests.EventId
 		collection.TrashId = request.TrashId
@@ -430,7 +429,7 @@ func (s *eventAccess) CreateCollectionsOrganized(collectionRequests *trash.Creat
 		}
 		collections = append(collections, *collection)
 		if request.CleanedTrash {
-			updating := new(trash.Trash)
+			updating := new(models.Trash)
 			updating.Id = request.TrashId
 			_, err = s.db.Model(updating).Column("cleaned").Where("id = ?", request.TrashId).Update()
 			if err != nil {
@@ -439,13 +438,13 @@ func (s *eventAccess) CreateCollectionsOrganized(collectionRequests *trash.Creat
 			}
 		}
 
-		*collection = trash.Collection{}
+		*collection = models.Collection{}
 	}
 
 	return collections, errs
 }
 
-func (s *eventAccess) UpdateCollectionOrganized(request *trash.UpdateCollectionOrganizedRequest) (*trash.Collection, error) {
+func (s *eventAccess) UpdateCollectionOrganized(request *models.UpdateCollectionOrganizedRequest) (*models.Collection, error) {
 	rights, err := s.CheckPickerRights(request.OrganizerId, request.EventId, request.AsSociety)
 	if err != nil {
 		return nil, err
@@ -454,25 +453,25 @@ func (s *eventAccess) UpdateCollectionOrganized(request *trash.UpdateCollectionO
 		return nil, err
 	}
 
-	oldCollection := new(trash.Collection)
+	oldCollection := new(models.Collection)
 	oldCollection.Id = request.Collection.Id
 	if err := s.db.Select(oldCollection); err != nil {
-		return &trash.Collection{}, fmt.Errorf("Couldn`t get old collection: %w ", err)
+		return &models.Collection{}, fmt.Errorf("Couldn`t get old collection: %w ", err)
 	}
 	if oldCollection.TrashId != request.Collection.TrashId {
-		return &trash.Collection{}, fmt.Errorf("Cannot change trashId to collection ")
+		return &models.Collection{}, fmt.Errorf("Cannot change trashId to collection ")
 	}
 	if oldCollection.EventId != request.Collection.EventId {
-		return &trash.Collection{}, fmt.Errorf("Cannot change trashId to collection ")
+		return &models.Collection{}, fmt.Errorf("Cannot change trashId to collection ")
 	}
 
 	tx, err := s.db.Begin()
 	if err != nil {
-		return &trash.Collection{}, fmt.Errorf("Couldn`t create transaction: %w ", err)
+		return &models.Collection{}, fmt.Errorf("Couldn`t create transaction: %w ", err)
 	}
 	defer tx.Rollback()
 
-	updatedCollection := &trash.Collection{
+	updatedCollection := &models.Collection{
 		Id:           request.Collection.Id,
 		Weight:       request.Collection.Weight,
 		CleanedTrash: request.Collection.CleanedTrash,
@@ -482,16 +481,16 @@ func (s *eventAccess) UpdateCollectionOrganized(request *trash.UpdateCollectionO
 	}
 	err = tx.Update(updatedCollection)
 	if err != nil {
-		return &trash.Collection{}, fmt.Errorf("Error update collection: %w ", err)
+		return &models.Collection{}, fmt.Errorf("Error update collection: %w ", err)
 	}
 
 	if oldCollection.CleanedTrash != request.Collection.CleanedTrash {
-		updateTrash := new(trash.Trash)
+		updateTrash := new(models.Trash)
 		updateTrash.Id = request.Collection.TrashId
 		updateTrash.Cleaned = request.Collection.CleanedTrash
 		_, err = tx.Model(updateTrash).Column("cleaned").Where("id = ?", request.Collection.TrashId).Update()
 		if err != nil {
-			return &trash.Collection{}, err
+			return &models.Collection{}, err
 		}
 	}
 
@@ -513,7 +512,7 @@ func (s *eventAccess) DeleteCollectionOrganized(organizerId, collectionId, event
 	}
 	defer tx.Rollback()
 
-	oldCollection := new(trash.Collection)
+	oldCollection := new(models.Collection)
 	oldCollection.Id = collectionId
 	if err := tx.Select(oldCollection); err != nil {
 		return fmt.Errorf("Couldn`t get old collection: %w ", err)
@@ -523,7 +522,7 @@ func (s *eventAccess) DeleteCollectionOrganized(organizerId, collectionId, event
 	}
 
 	if oldCollection.CleanedTrash {
-		updateTrash := new(trash.Trash)
+		updateTrash := new(models.Trash)
 		updateTrash.Id = oldCollection.TrashId
 		updateTrash.Cleaned = false
 		_, err = tx.Model(updateTrash).Column("cleaned").Where("id = ?", oldCollection.TrashId).Update()
@@ -540,8 +539,8 @@ func (s *eventAccess) DeleteCollectionOrganized(organizerId, collectionId, event
 	return tx.Commit()
 }
 
-func (s *eventAccess) HasUserEventPermission(userId, eventId string, editPermission *[]eventPermission) (bool, error) {
-	relation := new(EventUser)
+func (s *eventAccess) HasUserEventPermission(userId, eventId string, editPermission *[]models.EventPermission) (bool, error) {
+	relation := new(models.EventUser)
 	relation.UserId = userId
 	relation.EventId = eventId
 	err := s.db.Select(relation)
@@ -556,8 +555,8 @@ func (s *eventAccess) HasUserEventPermission(userId, eventId string, editPermiss
 	return false, nil
 }
 
-func (s *eventAccess) HasSocietyEventPermission(societyId, eventId string, editPermission *[]eventPermission) (bool, error) {
-	relation := new(EventSociety)
+func (s *eventAccess) HasSocietyEventPermission(societyId, eventId string, editPermission *[]models.EventPermission) (bool, error) {
+	relation := new(models.EventSociety)
 	relation.SocietyId = societyId
 	relation.EventId = eventId
 	err := s.db.Model(relation).Select(relation)
@@ -572,8 +571,8 @@ func (s *eventAccess) HasSocietyEventPermission(societyId, eventId string, editP
 	return false, nil
 }
 
-func (s *eventAccess) AssignTrashToEvent(tx *pg.Tx, event *Event) error {
-	relation := new(EventTrash)
+func (s *eventAccess) AssignTrashToEvent(tx *pg.Tx, event *models.Event) error {
+	relation := new(models.EventTrash)
 	relation.EventId = event.Id
 
 	_, err := tx.Model(relation).Where("event_id = ?", event.Id).Delete()
@@ -594,9 +593,9 @@ func (s *eventAccess) AssignTrashToEvent(tx *pg.Tx, event *Event) error {
 
 func (s *eventAccess) CheckPickerRights(organizerId string, eventId string, asSociety bool) (bool, error) {
 	if asSociety {
-		return s.HasSocietyEventPermission(organizerId, eventId, &[]eventPermission{"creator", "editor"})
+		return s.HasSocietyEventPermission(organizerId, eventId, &[]models.EventPermission{"creator", "editor"})
 
 	} else {
-		return s.HasUserEventPermission(organizerId, eventId, &[]eventPermission{"creator", "editor"})
+		return s.HasUserEventPermission(organizerId, eventId, &[]models.EventPermission{"creator", "editor"})
 	}
 }

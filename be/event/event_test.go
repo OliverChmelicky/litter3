@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
+	"github.com/olo/litter3/models"
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
 	log "github.com/sirupsen/logrus"
@@ -52,25 +53,25 @@ func (s *TrashSuite) SetupSuite() {
 //create event --> hard
 func (s *TrashSuite) Test_CreateTrash_User() {
 	candidates := []struct {
-		creatorUser  *user.User
-		eventRequest *EventRequest
-		trash        []trash.Trash
-		event        *Event
+		creatorUser  *models.User
+		eventRequest *models.EventRequest
+		trash        []models.Trash
+		event        *models.Event
 	}{
 		{
-			creatorUser:  &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			eventRequest: &EventRequest{UserId: "1", AsSociety: false, Date: time.Now(), Publc: true},
-			trash:        []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
-			event:        &Event{Date: time.Now(), Publc: true},
+			creatorUser:  &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			eventRequest: &models.EventRequest{UserId: "1", AsSociety: false, Date: time.Now(), Publc: true},
+			trash:        []models.Trash{{Id: "1", Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")}},
+			event:        &models.Event{Date: time.Now(), Publc: true},
 		},
 		{
-			creatorUser:  &user.User{Id: "2", FirstName: "Damian", LastName: "Zelenina", Email: "On@friend.com", CreatedAt: time.Now()},
-			eventRequest: &EventRequest{UserId: "2", AsSociety: false, Date: time.Now(), Publc: true},
-			trash: []trash.Trash{
-				{Id: "9", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
-				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			creatorUser:  &models.User{Id: "2", FirstName: "Damian", LastName: "Zelenina", Email: "On@friend.com", CreatedAt: time.Now()},
+			eventRequest: &models.EventRequest{UserId: "2", AsSociety: false, Date: time.Now(), Publc: true},
+			trash: []models.Trash{
+				{Id: "9", Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+				{Id: "2", Location: models.Point{50, 16}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
 			},
-			event: &Event{Date: time.Now(), Publc: true},
+			event: &models.Event{Date: time.Now(), Publc: true},
 		},
 	}
 
@@ -99,7 +100,7 @@ func (s *TrashSuite) Test_CreateTrash_User() {
 
 		s.NoError(s.service.CreateEvent(c))
 
-		resp := &Event{}
+		resp := &models.Event{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -113,28 +114,28 @@ func (s *TrashSuite) Test_CreateTrash_User() {
 
 func (s *TrashSuite) Test_CreateTrash_Society() {
 	candidates := []struct {
-		admin          *user.User
-		creatorSociety *user.Society
-		eventRequest   *EventRequest
-		trash          []trash.Trash
-		event          *Event
+		admin          *models.User
+		creatorSociety *models.Society
+		eventRequest   *models.EventRequest
+		trash          []models.Trash
+		event          *models.Event
 	}{
 		{
-			admin:          &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
-			creatorSociety: &user.Society{Name: "Original", CreatedAt: time.Now()},
-			eventRequest:   &EventRequest{AsSociety: true, Date: time.Now(), Publc: true},
-			trash:          []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
-			event:          &Event{Date: time.Now(), Publc: true},
+			admin:          &models.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			creatorSociety: &models.Society{Name: "Original", CreatedAt: time.Now()},
+			eventRequest:   &models.EventRequest{AsSociety: true, Date: time.Now(), Publc: true},
+			trash:          []models.Trash{{Id: "1", Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")}},
+			event:          &models.Event{Date: time.Now(), Publc: true},
 		},
 		{
-			admin:          &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
-			creatorSociety: &user.Society{Name: "company", CreatedAt: time.Now()},
-			eventRequest:   &EventRequest{AsSociety: true, Date: time.Now(), Publc: true},
-			trash: []trash.Trash{
-				{Id: "9", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
-				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			admin:          &models.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			creatorSociety: &models.Society{Name: "company", CreatedAt: time.Now()},
+			eventRequest:   &models.EventRequest{AsSociety: true, Date: time.Now(), Publc: true},
+			trash: []models.Trash{
+				{Id: "9", Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+				{Id: "2", Location: models.Point{50, 16}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
 			},
-			event: &Event{Date: time.Now(), Publc: true},
+			event: &models.Event{Date: time.Now(), Publc: true},
 		},
 	}
 
@@ -166,7 +167,7 @@ func (s *TrashSuite) Test_CreateTrash_Society() {
 
 		s.NoError(s.service.CreateEvent(c))
 
-		resp := &Event{}
+		resp := &models.Event{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -179,34 +180,34 @@ func (s *TrashSuite) Test_CreateTrash_Society() {
 
 func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 	candidates := []struct {
-		creatorUser   *user.User
-		eventRequest  *EventRequest
-		trash         []trash.Trash
-		updatingTrash []trash.Trash
-		event         *Event
-		updatingEvent *EventRequest
+		creatorUser   *models.User
+		eventRequest  *models.EventRequest
+		trash         []models.Trash
+		updatingTrash []models.Trash
+		event         *models.Event
+		updatingEvent *models.EventRequest
 	}{
 		{
-			creatorUser:  &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
-			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
-			trash:        []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
-			updatingTrash: []trash.Trash{
-				{Id: "9", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
-				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			creatorUser:  &models.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			eventRequest: &models.EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash:        []models.Trash{{Id: "1", Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")}},
+			updatingTrash: []models.Trash{
+				{Id: "9", Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+				{Id: "2", Location: models.Point{50, 16}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
 			},
-			event:         &Event{Date: time.Now(), Publc: true},
-			updatingEvent: &EventRequest{Date: time.Now(), Publc: true},
+			event:         &models.Event{Date: time.Now(), Publc: true},
+			updatingEvent: &models.EventRequest{Date: time.Now(), Publc: true},
 		},
 		{
-			creatorUser:  &user.User{Email: "ja@he.cpe", FirstName: "Big", LastName: "Rocky"},
-			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
-			trash: []trash.Trash{
-				{Id: "9", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
-				{Id: "2", Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			creatorUser:  &models.User{Email: "ja@he.cpe", FirstName: "Big", LastName: "Rocky"},
+			eventRequest: &models.EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash: []models.Trash{
+				{Id: "9", Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+				{Id: "2", Location: models.Point{50, 16}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
 			},
-			updatingTrash: []trash.Trash{{Id: "1", Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
-			event:         &Event{Date: time.Now(), Publc: true},
-			updatingEvent: &EventRequest{Date: time.Now(), Publc: true},
+			updatingTrash: []models.Trash{{Id: "1", Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")}},
+			event:         &models.Event{Date: time.Now(), Publc: true},
+			updatingEvent: &models.EventRequest{Date: time.Now(), Publc: true},
 		},
 	}
 
@@ -241,7 +242,7 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 
 	//UPDATE
 	for i, candidate := range candidates {
-		updatingRequest := &EventRequest{
+		updatingRequest := &models.EventRequest{
 			Id:        candidate.event.Id,
 			UserId:    candidate.updatingEvent.UserId,
 			SocietyId: candidate.updatingEvent.SocietyId,
@@ -262,7 +263,7 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 
 		s.NoError(s.service.UpdateEvent(c))
 
-		resp := &Event{}
+		resp := &models.Event{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -286,7 +287,7 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 
 		s.NoError(s.service.GetEvent(c))
 
-		resp := &Event{}
+		resp := &models.Event{}
 		err := json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -301,30 +302,30 @@ func (s *TrashSuite) Test_GetEvent_UpdateEvent() {
 
 func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 	candidates := []struct {
-		admin         *user.User
-		eventRequest  *EventRequest
-		wantsToAttend *user.User
-		trash         []trash.Trash
+		admin         *models.User
+		eventRequest  *models.EventRequest
+		wantsToAttend *models.User
+		trash         []models.Trash
 
-		attendRequest EventPickerRequest
-		event         *Event
+		attendRequest models.EventPickerRequest
+		event         *models.Event
 	}{
 		{
-			admin:         &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
-			eventRequest:  &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
-			trash:         []trash.Trash{{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
-			wantsToAttend: &user.User{Email: "attends@first.com", FirstName: "joshua", LastName: "Bosh"},
-			event:         &Event{Date: time.Now(), Publc: true},
+			admin:         &models.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			eventRequest:  &models.EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash:         []models.Trash{{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")}},
+			wantsToAttend: &models.User{Email: "attends@first.com", FirstName: "joshua", LastName: "Bosh"},
+			event:         &models.Event{Date: time.Now(), Publc: true},
 		},
 		{
-			admin:        &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
-			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
-			trash: []trash.Trash{
-				{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
-				{Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			admin:        &models.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			eventRequest: &models.EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash: []models.Trash{
+				{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+				{Location: models.Point{50, 16}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
 			},
-			wantsToAttend: &user.User{Email: "attends@second.com", FirstName: "joshua", LastName: "Bosh"},
-			event:         &Event{Date: time.Now(), Publc: true},
+			wantsToAttend: &models.User{Email: "attends@second.com", FirstName: "joshua", LastName: "Bosh"},
+			event:         &models.Event{Date: time.Now(), Publc: true},
 		},
 	}
 
@@ -358,7 +359,7 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 
 		s.NoError(s.service.CreateEvent(c))
 
-		resp := &Event{}
+		resp := &models.Event{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -385,11 +386,11 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 		s.NoError(s.service.AttendEvent(c))
 		s.EqualValues(http.StatusCreated, rec.Code)
 		//Chcek if record exists
-		reality := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
+		reality := &models.EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
 		err = s.db.Select(reality)
 		s.Nil(err)
 
-		expected := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id, Permission: eventPermission("viewer")}
+		expected := &models.EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id, Permission: models.EventPermission("viewer")}
 		s.EqualValues(expected, reality)
 		s.Nil(err)
 
@@ -408,7 +409,7 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 		s.NoError(s.service.CannotAttendEvent(c))
 		s.EqualValues(http.StatusOK, rec.Code)
 
-		reality := &EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
+		reality := &models.EventUser{EventId: candidate.event.Id, UserId: candidate.wantsToAttend.Id}
 		err := s.db.Select(reality)
 		s.EqualValues(pg.ErrNoRows, err)
 	}
@@ -417,23 +418,23 @@ func (s *TrashSuite) Test_CreateTrashUser_AttendEvent_CannotAttend() {
 
 func (s *TrashSuite) Test_GetSocietyEvents() {
 	candidates := []struct {
-		admin   *user.User
-		society *user.Society
+		admin   *models.User
+		society *models.Society
 
-		event   *Event
-		request *EventPickerRequest
+		event   *models.Event
+		request *models.EventPickerRequest
 	}{
 		{
-			admin:   &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
-			society: &user.Society{Name: "Olala"},
-			event:   &Event{Date: time.Now(), Publc: true, Description: "this is my first description"},
-			request: &EventPickerRequest{AsSociety: true},
+			admin:   &models.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			society: &models.Society{Name: "Olala"},
+			event:   &models.Event{Date: time.Now(), Publc: true, Description: "this is my first description"},
+			request: &models.EventPickerRequest{AsSociety: true},
 		},
 		{
-			admin:   &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
-			society: &user.Society{Name: "HAHA"},
-			event:   &Event{Date: time.Now(), Publc: true, Description: "this is cool"},
-			request: &EventPickerRequest{AsSociety: true},
+			admin:   &models.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			society: &models.Society{Name: "HAHA"},
+			event:   &models.Event{Date: time.Now(), Publc: true, Description: "this is cool"},
+			request: &models.EventPickerRequest{AsSociety: true},
 		},
 	}
 
@@ -446,7 +447,7 @@ func (s *TrashSuite) Test_GetSocietyEvents() {
 		s.Nil(err)
 		candidates[i].society = society
 
-		event, err := s.service.eventAccess.CreateEvent(&EventRequest{UserId: admin.Id, AsSociety: true, SocietyId: society.Id, Date: candidates[i].event.Date, Publc: true})
+		event, err := s.service.eventAccess.CreateEvent(&models.EventRequest{UserId: admin.Id, AsSociety: true, SocietyId: society.Id, Date: candidates[i].event.Date, Publc: true})
 		candidates[i].event = event
 		s.Nil(err)
 
@@ -466,7 +467,7 @@ func (s *TrashSuite) Test_GetSocietyEvents() {
 		s.NoError(s.service.GetSocietyEvents(c))
 		s.EqualValues(http.StatusOK, rec.Code)
 
-		resp := []Event{}
+		resp := []models.Event{}
 		err := json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
 
@@ -479,19 +480,19 @@ func (s *TrashSuite) Test_GetSocietyEvents() {
 
 func (s *TrashSuite) Test_GetUserEvents() {
 	candidates := []struct {
-		admin   *user.User
-		event   *Event
-		request *EventPickerRequest
+		admin   *models.User
+		event   *models.Event
+		request *models.EventPickerRequest
 	}{
 		{
-			admin:   &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
-			event:   &Event{Date: time.Now(), Publc: true, Description: "this is my first description"},
-			request: &EventPickerRequest{AsSociety: true},
+			admin:   &models.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			event:   &models.Event{Date: time.Now(), Publc: true, Description: "this is my first description"},
+			request: &models.EventPickerRequest{AsSociety: true},
 		},
 		{
-			admin:   &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
-			event:   &Event{Date: time.Now(), Publc: true, Description: "this is cool"},
-			request: &EventPickerRequest{AsSociety: true},
+			admin:   &models.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			event:   &models.Event{Date: time.Now(), Publc: true, Description: "this is cool"},
+			request: &models.EventPickerRequest{AsSociety: true},
 		},
 	}
 
@@ -500,7 +501,7 @@ func (s *TrashSuite) Test_GetUserEvents() {
 		s.Nil(err)
 		candidates[i].admin = admin
 
-		event, err := s.service.eventAccess.CreateEvent(&EventRequest{UserId: admin.Id, Date: candidates[i].event.Date, Publc: true})
+		event, err := s.service.eventAccess.CreateEvent(&models.EventRequest{UserId: admin.Id, Date: candidates[i].event.Date, Publc: true})
 		candidates[i].event = event
 		s.Nil(err)
 
@@ -520,7 +521,7 @@ func (s *TrashSuite) Test_GetUserEvents() {
 		s.NoError(s.service.GetUserEvents(c))
 		s.EqualValues(http.StatusOK, rec.Code)
 
-		resp := []Event{}
+		resp := []models.Event{}
 		err := json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
 
@@ -533,28 +534,28 @@ func (s *TrashSuite) Test_GetUserEvents() {
 
 func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 	candidates := []struct {
-		admin        *user.User
-		eventRequest *EventRequest
-		trash        []trash.Trash
+		admin        *models.User
+		eventRequest *models.EventRequest
+		trash        []models.Trash
 
 		eventId          string
-		requestOrganized *trash.CreateCollectionOrganizedRequest
-		collections      []trash.CreateCollectionRequest
+		requestOrganized *models.CreateCollectionOrganizedRequest
+		collections      []models.CreateCollectionRequest
 	}{
 		{
-			admin:        &user.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
-			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
-			trash:        []trash.Trash{{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")}},
-			collections:  []trash.CreateCollectionRequest{{CleanedTrash: false, Weight: 622.642}},
+			admin:        &models.User{Email: "ja@me.cpg", FirstName: "joshua", LastName: "Bosh"},
+			eventRequest: &models.EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash:        []models.Trash{{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")}},
+			collections:  []models.CreateCollectionRequest{{CleanedTrash: false, Weight: 622.642}},
 		},
 		{
-			admin:        &user.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
-			eventRequest: &EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
-			trash: []trash.Trash{
-				{Location: trash.Point{20, 30}, Cleaned: false, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
-				{Location: trash.Point{50, 16}, Cleaned: true, Size: trash.Size("bag"), Accessibility: trash.Accessibility("car"), TrashType: trash.TrashType("organic")},
+			admin:        &models.User{Email: "ja@me.cpe", FirstName: "Big", LastName: "Rocky"},
+			eventRequest: &models.EventRequest{AsSociety: false, Date: time.Now(), Publc: true},
+			trash: []models.Trash{
+				{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+				{Location: models.Point{50, 16}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
 			},
-			collections: []trash.CreateCollectionRequest{{CleanedTrash: false, Weight: 622.31}, {CleanedTrash: false, Weight: 63.74}},
+			collections: []models.CreateCollectionRequest{{CleanedTrash: false, Weight: 622.31}, {CleanedTrash: false, Weight: 63.74}},
 		},
 	}
 
@@ -575,7 +576,7 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 		event, err := s.service.eventAccess.CreateEvent(candidates[i].eventRequest)
 		s.Nil(err)
 		candidates[i].eventId = event.Id
-		candidates[i].requestOrganized = &trash.CreateCollectionOrganizedRequest{
+		candidates[i].requestOrganized = &models.CreateCollectionOrganizedRequest{
 			EventId:     event.Id,
 			Collections: candidates[i].collections,
 		}
@@ -592,10 +593,10 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 		c := s.e.NewContext(req, rec)
 		c.Set("userId", candidate.admin.Id)
 
-		s.NoError(s.service.CreateCollections(c))
+		s.NoError(s.service.CreateCollectionsOrganized(c))
 		s.EqualValues(http.StatusCreated, rec.Code)
 
-		var newCollections []trash.Collection
+		var newCollections []models.Collection
 		err = s.db.Model(&newCollections).Where("event_id = ?", candidate.eventId).Select()
 		s.Nil(err)
 

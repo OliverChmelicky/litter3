@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
+	"github.com/olo/litter3/models"
 	"github.com/olo/litter3/user"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
@@ -45,14 +46,14 @@ func (s *TrashSuite) SetupSuite() {
 
 func (s *TrashSuite) Test_CreateTrash() {
 	candidates := []struct {
-		creator  *user.User
-		trash    *Trash
-		updating *Trash
+		creator  *models.User
+		trash    *models.Trash
+		updating *models.Trash
 	}{
 		{
-			creator:  &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:    &Trash{Location: Point{20, 30}, Cleaned: false, Size: Size("bag"), Accessibility: Accessibility("car"), TrashType: TrashType("organic")},
-			updating: &Trash{Location: Point{99, 69}, Cleaned: true, Size: Size("bag"), Accessibility: Accessibility("unknown"), TrashType: TrashType("organic")},
+			creator:  &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:    &models.Trash{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+			updating: &models.Trash{Location: models.Point{99, 69}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("unknown"), TrashType: models.TrashType("organic")},
 		},
 	}
 
@@ -73,7 +74,7 @@ func (s *TrashSuite) Test_CreateTrash() {
 
 		s.NoError(s.service.CreateTrash(c))
 
-		resp := &Trash{}
+		resp := &models.Trash{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -98,7 +99,7 @@ func (s *TrashSuite) Test_CreateTrash() {
 
 		s.NoError(s.service.UpdateTrash(c))
 
-		resp := &Trash{}
+		resp := &models.Trash{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -109,14 +110,14 @@ func (s *TrashSuite) Test_CreateTrash() {
 
 func (s *TrashSuite) Test_GetAround() {
 	candidates := []struct {
-		creator      *user.User
-		trash        *Trash
-		rangeRequest *RangeRequest
+		creator      *models.User
+		trash        *models.Trash
+		rangeRequest *models.RangeRequest
 	}{
 		{
-			creator:      &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:        &Trash{Location: Point{20, 30}, Cleaned: false, Size: Size("bag"), Accessibility: Accessibility("car"), TrashType: TrashType("organic")},
-			rangeRequest: &RangeRequest{Location: Point{20, 29.99}, Radius: 5000.0},
+			creator:      &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:        &models.Trash{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+			rangeRequest: &models.RangeRequest{Location: models.Point{20, 29.99}, Radius: 5000.0},
 		},
 	}
 
@@ -138,7 +139,7 @@ func (s *TrashSuite) Test_GetAround() {
 
 		s.NoError(s.service.GetTrashInRange(c))
 
-		var resp []Trash
+		var resp []models.Trash
 		err = json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
 
@@ -148,20 +149,20 @@ func (s *TrashSuite) Test_GetAround() {
 
 func (s *TrashSuite) Test_CreateCommentOnTrash() {
 	candidates := []struct {
-		creator         *user.User
-		trash           *Trash
-		commentRequest  *TrashCommentRequest
-		updatingRequest *TrashCommentRequest
-		actualComment   *TrashComment
-		trashComments   []TrashComment
+		creator         *models.User
+		trash           *models.Trash
+		commentRequest  *models.TrashCommentRequest
+		updatingRequest *models.TrashCommentRequest
+		actualComment   *models.TrashComment
+		trashComments   []models.TrashComment
 	}{
 		{
-			creator:         &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:           &Trash{Location: Point{20, 30}},
-			commentRequest:  &TrashCommentRequest{Message: "prva message"},
-			actualComment:   &TrashComment{Message: "prva message"},
-			updatingRequest: &TrashCommentRequest{Message: "DRUHA message"},
-			trashComments:   []TrashComment{{Message: "DRUHA message"}},
+			creator:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:           &models.Trash{Location: models.Point{20, 30}},
+			commentRequest:  &models.TrashCommentRequest{Message: "prva message"},
+			actualComment:   &models.TrashComment{Message: "prva message"},
+			updatingRequest: &models.TrashCommentRequest{Message: "DRUHA message"},
+			trashComments:   []models.TrashComment{{Message: "DRUHA message"}},
 		},
 	}
 
@@ -186,7 +187,7 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 
 		s.NoError(s.service.CreateTrashComment(c))
 
-		resp := &TrashComment{}
+		resp := &models.TrashComment{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -209,7 +210,7 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 
 		s.NoError(s.service.UpdateTrashComment(c))
 
-		resp := &TrashComment{}
+		resp := &models.TrashComment{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -232,7 +233,7 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 
 		s.NoError(s.service.GetTrashComments(c))
 
-		var resp []TrashComment
+		var resp []models.TrashComment
 		err := json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
 		arr := candidate.trashComments
@@ -264,16 +265,16 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 
 func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 	candidates := []struct {
-		creator    *user.User
-		trash      *Trash
-		request    *CreateCollectionRandomRequest
-		collection *Collection
+		creator    *models.User
+		trash      *models.Trash
+		request    *models.CreateCollectionRandomRequest
+		collection *models.Collection
 	}{
 		{
-			creator:    &user.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:      &Trash{Location: Point{20, 30}},
-			request:    &CreateCollectionRandomRequest{Weight: 369.7, CleanedTrash: false},
-			collection: &Collection{CleanedTrash: false, Weight: 369.7},
+			creator:    &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:      &models.Trash{Location: models.Point{20, 30}},
+			request:    &models.CreateCollectionRandomRequest{Weight: 369.7, CleanedTrash: false},
+			collection: &models.Collection{CleanedTrash: false, Weight: 369.7},
 		},
 	}
 
@@ -300,7 +301,7 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 
 		s.NoError(s.service.CreateCollection(c))
 
-		resp := &Collection{}
+		resp := &models.Collection{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
 		s.Nil(err)
 
@@ -347,7 +348,7 @@ func TestUserServiceSuite(t *testing.T) {
 	suite.Run(t, &TrashSuite{})
 }
 
-func fillActualComment(comment *TrashComment, resp *TrashComment, creatorId, trashId string) {
+func fillActualComment(comment *models.TrashComment, resp *models.TrashComment, creatorId, trashId string) {
 	comment.UserId = creatorId
 	comment.TrashId = trashId
 	comment.CreatedAt = resp.CreatedAt

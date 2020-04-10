@@ -4,6 +4,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
+	"github.com/olo/litter3/models"
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
 	"net/http"
@@ -24,7 +25,7 @@ func CreateService(db *pg.DB, userAccess *user.UserAccess, trashAccess *trash.Tr
 func (s *EventService) CreateEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(EventRequest)
+	request := new(models.EventRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -62,7 +63,7 @@ func (s *EventService) GetEvent(c echo.Context) error {
 func (s *EventService) AttendEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(EventPickerRequest)
+	request := new(models.EventPickerRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -91,7 +92,7 @@ func (s *EventService) AttendEvent(c echo.Context) error {
 func (s *EventService) CannotAttendEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(EventPickerRequest)
+	request := new(models.EventPickerRequest)
 	eventId := c.QueryParam("event")
 	pickerId := c.QueryParam("picker")
 	asSociety, err := strconv.ParseBool(c.QueryParam("asSociety"))
@@ -125,7 +126,7 @@ func (s *EventService) CannotAttendEvent(c echo.Context) error {
 func (s *EventService) UpdateEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(EventRequest)
+	request := new(models.EventRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -153,7 +154,7 @@ func (s *EventService) UpdateEvent(c echo.Context) error {
 func (s *EventService) EditEventRights(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(EventPermissionRequest)
+	request := new(models.EventPermissionRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -180,7 +181,7 @@ func (s *EventService) EditEventRights(c echo.Context) error {
 func (s *EventService) DeleteEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(EventPickerRequest)
+	request := new(models.EventPickerRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -205,7 +206,7 @@ func (s *EventService) DeleteEvent(c echo.Context) error {
 }
 
 func (s *EventService) GetSocietyEvents(c echo.Context) error {
-	request := new(EventPickerRequest)
+	request := new(models.EventPickerRequest)
 	eventId := c.QueryParam("event")
 	pickerId := c.QueryParam("picker")
 	asSociety, err := strconv.ParseBool(c.QueryParam("asSociety"))
@@ -239,7 +240,7 @@ func (s *EventService) GetUserEvents(c echo.Context) error {
 func (s *EventService) CreateCollectionsOrganized(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(trash.CreateCollectionOrganizedRequest)
+	request := new(models.CreateCollectionOrganizedRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
@@ -268,7 +269,7 @@ func (s *EventService) CreateCollectionsOrganized(c echo.Context) error {
 func (s *EventService) UpdateCollectionOrganized(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	request := new(trash.UpdateCollectionOrganizedRequest)
+	request := new(models.UpdateCollectionOrganizedRequest)
 	err := c.Bind(request)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))

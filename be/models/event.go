@@ -1,4 +1,4 @@
-package event
+package models
 
 import (
 	"context"
@@ -32,7 +32,7 @@ type GetEventsRequest struct {
 type EventPermissionRequest struct {
 	ChangingRightsTo string
 	EventId          string
-	Permission       eventPermission
+	Permission       EventPermission
 	AsSociety        bool
 	SocietyId        string
 }
@@ -57,7 +57,7 @@ func (u *Event) BeforeInsert(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-type eventPermission string
+type EventPermission string
 
 //    'creator',
 //    'editor',
@@ -67,14 +67,14 @@ type EventSociety struct {
 	tableName  struct{} `pg:"events_societies"json:"-"`
 	SocietyId  string   `pg:",pk"`
 	EventId    string   `pg:",pk"`
-	Permission eventPermission
+	Permission EventPermission
 }
 
 type EventUser struct {
 	tableName  struct{} `pg:"events_users"json:"-"`
 	UserId     string   `pg:",pk"`
 	EventId    string   `pg:",pk"`
-	Permission eventPermission
+	Permission EventPermission
 }
 
 type EventTrash struct {
