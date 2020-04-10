@@ -116,7 +116,7 @@ func (s *UserAccess) GetSocietyMembers(societyId string) (*models.AllMembers, er
 		return nil, fmt.Errorf("Error querying simple members view: %w ", err)
 	}
 
-	return &models.AllMembers{AllMembers: socMemb, Friends: []string{}, Count: len(socMemb)}, nil
+	return &models.AllMembers{AllMembers: socMemb, Count: len(socMemb)}, nil
 }
 
 //TODO worht thinking more how to involve my friends who are in the wanted society
