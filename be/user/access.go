@@ -285,7 +285,7 @@ func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*models.Friends
 	if err != nil {
 		return &models.Friends{}, fmt.Errorf("Error creating Friendship %w", err)
 	}
-	return friendship, nil
+	return friendship, tx.Commit()
 }
 
 func (s *UserAccess) RemoveFriend(friendship *models.Friends) error {

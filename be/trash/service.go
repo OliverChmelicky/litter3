@@ -77,19 +77,18 @@ func (s *trashService) UpdateTrash(c echo.Context) error {
 	return c.JSON(http.StatusOK, trash)
 }
 
-//TODO delete trash
-//func (s *trashService) DeleteTrash(c echo.Context) error {
-//	userId := c.Get("userId")
-//
-//	trashId := c.Param("trashId")
-//
-//	err := s.TrashAccess.DeleteTrash(userId, trashId)
-//	if err != nil {
-//		return c.JSON(http.StatusInternalServerError, err)
-//	}
-//
-//	return c.JSON(http.StatusOK, "")
-//}
+func (s *trashService) DeleteTrash(c echo.Context) error {
+	userId := c.Get("userId")
+
+	trashId := c.Param("trashId")
+
+	err := s.TrashAccess.DeleteTrash(userId, trashId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, "")
+}
 
 //
 //

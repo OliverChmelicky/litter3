@@ -45,23 +45,39 @@ func (s *TrashAccess) UpdateTrash(in *models.Trash) (*models.Trash, error) {
 	return in, s.Db.Update(in)
 }
 
-//TODO delete trash
-//func (s *TrashAccess) DeleteTrash(userId, trashId string) error {
-//	trash := new(models.Trash)
-//	trash.Id = trashId
-//
-//	err := s.Db.Select(trash)
-//	if err != nil {
-//		return fmt.Errorf("Error getting old trash: %w ", err)
-//	}
-//
-//	if trash.FinderId != userId {
-//		return fmt.Errorf("You cannot delete trash of someone else: %w ", err)
-//	}
-//
-//	trashEvent := new(models.EventTrash)
-//
-//}
+func (s *TrashAccess) DeleteTrash(userId, trashId string) error {
+	trash := new(models.Trash)
+	trash.Id = trashId
+
+	tx, err := s.Db.Begin()
+	if err != nil {
+		return fmt.Errorf("Coudln`t start transaction: %w ", err)
+	}
+	defer tx.Rollback()
+
+	err = tx.Select(trash)
+	if err != nil {
+		return fmt.Errorf("Error getting old trash: %w ", err)
+	}
+
+	if trash.FinderId != userId {
+		return fmt.Errorf("You cannot delete trash of someone else: %w ", err)
+	}
+
+	trashComment := new(models.TrashComment)
+	trashComment.TrashId = trashId
+	_, err = tx.Model(trashComment).Where("trash_id = ?", trashId).Delete()
+	if err != nil {
+		return fmt.Errorf("You cannot delete trash of someone else: %w ", err)
+	}
+
+	err = tx.Delete(trash)
+	if err != nil {
+		return fmt.Errorf("Error deleting traash: %w ", err)
+	}
+
+	return tx.Commit()
+}
 
 //
 //
@@ -159,12 +175,12 @@ func (s *TrashAccess) UpdateCollectionRandom(request *models.Collection, userId 
 	if err != nil {
 		return &models.Collection{}, fmt.Errorf("Error creating transaction: %w ", err)
 	}
+	defer tx.Rollback()
 
 	err = tx.Update(request)
 	if err != nil {
 		return &models.Collection{}, fmt.Errorf("Error update collection: %w ", err)
 	}
-	defer tx.Rollback()
 
 	if request.CleanedTrash != oldCollection.CleanedTrash {
 		trash := new(models.Trash)
