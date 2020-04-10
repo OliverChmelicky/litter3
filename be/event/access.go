@@ -498,8 +498,8 @@ func (s *eventAccess) UpdateCollectionOrganized(request *trash.UpdateCollectionO
 	return updatedCollection, tx.Commit()
 }
 
-func (s *eventAccess) DeleteCollectionOrganized(request *trash.UpdateCollectionOrganizedRequest) error {
-	rights, err := s.CheckPickerRights(request.OrganizerId, request.EventId, request.AsSociety)
+func (s *eventAccess) DeleteCollectionOrganized(organizerId, collectionId, eventId string, asSociety bool) error {
+	rights, err := s.CheckPickerRights(organizerId, eventId, asSociety)
 	if err != nil {
 		return err
 	}
@@ -514,20 +514,19 @@ func (s *eventAccess) DeleteCollectionOrganized(request *trash.UpdateCollectionO
 	defer tx.Rollback()
 
 	oldCollection := new(trash.Collection)
-	oldCollection.Id = request.Collection.Id
+	oldCollection.Id = collectionId
 	if err := tx.Select(oldCollection); err != nil {
 		return fmt.Errorf("Couldn`t get old collection: %w ", err)
 	}
-
-	if oldCollection.EventId != request.EventId {
+	if oldCollection.EventId != eventId {
 		return fmt.Errorf("Collection does not belong to event: %w ", err)
 	}
 
 	if oldCollection.CleanedTrash {
 		updateTrash := new(trash.Trash)
-		updateTrash.Id = request.Collection.TrashId
+		updateTrash.Id = oldCollection.TrashId
 		updateTrash.Cleaned = false
-		_, err = tx.Model(updateTrash).Column("cleaned").Where("id = ?", request.Collection.TrashId).Update()
+		_, err = tx.Model(updateTrash).Column("cleaned").Where("id = ?", oldCollection.TrashId).Update()
 		if err != nil {
 			return fmt.Errorf("Error updating trash before deleting collection: %w ", err)
 		}
