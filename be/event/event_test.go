@@ -606,8 +606,6 @@ func (s *TrashSuite) Test_CreateCollectionFromEvents() {
 
 }
 
-//TODO ako to je s updatom tejto kolekcie?  --> update je napicu...ale bude sa dat
-
 //TODO delete event
 
 func (s *TrashSuite) SetupTest() {
