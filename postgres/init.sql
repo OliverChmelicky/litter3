@@ -57,6 +57,8 @@ create table users
     first_name VARCHAR     NOT NULL,
     last_name  VARCHAR     NOT NULL,
     email      VARCHAR     NOT NULL unique,
+    uid        VARCHAR     NOT NULL unique,
+    avatar     varchar,
     CONSTRAINT proper_email CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
     created_at timestamptz NOT NULL
 );
@@ -65,6 +67,7 @@ create table societies
 (
     id         VARCHAR PRIMARY KEY,
     name       VARCHAR     NOT NULL,
+    avatar     varchar,
     created_at timestamptz NOT NULL
 );
 
@@ -77,7 +80,7 @@ create table trash
     trash_type    trashType     default 'unknown',
     location      GEOGRAPHY(POINT, 4326) NOT NULL,
     description   VARCHAR,
-    finder_id     VARCHAR                REFERENCES users(id) on delete set null,
+    finder_id     VARCHAR                REFERENCES users (id) on delete set null,
     created_at    timestamptz            NOT NULL
 );
 
@@ -118,7 +121,7 @@ create table collections
 
 create table societies_members
 (
-    "user_id"  VARCHAR REFERENCES users (id), --no cascade on delete, because he might be a user
+    "user_id"  VARCHAR REFERENCES users (id),
     society_id VARCHAR REFERENCES societies (id) on delete cascade,
     permission membership  not null,
     created_at timestamptz NOT NULL,

@@ -59,8 +59,8 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			heinrich:  &models.User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "Heinrich@Herrer.tibet", CreatedAt: time.Now()},
-			peterAsks: &models.User{FirstName: "Novy", LastName: "Member", Email: "Ja@Peter.cz"},
+			heinrich:  &models.User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Uid: "7", Email: "Heinrich@Herrer.tibet", CreatedAt: time.Now()},
+			peterAsks: &models.User{FirstName: "Novy", LastName: "Member", Uid: "5", Email: "Ja@Peter.cz"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrApplyForFriendship},
 		},
 	}
@@ -148,8 +148,8 @@ func (s *UserSuite) Test_RequestFriendshipExistingFriendship() {
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			heinrich:  &models.User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
-			peterAsks: &models.User{FirstName: "Novy", LastName: "Member", Email: "blbost@peterAsks.com"},
+			heinrich:  &models.User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Uid: "5", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
+			peterAsks: &models.User{FirstName: "Novy", LastName: "Member", Uid: "7", Email: "blbost@peterAsks.com"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrConflict, Message: "YOU ARE FIENDS ALREADY"},
 		},
 	}
@@ -207,8 +207,8 @@ func (s *UserSuite) Test_AddFriend() {
 		response  *models.Friends
 	}{
 		{
-			heinrich:  &models.User{FirstName: "John", LastName: "Modest", Email: "On@Janovutbr.com"},
-			peterAsks: &models.User{FirstName: "Hello", LastName: "Flowup", Email: "TY@Janovutbr.cz"},
+			heinrich:  &models.User{FirstName: "John", LastName: "Modest", Uid: "7", Email: "On@Janovutbr.com"},
+			peterAsks: &models.User{FirstName: "Hello", LastName: "Flowup", Uid: "5", Email: "TY@Janovutbr.cz"},
 		},
 	}
 
@@ -257,8 +257,8 @@ func (s *UserSuite) Test_RemoveFriend() {
 		friendship *models.Friends
 	}{
 		{
-			heinrich:  &models.User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.italy"},
-			peterAsks: &models.User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Milan.cz"},
+			heinrich:  &models.User{FirstName: "John", LastName: "Modest", Uid: "6", Email: "Ja@Janovutbr.italy"},
+			peterAsks: &models.User{FirstName: "Hello", LastName: "Flowup", Uid: "5", Email: "Ja@Milan.cz"},
 		},
 	}
 

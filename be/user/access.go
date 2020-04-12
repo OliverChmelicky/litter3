@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v9/orm"
 	"github.com/olo/litter3/models"
 )
 
@@ -27,9 +28,10 @@ func (s *UserAccess) CreateUser(in *models.User) (*models.User, error) {
 	return in, nil
 }
 
-func (s *UserAccess) GetUser(in string) (*models.User, error) {
+func (s *UserAccess) GetUser(id string) (*models.User, error) {
 	user := new(models.User)
-	err := s.Db.Model(user).Where("id = ?", in).Select()
+	user.Id = id
+	err := s.Db.Model(user).Select()
 	if err != nil {
 		return &models.User{}, err
 	}
@@ -37,6 +39,9 @@ func (s *UserAccess) GetUser(in string) (*models.User, error) {
 }
 
 func (s *UserAccess) UpdateUser(in *models.User) (*models.User, error) {
+	if _, err := s.GetUser(in.Id); err != nil {
+		return &models.User{}, err
+	}
 	return in, s.Db.Update(in)
 }
 
@@ -98,30 +103,27 @@ func (s *UserAccess) CreateSocietyWithAdmin(in *models.Society, adminId string) 
 	return in, tx.Commit()
 }
 
-func (s *UserAccess) GetSociety(in string) (*models.Society, error) {
-	society := new(models.Society)
-	err := s.Db.Model(society).Where("id = ?", in).Select()
+func (s *UserAccess) GetSociety(id string) (*models.Society, error) {
+	society := &models.Society{Id: id}
+	err := s.Db.Model(society).Column("society.*").
+		Relation("Users").
+		Where("id = ?", id).First()
 	if err != nil {
 		return &models.Society{}, err
 	}
 	return society, nil
 }
 
-func (s *UserAccess) GetSocietyMembers(societyId string) (*models.AllMembers, error) {
-	socMemb := []models.SocietyMemberResponse{}
-	err := s.Db.Model(&socMemb).Column("societies_members.*").Where("society_id = ?", societyId).
-		Relation("UserDetails").
-		Select()
-	if err != nil {
-		return nil, fmt.Errorf("Error querying simple members view: %w ", err)
-	}
-
-	return &models.AllMembers{AllMembers: socMemb, Count: len(socMemb)}, nil
-}
-
-//TODO worht thinking more how to involve my friends who are in the wanted society
-//func (s *UserAccess) getNormalSocietyView(societyId, userId string) (*models.AllMembers, error) {
-//	socMemb := []models.SocietyMemberResponse{}
+//worht thinking more how to explicitly involve my friends who are in the wanted society
+//func (s *UserAccess) GetMyFriendsInSociety(societyId, userId string) ([]models.User, error) {
+//	friends := []models.Friends{}
+//	err := s.Db.Model(&friends).Where("user1_id = ? or user2_id = ?", userId, userId).
+//		Select()
+//	if err != nil {
+//		return nil, fmt.Errorf("Error querying friends of user: %w ", err)
+//	}
+//
+//	socMemb := []models.User{}
 //	err := s.Db.Model(&socMemb).Column("societies_members.*").Where("society_id = ?", societyId).
 //		Relation("UserDetails").
 //		Select()
@@ -129,15 +131,26 @@ func (s *UserAccess) GetSocietyMembers(societyId string) (*models.AllMembers, er
 //		return nil, fmt.Errorf("Error querying normal members view: %w ", err)
 //	}
 //
-//	friends := []models.SocietyMemberFriends{}
-//	err := s.Db.Model(&friends).Column("societies_members.*").Where("society_id = ?", societyId).
-//		Relation("UserDetails").
-//		Select()
-//	if err != nil {
-//		return nil, fmt.Errorf("Error querying normal members view: %w ", err)
-//	}
 //
 //}
+
+func (s *UserAccess) GetSocietyAdminsAll(societyId string) ([]models.User, error) {
+	var admins []models.User
+	permission := models.Membership("admin")
+	err := s.Db.Model(&admins).Column("user.*").
+		Relation("Admins", func(q *orm.Query) (*orm.Query, error) {
+			return q.Where("permission = ? and society_id = ?", permission, societyId), nil
+		}).
+		Select()
+	if err != nil {
+		return nil, err
+	}
+	if len(admins) == 0 {
+		return nil, pg.ErrNoRows
+	}
+
+	return admins, nil
+}
 
 func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	members := new(models.Member)
@@ -164,6 +177,11 @@ func (s *UserAccess) CountSocietyAdmins(in string) (int, error) {
 }
 
 func (s *UserAccess) UpdateSociety(in *models.Society) (*models.Society, error) {
+	society := &models.Society{Id: in.Id}
+	if err := s.Db.Model(society).Select(); err != nil {
+		return &models.Society{}, fmt.Errorf("Error find society: %w ", err)
+	}
+
 	return in, s.Db.Update(in)
 }
 

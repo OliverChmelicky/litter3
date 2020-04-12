@@ -52,7 +52,7 @@ func (s *SocietySuite) Test_CRUsociety() {
 		societyUpdate *models.Society
 	}{
 		{
-			user:          &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			user:          &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", Uid: "123", CreatedAt: time.Now()},
 			society:       &models.Society{Name: "Dake meno"},
 			numOfAdmins:   1,
 			societyUpdate: &models.Society{Name: "Nove menicko ako v restauracii"},
@@ -85,8 +85,6 @@ func (s *SocietySuite) Test_CRUsociety() {
 		s.EqualValues(candidates[i].society, resp)
 		candidates[i].societyUpdate.Id = resp.Id
 		candidates[i].societyUpdate.CreatedAt = resp.CreatedAt
-
-		//oprav acces admina
 
 		isAdmin, numAdmins, err := s.service.UserAccess.IsUserSocietyAdmin(candidates[i].user.Id, resp.Id)
 		s.Nil(err)
@@ -128,9 +126,9 @@ func (s *SocietySuite) Test_ApplyForMembership_RemoveApplication_AllByUser() {
 		err             string
 	}{
 		{
-			admin:     &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Motyl.cz", CreatedAt: time.Now()},
+			admin:     &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Motyl.cz", Uid: "123", CreatedAt: time.Now()},
 			society:   &models.Society{Name: "Dake meno"},
-			newMember: &models.User{FirstName: "Novy", LastName: "Member", Email: "dakto@novy.cz"},
+			newMember: &models.User{FirstName: "Novy", LastName: "Member", Uid: "321", Email: "dakto@novy.cz"},
 		},
 	}
 
@@ -194,9 +192,9 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 		err             *custom_errors.ErrorModel
 	}{
 		{
-			admin:     &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", CreatedAt: time.Now()},
+			admin:     &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "ja@TestApplyFormMembershipExistingMember.com", Uid: "987", CreatedAt: time.Now()},
 			society:   &models.Society{Name: "TestApplyFormMembershipExistingMember"},
-			newMember: &models.User{FirstName: "Novy", LastName: "Member", Email: "blbost@newMember.com"},
+			newMember: &models.User{FirstName: "Novy", LastName: "Member", Uid: "5547", Email: "blbost@newMember.com"},
 			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrConflict, Message: "User is already a member"},
 		},
 	}
@@ -258,9 +256,9 @@ func (s *SocietySuite) Test_DismissApplicant() {
 		application *models.Applicant
 	}{
 		{
-			admin:     &models.User{Id: "2", FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
+			admin:     &models.User{Id: "2", FirstName: "John", LastName: "Modest", Uid: "987654", Email: "Ja@Janovutbr.cz"},
 			society:   &models.Society{Name: "More members than one"},
-			newMember: &models.User{FirstName: "Hello", LastName: "Flowup", Email: "me@mew.cz"},
+			newMember: &models.User{FirstName: "Hello", LastName: "Flowup", Uid: "564", Email: "me@mew.cz"},
 		},
 	}
 
@@ -309,9 +307,9 @@ func (s *SocietySuite) Test_AddMember() {
 		response  *models.Member
 	}{
 		{
-			admin:     &models.User{FirstName: "John", LastName: "Modest", Email: "Ja@Janovutbr.cz"},
+			admin:     &models.User{FirstName: "John", LastName: "Modest", Uid: "45", Email: "Ja@Janovutbr.cz"},
 			society:   &models.Society{Name: "More members than one"},
-			newMember: &models.User{FirstName: "Hello", LastName: "Flowup", Email: "Ja@Janovutbr.com"},
+			newMember: &models.User{FirstName: "Hello", LastName: "Flowup", Uid: "2", Email: "Ja@Janovutbr.com"},
 			response:  &models.Member{Permission: "member"},
 		},
 	}
@@ -370,16 +368,16 @@ func (s *SocietySuite) Test_ChangeRights() {
 		err           string
 	}{
 		{
-			admin:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Herrer.cz", CreatedAt: time.Now()},
+			admin:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "9", Email: "Ja@Herrer.cz", CreatedAt: time.Now()},
 			society:       &models.Society{Name: "Dake meno"},
-			friend:        &models.User{FirstName: "Novy", LastName: "Member", Email: "Peter@me.cz"},
+			friend:        &models.User{FirstName: "Novy", LastName: "Member", Uid: "3", Email: "Peter@me.cz"},
 			oldMembership: &models.Member{Permission: models.Membership("member")},
 			newMembership: &models.Member{Permission: models.Membership("admin")},
 		},
 		{
-			admin:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
+			admin:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "7", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
 			society:       &models.Society{Name: "Dake meno"},
-			friend:        &models.User{FirstName: "Novy", LastName: "Member", Email: "me@me.cz"},
+			friend:        &models.User{FirstName: "Novy", LastName: "Member", Uid: "1", Email: "me@me.cz"},
 			oldMembership: &models.Member{Permission: models.Membership("admin")},
 			newMembership: &models.Member{Permission: models.Membership("member")},
 		},
@@ -431,11 +429,106 @@ func (s *SocietySuite) Test_ChangeRights() {
 	}
 }
 
+func (s *SocietySuite) Test_GetSocietyMembers() {
+	candidates := []struct {
+		admin     *models.User
+		society   *models.Society
+		newMember *models.User
+	}{
+		{
+			admin:     &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "3", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			society:   &models.Society{Name: "Dake meno"},
+			newMember: &models.User{FirstName: "Hello", LastName: "Flowup", Uid: "8", Email: "Ja@Janovutbr.com"},
+		},
+	}
+
+	for i, _ := range candidates {
+		var err error
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		s.Nil(err)
+		candidates[i].newMember, err = s.service.UserAccess.CreateUser(candidates[i].newMember)
+		s.Nil(err)
+
+		application := &models.Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.UserAccess.AddApplicant(application)
+		s.Nil(err)
+
+		_, err = s.service.UserAccess.AcceptApplicant(application.UserId, application.SocietyId)
+		s.Nil(err)
+	}
+
+	for _, candidate := range candidates {
+		members, err := s.service.UserAccess.GetSociety(candidate.society.Id)
+		s.Nil(err)
+
+		s.EqualValues(2, len(members.Users))
+	}
+}
+
+func (s *SocietySuite) Test_GetSocietyAdmins() {
+	candidates := []struct {
+		admin     *models.User
+		society   *models.Society
+		newMember *models.User
+		relation  models.Member
+	}{
+		{
+			admin:     &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "3", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			society:   &models.Society{Name: "Dake meno"},
+			newMember: &models.User{FirstName: "Hello", LastName: "Flowup", Uid: "8", Email: "Ja@Janovutbr.com"},
+			relation:  models.Member{},
+		},
+	}
+
+	for i, _ := range candidates {
+		var err error
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		s.Nil(err)
+		candidates[i].newMember, err = s.service.UserAccess.CreateUser(candidates[i].newMember)
+		s.Nil(err)
+
+		candidates[i].relation.Permission = models.Membership("admin")
+		candidates[i].relation.UserId = candidates[i].admin.Id
+		candidates[i].relation.SocietyId = candidates[i].society.Id
+
+		application := &models.Applicant{UserId: candidates[i].newMember.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.UserAccess.AddApplicant(application)
+		s.Nil(err)
+
+		_, err = s.service.UserAccess.AcceptApplicant(application.UserId, application.SocietyId)
+		s.Nil(err)
+	}
+
+	for i, candidate := range candidates {
+		req := httptest.NewRequest(echo.POST, "/societies/"+candidate.society.Id, nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.SetParamNames("societyId")
+		c.SetParamValues(candidate.society.Id)
+
+		s.NoError(s.service.GetSocietyAdmins(c))
+
+		resp := []models.User{}
+		err := json.Unmarshal(rec.Body.Bytes(), &resp)
+		s.Nil(err)
+
+		candidates[i].relation.CreatedAt = resp[0].Admins[0].CreatedAt
+		s.EqualValues(candidates[i].relation, resp[0].Admins[0])
+	}
+}
+
 //remove admin by another admin
 //remove member by admin
 //test remove sam seba(som admin) a som posledny admin v society
 
-//test delete society //delete user --> complicated pockaj si na odpoved veduceho
+//test delete society //delete user
 //ale delete society mozem spravit dvomi sposobmi, odide posledny admin, alebo to admin zrusi priamo
 
 func (s *SocietySuite) TearDownSuite() {

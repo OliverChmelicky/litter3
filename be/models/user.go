@@ -13,7 +13,21 @@ type User struct {
 	FirstName string
 	LastName  string
 	Email     string
+	Uid       string
+	Avatar    string
+	Admins    []Member
+	Societies []Society `pg:"many2many:societies_members"`
 	CreatedAt time.Time `pg:"default:now()"`
+}
+
+//from users move property admins and replace with this
+type Admins struct {
+	tableName struct{} `pg:"users"json:"-"`
+	Id        string   `pg:",pk"`
+	FirstName string
+	LastName  string
+	Avatar    string
+	Admins    []Member
 }
 
 var _ pg.BeforeInsertHook = (*User)(nil)
@@ -28,6 +42,8 @@ type Society struct {
 	tableName struct{} `pg:"societies"json:"-"`
 	Id        string   `pg:",pk"`
 	Name      string
+	Avatar    string
+	Users     []User    `pg:"many2many:societies_members"`
 	CreatedAt time.Time `pg:"default:now()"`
 }
 
@@ -59,19 +75,6 @@ type Member struct {
 	SocietyId  string   `pg:",pk"`
 	Permission Membership
 	CreatedAt  time.Time `pg:"default:now()"`
-}
-
-type SocietyMemberResponse struct {
-	tableName   struct{} `pg:"societies_members"json:"-"`
-	UserId      string
-	SocietyId   string
-	Permission  Membership
-	UserDetails *User
-}
-
-type AllMembers struct {
-	AllMembers []SocietyMemberResponse
-	Count      int
 }
 
 type Applicant struct {

@@ -22,14 +22,14 @@ func CreateService(db *pg.DB) *userService {
 func (s *userService) CreateUser(c echo.Context) error {
 	user := new(models.User)
 	if err := c.Bind(user); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
 	}
 
 	user, err := s.UserAccess.CreateUser(user)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
 	}
-	return c.JSON(http.StatusNotImplemented, user)
+	return c.JSON(http.StatusOK, user)
 }
 
 func (s *userService) GetUser(c echo.Context) error {
@@ -55,22 +55,19 @@ func (s *userService) GetCurrentUser(c echo.Context) error {
 }
 
 func (s *userService) UpdateUser(c echo.Context) error {
-	updatorId := c.Get("userId").(string)
+	callerId := c.Get("userId").(string)
 
 	user := new(models.User)
 	if err := c.Bind(user); err != nil {
-		return c.String(http.StatusBadRequest, "Invalid arguments")
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
 	}
-	user.Id = updatorId
-
-	_, err := s.UserAccess.GetUser(user.Id)
-	if err != nil {
-		return c.String(http.StatusNotFound, "Trash with provided Id does not exist")
+	if user.Id != callerId {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateUser, fmt.Errorf("You cannot update someone else ")))
 	}
 
-	user, err = s.UserAccess.UpdateUser(user)
+	user, err := s.UserAccess.UpdateUser(user)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "Error updating user")
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
 	}
 
 	return c.JSON(http.StatusOK, user)
@@ -81,7 +78,7 @@ func (s *userService) ApplyForMembership(c echo.Context) error {
 
 	request := new(models.IdMessage)
 	if err := c.Bind(request); err != nil {
-		return c.String(http.StatusBadRequest, "Invalid arguments")
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
 	}
 
 	isMember, err := s.UserAccess.IsMember(requesterId, request.Id)
@@ -218,34 +215,34 @@ func (s *userService) CreateSociety(c echo.Context) error {
 
 	society := new(models.Society)
 	if err := c.Bind(society); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateSociety, err))
 	}
 
 	society, err := s.UserAccess.CreateSocietyWithAdmin(society, creatorId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateSociety, err))
 	}
 
 	return c.JSON(http.StatusCreated, society)
 }
 
 func (s *userService) GetSociety(c echo.Context) error {
+	//can call also unregistered user
 	id := c.Param("id")
 
 	society, err := s.UserAccess.GetSociety(id)
 	if err != nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("Society with id %s does not exist", id))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetSociety, err))
 	}
 
 	return c.JSON(http.StatusOK, society)
 }
 
-//TODO testni
-func (s *userService) GetSocietyMembers(c echo.Context) error {
+func (s *userService) GetSocietyAdmins(c echo.Context) error {
 	//can call also unregistered user
 	societyId := c.Param("societyId")
 
-	memebers, err := s.UserAccess.GetSocietyMembers(societyId)
+	memebers, err := s.UserAccess.GetSocietyAdminsAll(societyId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetSocietyMembers, err))
 	}
@@ -258,22 +255,17 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 
 	society := new(models.Society)
 	if err := c.Bind(society); err != nil {
-		return c.String(http.StatusBadRequest, "Invalid arguments")
-	}
-
-	_, err := s.UserAccess.GetSociety(society.Id)
-	if err != nil {
-		return c.String(http.StatusNotFound, "Society with provided Id does not exist")
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateSociety, err))
 	}
 
 	admin, _, _ := s.UserAccess.IsUserSocietyAdmin(userId, society.Id)
 	if !admin {
-		return c.String(http.StatusForbidden, "You have no right to update society")
+		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrUpdateSociety, fmt.Errorf("You are not an admin of society ")))
 	}
 
-	society, err = s.UserAccess.UpdateSociety(society)
+	society, err := s.UserAccess.UpdateSociety(society)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "Error updating society")
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateSociety, err))
 	}
 
 	return c.JSON(http.StatusOK, society)
@@ -292,7 +284,7 @@ func (s *userService) AcceptApplicant(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, err))
 	}
 	if !isAdmin {
-		return c.JSON(http.StatusUnauthorized, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, errors.New("You are not an admin")))
+		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, errors.New("You are not an admin")))
 	}
 
 	isMember, err := s.UserAccess.IsMember(request.UserId, request.SocietyId)
@@ -318,11 +310,11 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 
 	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(admin, societyId)
 	if err != nil {
-		return c.String(http.StatusNotFound, err.Error())
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
 	if !isAdmin {
-		return c.String(http.StatusUnauthorized, "You are not an admin")
+		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrDismissApplicant, fmt.Errorf("You are not an admin ")))
 	}
 
 	err = s.UserAccess.RemoveApplicationForMembership(&models.Applicant{UserId: removingUserId, SocietyId: societyId})
@@ -339,74 +331,69 @@ func (s *userService) ChangeMemberRights(c echo.Context) error {
 	request := new(models.Member)
 	err := c.Bind(request)
 	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
 	isAdmin, numOfAdmins, err := s.UserAccess.IsUserSocietyAdmin(id, request.SocietyId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrChangeMemberRights, err))
 	}
 	if !isAdmin {
-		return c.String(http.StatusForbidden, "You are not an admin")
+		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrDismissApplicant, fmt.Errorf("You are not an admin ")))
 	}
 
 	if numOfAdmins == 1 && request.UserId == id && request.Permission == models.Membership("member") {
-		return c.String(http.StatusConflict, "You are the only one admin in group")
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrChangeMemberRights, fmt.Errorf("You are the only one admin in group ")))
 	}
 
 	member, err := s.UserAccess.ChangeUserRights(request)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrChangeMemberRights, err))
 	}
 
 	return c.JSON(http.StatusNotImplemented, member)
 }
 
 func (s *userService) RemoveMember(c echo.Context) error {
-	//TODO DELETE {userId, societyId} ----> prerob, tak by v body nebolo nic
-	id := c.Get("userId")
-	requesterId := fmt.Sprintf("%v", id)
+	requesterId := c.Get("userId").(string)
 
-	request := new(models.UserGroupRequest)
-	if err := c.Bind(request); err != nil {
-		return c.String(http.StatusBadRequest, "Invalid arguments")
-	}
-	admin, adminNumber, err := s.UserAccess.IsUserSocietyAdmin(requesterId, request.SocietyId)
+	wantsToRemove := c.Param("removingId")
+	societyId := c.Param("societyId")
+
+	admin, adminNumber, err := s.UserAccess.IsUserSocietyAdmin(requesterId, societyId)
 	if err != nil {
-		return c.String(http.StatusNotFound, err.Error())
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	if request.UserId == c.Get("useId") { //user asks for removing himself
+	if requesterId == wantsToRemove { //user asks for removing himself
 		if admin {
 			if adminNumber == 1 {
-				err = s.UserAccess.DeleteSociety(request.SocietyId)
-			} else {
-				err = s.UserAccess.RemoveMember(request.UserId, request.SocietyId)
+				return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrRemoveMember, fmt.Errorf("If you want to delete yourself you have to press delete Society ")))
 			}
 
+			err = s.UserAccess.RemoveMember(wantsToRemove, societyId)
 			if err != nil {
-				return c.String(http.StatusInternalServerError, err.Error())
+				return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveMember, err))
 			}
 		} else {
-			err = s.UserAccess.RemoveMember(request.UserId, request.SocietyId)
+			err = s.UserAccess.RemoveMember(wantsToRemove, societyId)
 			if err != nil {
-				return c.String(http.StatusInternalServerError, err.Error())
+				return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveMember, err))
 			}
 		}
-		return c.String(http.StatusOK, "You were removed")
+		return c.String(http.StatusOK, "")
 
 	} else { //admin removes someone
 		if !admin {
-			return c.String(http.StatusUnauthorized, "You are not an admin")
+			return c.JSON(http.StatusUnauthorized, custom_errors.WrapError(custom_errors.ErrRemoveMember, fmt.Errorf("You are not an admin ")))
 		}
-		err = s.UserAccess.RemoveMember(request.UserId, request.SocietyId)
+		err = s.UserAccess.RemoveMember(wantsToRemove, societyId)
 		if err != nil {
-			return c.String(http.StatusInternalServerError, err.Error())
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveMember, err))
 		}
-
 	}
 
-	return c.String(http.StatusOK, "Success removing user")
+	return c.String(http.StatusOK, "")
 }
 
 func (s *userService) DeleteSociety(c echo.Context) error {

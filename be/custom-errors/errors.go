@@ -23,15 +23,23 @@ var (
 	ErrUpdateUser     = "ERR UPDATE USER"
 	ErrDeleteUser     = "ERROR DELETE USER"
 
-	ErrGetSocietyMembers = "ERROR GET SOCIETY MEMBERS"
+	ErrChangeMemberRights = "ERROR CHANGE MEMBER RIGHTS"
+	ErrGetSocietyMembers  = "ERROR GET SOCIETY MEMBERS"
+	ErrRemoveMember       = "ERROR REMOVE MEMBER"
 
 	ErrApplyForMembership             = "ERROR APPLY FOR MEMBERSHIP"
 	ErrRemoveApplicationForMembership = "ERROR REMOVE APPLICATION FOR MEMBERSHIP"
 	ErrAcceptApplicant                = "ERROR ACCEPT APPLICANT"
+	ErrDismissApplicant               = "ERROR DISMISS APPLICANT"
 
 	ErrApplyForFriendship             = "ERROR APPLY FOR FRIENDSHIP"
 	ErrRemoveApplicationForFriendship = "ERROR REMOVE APPLICATION FOR FRIENDSHIP"
 	ErrRemoveFriend                   = "ERROR REMOVE FRIEND"
+
+	ErrCreateSociety = "ERROR CREATE SOCIETY"
+	ErrGetSociety    = "ERROR GET SOCIETY"
+	ErrUpdateSociety = "ERROR UPDATE SOCIETY"
+	ErrDeleteSociety = "ERROR DELETE SOCIETY"
 
 	ErrCreateComment = "ERROR CREATE COMMENT"
 	ErrGetComment    = "ERROR GET COMMENT"
