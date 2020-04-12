@@ -114,7 +114,7 @@ func (s *UserAccess) GetSociety(id string) (*models.Society, error) {
 	return society, nil
 }
 
-//worht thinking more how to explicitly involve my friends who are in the wanted society
+//worth thinking more how to explicitly involve my friends who are in the wanted society
 //func (s *UserAccess) GetMyFriendsInSociety(societyId, userId string) ([]models.User, error) {
 //	friends := []models.Friends{}
 //	err := s.Db.Model(&friends).Where("user1_id = ? or user2_id = ?", userId, userId).
@@ -134,6 +134,7 @@ func (s *UserAccess) GetSociety(id string) (*models.Society, error) {
 //
 //}
 
+//ci nemozem mat inu mensiu strukturu na to a nemat to v userovi pripadne by som to mohol pouzit pri get user
 func (s *UserAccess) GetSocietyAdminsAll(societyId string) ([]models.User, error) {
 	var admins []models.User
 	permission := models.Membership("admin")
