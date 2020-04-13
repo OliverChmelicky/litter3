@@ -4,6 +4,7 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -11,25 +12,42 @@ import (
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"google.golang.org/api/option"
 )
 
 func main() {
+	viper.SetDefault("dbUsr", "goo")
+	viper.SetDefault("dbPass", "goo")
+	viper.SetDefault("dbName", "goo")
+	viper.SetDefault("dbAddr", "localhost:5432")
+	viper.SetDefault("firebaseCredentials", "secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
+	viper.SetDefault("gcpBucketName", "litter3-olo-gcp.appspot.com")
+
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
+
 	db := pg.Connect(&pg.Options{
-		User:     "goo",
-		Password: "goo",
-		Database: "goo",
-		Addr:     "localhost:5432",
+		User:     viper.GetString("dbUsr"),
+		Password: viper.GetString("dbPass"),
+		Database: viper.GetString("dbName"),
+		Addr:     viper.GetString("dbAddr"),
 	})
 	defer db.Close()
-	_, err := db.Exec("SELECT 1")
+	_, err = db.Exec("SELECT 1")
 	if err != nil {
 		log.Error("PostgreSQL is down")
 		return
 	}
 	db.AddQueryHook(middlewareService.DbMiddleware{})
 
-	firebaseAuth, err := getFirebaseAuth()
+	opt := option.WithCredentialsFile("secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
+	firebaseAuth, err := getFirebaseAuth(opt)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,11 +77,12 @@ func main() {
 	e.GET("/trash/:id", trashService.GetTrashById)
 	e.POST("/trash", trashService.CreateTrash)
 
+	//fileuploadService := fileupload.CreateService(opt,"litter3-olo-gcp.appspot.com")
+
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
-func getFirebaseAuth() (*auth.Client, error) {
-	opt := option.WithCredentialsFile("secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
+func getFirebaseAuth(opt option.ClientOption) (*auth.Client, error) {
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Errorf("error initializing app: %s\n", err.Error())
