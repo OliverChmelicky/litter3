@@ -38,7 +38,6 @@ func (s *TrashAccess) GetTrashInRange(request *models.RangeRequest) ([]models.Tr
 	err := s.Db.Model(&trash).
 		Column("trash.*").
 		Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).
-		Relation("Collections").
 		Relation("Images").
 		Select()
 	if err != nil {
