@@ -5,7 +5,6 @@ import (
 	"github.com/go-pg/pg/v9"
 	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/olo/litter3/models"
-	"github.com/satori/go.uuid"
 )
 
 type TrashAccess struct {
@@ -13,7 +12,6 @@ type TrashAccess struct {
 }
 
 func (s *TrashAccess) CreateTrash(in *models.Trash) (*models.Trash, error) {
-	in.Id = uuid.NewV4().String()
 	err := s.Db.Insert(in)
 	if err != nil {
 		return &models.Trash{}, err
@@ -22,9 +20,12 @@ func (s *TrashAccess) CreateTrash(in *models.Trash) (*models.Trash, error) {
 	return in, nil
 }
 
-func (s *TrashAccess) GetTrash(in string) (*models.Trash, error) {
-	trash := &models.Trash{Id: in}
-	err := s.Db.Select(trash)
+func (s *TrashAccess) GetTrash(id string) (*models.Trash, error) {
+	trash := &models.Trash{Id: id}
+	err := s.Db.Model(trash).Column("trash.*").
+		Relation("Collections").
+		Relation("Images").
+		First()
 	if err != nil {
 		return &models.Trash{}, err
 	}
@@ -34,7 +35,12 @@ func (s *TrashAccess) GetTrash(in string) (*models.Trash, error) {
 func (s *TrashAccess) GetTrashInRange(request *models.RangeRequest) ([]models.Trash, error) {
 	//https://postgis.net/docs/PostGIS_FAQ.html#idm1368
 	trash := []models.Trash{}
-	err := s.Db.Model(&trash).Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).Select()
+	err := s.Db.Model(&trash).
+		Column("trash.*").
+		Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).
+		Relation("Collections").
+		Relation("Images").
+		Select()
 	if err != nil {
 		return nil, err
 	}

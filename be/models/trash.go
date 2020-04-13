@@ -70,15 +70,15 @@ type Trash struct {
 	Location      Point `pg:"type:geometry"`
 	Description   string
 	FinderId      string
+	Collections   []Collection
+	Images        []TrashImage
 	CreatedAt     time.Time `pg:"default:now()"`
 }
 
 var _ pg.BeforeInsertHook = (*Trash)(nil)
 
 func (u *Trash) BeforeInsert(ctx context.Context) (context.Context, error) {
-	if u.Id == "" {
-		u.Id = uuid.NewV4().String()
-	}
+	u.Id = uuid.NewV4().String()
 	u.CreatedAt = time.Now()
 	return ctx, nil
 }
@@ -90,6 +90,7 @@ type Collection struct {
 	CleanedTrash bool     `pg:",use_zero"`
 	TrashId      string
 	EventId      string
+	Images       []CollectionImage
 	CreatedAt    time.Time `pg:"default:now()"`
 }
 
@@ -101,6 +102,18 @@ func (u *Collection) BeforeInsert(ctx context.Context) (context.Context, error) 
 	}
 	u.CreatedAt = time.Now()
 	return ctx, nil
+}
+
+type TrashImage struct {
+	tableName struct{} `pg:"trash_images"json:"-"`
+	TrashId   string
+	Url       string
+}
+
+type CollectionImage struct {
+	tableName    struct{} `pg:"collection_images"json:"-"`
+	CollectionId string
+	Url          string
 }
 
 type UserCollection struct {

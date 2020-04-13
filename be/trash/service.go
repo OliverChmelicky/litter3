@@ -7,6 +7,7 @@ import (
 	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
 	"net/http"
+	"strconv"
 )
 
 type trashService struct {
@@ -33,7 +34,6 @@ func (s *trashService) CreateTrash(c echo.Context) error {
 }
 
 func (s *trashService) GetTrashById(c echo.Context) error {
-	//TODO relational mapping s obrazkami
 	id := c.Param("id")
 
 	trash, err := s.TrashAccess.GetTrash(id)
@@ -46,9 +46,20 @@ func (s *trashService) GetTrashById(c echo.Context) error {
 
 func (s *trashService) GetTrashInRange(c echo.Context) error {
 	request := new(models.RangeRequest)
-	if err := c.Bind(request); err != nil {
+	lng, err := strconv.ParseFloat(c.QueryParam("lng"), 64)
+	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
+	lat, err := strconv.ParseFloat(c.QueryParam("lat"), 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+	radius, err := strconv.ParseFloat(c.QueryParam("radius"), 64)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+	request.Location = models.Point{lng, lat}
+	request.Radius = radius
 
 	trash, err := s.TrashAccess.GetTrashInRange(request)
 	if err != nil {
@@ -87,7 +98,7 @@ func (s *trashService) DeleteTrash(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, "")
+	return c.NoContent(http.StatusOK)
 }
 
 //

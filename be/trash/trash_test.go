@@ -2,6 +2,7 @@ package trash
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	"github.com/olo/litter3/models"
@@ -110,14 +111,18 @@ func (s *TrashSuite) Test_CreateTrash() {
 
 func (s *TrashSuite) Test_GetAround() {
 	candidates := []struct {
-		creator      *models.User
-		trash        *models.Trash
-		rangeRequest *models.RangeRequest
+		creator           *models.User
+		trash             *models.Trash
+		rangeRequest      *models.RangeRequest
+		collectionRequest *models.CreateCollectionRandomRequest
+		randomImg         *models.TrashImage
 	}{
 		{
-			creator:      &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:        &models.Trash{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
-			rangeRequest: &models.RangeRequest{Location: models.Point{20, 29.99}, Radius: 5000.0},
+			creator:           &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "Velikonoce", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:             &models.Trash{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+			rangeRequest:      &models.RangeRequest{Location: models.Point{20, 29.99}, Radius: 5000.0},
+			collectionRequest: &models.CreateCollectionRandomRequest{Weight: 32},
+			randomImg:         &models.TrashImage{Url: "dasd"},
 		},
 	}
 
@@ -127,11 +132,21 @@ func (s *TrashSuite) Test_GetAround() {
 		s.Nil(err)
 		candidates[i].trash, err = s.service.TrashAccess.CreateTrash(candidates[i].trash)
 		s.Nil(err)
+		candidates[i].collectionRequest.TrashId = candidates[i].trash.Id
+		collection, err := s.service.CreateCollectionRandom(candidates[i].collectionRequest, candidates[i].creator.Id)
+		s.Nil(err)
+		candidates[i].randomImg.TrashId = candidates[i].trash.Id
+		err = s.db.Insert(candidates[i].randomImg)
+		s.Nil(err)
 
 		bytes, err := json.Marshal(candidates[i].rangeRequest)
 		s.Nil(err)
+		queryParams :=
+			"?lng=" + fmt.Sprintf("%f", candidates[i].rangeRequest.Location[0]) +
+				"&lat=" + fmt.Sprintf("%f", candidates[i].rangeRequest.Location[1]) +
+				"&radius=" + fmt.Sprintf("%f", candidates[i].rangeRequest.Radius)
 
-		req := httptest.NewRequest(echo.POST, "/trash/get/range", strings.NewReader(string(bytes)))
+		req := httptest.NewRequest(echo.POST, "/trash/get/range"+queryParams, strings.NewReader(string(bytes)))
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		rec := httptest.NewRecorder()
@@ -144,6 +159,9 @@ func (s *TrashSuite) Test_GetAround() {
 		s.Nil(err)
 
 		s.EqualValues(candidates[i].trash.Location, resp[0].Location)
+		collection.CreatedAt = resp[0].Collections[0].CreatedAt
+		s.EqualValues(*collection, resp[0].Collections[0])
+		s.EqualValues(*candidates[i].randomImg, resp[0].Images[0])
 	}
 }
 
