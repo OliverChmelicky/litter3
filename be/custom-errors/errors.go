@@ -46,10 +46,12 @@ var (
 	ErrUpdateComment = "ERROR UPDATE COMMENT"
 	ErrDeleteComment = "ERROR DELETE COMMENT"
 
-	ErrCreateTrash = "ERROR CREATE TRASH"
-	ErrGetTrash    = "ERROR GET TRASH"
-	ErrUpdateTrash = "ERROR UPDATE TRASH"
-	ErrDeleteTrash = "ERROR DELETE TRASH"
+	ErrCreateTrash      = "ERROR CREATE TRASH"
+	ErrGetTrashById     = "ERROR GET TRASH BY ID"
+	ErrGetTrashInRange  = "ERROR GET TRASH IN RANGE"
+	ErrGetTrashComments = "ERROR GET TRASH COMMENTS"
+	ErrUpdateTrash      = "ERROR UPDATE TRASH"
+	ErrDeleteTrash      = "ERROR DELETE TRASH"
 
 	ErrCreateCollectionRaw = "CREATE RAW COLLECTION"
 	ErrUpdateCollection    = "UPDATE COLLECTION"

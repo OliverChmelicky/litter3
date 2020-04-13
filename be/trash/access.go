@@ -29,6 +29,7 @@ func (s *TrashAccess) GetTrash(id string) (*models.Trash, error) {
 	if err != nil {
 		return &models.Trash{}, err
 	}
+
 	return trash, nil
 }
 
@@ -50,7 +51,7 @@ func (s *TrashAccess) UpdateTrash(in *models.Trash) (*models.Trash, error) {
 	return in, s.Db.Update(in)
 }
 
-func (s *TrashAccess) DeleteTrash(userId, trashId string) error {
+func (s *TrashAccess) DeleteTrash(trashId string) error {
 	trash := new(models.Trash)
 	trash.Id = trashId
 
@@ -60,21 +61,21 @@ func (s *TrashAccess) DeleteTrash(userId, trashId string) error {
 	}
 	defer tx.Rollback()
 
-	err = tx.Select(trash)
+	var collections []models.Collection
+	err = tx.Model(&collections).Where("trash_id = ?", trashId).Select()
 	if err != nil {
-		return fmt.Errorf("Error getting old trash: %w ", err)
+		return fmt.Errorf("Error collections relelevant to trash: %w ", err)
+	}
+	if len(collections) != 0 {
+		return fmt.Errorf("Error trash has some collections already ")
 	}
 
-	if trash.FinderId != userId {
-		return fmt.Errorf("You cannot delete trash of someone else: %w ", err)
+	err = s.DeleteTrashComments(trashId, tx)
+	if err != nil {
+		return err
 	}
 
-	trashComment := new(models.TrashComment)
-	trashComment.TrashId = trashId
-	_, err = tx.Model(trashComment).Where("trash_id = ?", trashId).Delete()
-	if err != nil {
-		return fmt.Errorf("You cannot delete trash of someone else: %w ", err)
-	}
+	//TODO delete images
 
 	err = tx.Delete(trash)
 	if err != nil {
@@ -122,7 +123,7 @@ func (s *TrashAccess) CreateCollectionRandom(in *models.CreateCollectionRandomRe
 
 	if in.CleanedTrash {
 		trash := new(models.Trash)
-		trash.Id = in.TrashId
+		trash.Cleaned = true
 		_, err = s.Db.Model(trash).Column("cleaned").Where("id = ?", in.TrashId).Update()
 		if err != nil {
 			return &models.Collection{}, err
@@ -321,10 +322,9 @@ func (s *TrashAccess) DeleteTrashComment(id string) error {
 	return err
 }
 
-//will I need it?
-func (s *TrashAccess) DeleteTrashComments(trashId string) error {
+func (s *TrashAccess) DeleteTrashComments(trashId string, tx *pg.Tx) error {
 	comment := new(models.TrashComment)
-	_, err := s.Db.Model(comment).Where("trash_id = ?", trashId).Delete()
+	_, err := tx.Model(comment).Where("trash_id = ?", trashId).Delete()
 	return err
 }
 

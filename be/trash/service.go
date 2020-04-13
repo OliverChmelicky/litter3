@@ -38,7 +38,7 @@ func (s *trashService) GetTrashById(c echo.Context) error {
 
 	trash, err := s.TrashAccess.GetTrash(id)
 	if err != nil {
-		return c.String(http.StatusNotFound, "Trash with id does not exist")
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetTrashById, err))
 	}
 
 	return c.JSON(http.StatusOK, trash)
@@ -63,7 +63,7 @@ func (s *trashService) GetTrashInRange(c echo.Context) error {
 
 	trash, err := s.TrashAccess.GetTrashInRange(request)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError("GetTrashInRangeAccess", err))
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetTrashInRange, err))
 	}
 
 	return c.JSON(http.StatusOK, trash)
@@ -75,12 +75,7 @@ func (s *trashService) UpdateTrash(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	_, err := s.TrashAccess.GetTrash(trash.Id)
-	if err != nil {
-		return c.JSON(http.StatusNotFound, custom_errors.WrapError("Trash with provided Id does not exist", err))
-	}
-
-	trash, err = s.TrashAccess.UpdateTrash(trash)
+	trash, err := s.TrashAccess.UpdateTrash(trash)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateTrash, err))
 	}
@@ -89,13 +84,11 @@ func (s *trashService) UpdateTrash(c echo.Context) error {
 }
 
 func (s *trashService) DeleteTrash(c echo.Context) error {
-	userId := c.Get("userId").(string)
-
 	trashId := c.Param("trashId")
 
-	err := s.TrashAccess.DeleteTrash(userId, trashId)
+	err := s.TrashAccess.DeleteTrash(trashId)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err)
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteTrash, err))
 	}
 
 	return c.NoContent(http.StatusOK)
@@ -129,7 +122,7 @@ func (s *trashService) GetTrashComments(c echo.Context) error {
 
 	comments, err := s.TrashAccess.GetTrashComments(trashId)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetTrash, err))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetTrashComments, err))
 	}
 
 	return c.JSON(http.StatusOK, comments)

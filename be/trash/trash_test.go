@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
+	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
 	"github.com/olo/litter3/user"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -262,7 +264,7 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 		}
 	}
 
-	//test delete trash
+	//test delete trashComent
 	for _, candidate := range candidates {
 		req := httptest.NewRequest(echo.DELETE, "/trash/comment/", nil)
 
@@ -289,10 +291,10 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 		collection *models.Collection
 	}{
 		{
-			creator:    &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			creator:    &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "sds", Email: "Ja@kamo.com", CreatedAt: time.Now()},
 			trash:      &models.Trash{Location: models.Point{20, 30}},
-			request:    &models.CreateCollectionRandomRequest{Weight: 369.7, CleanedTrash: false},
-			collection: &models.Collection{CleanedTrash: false, Weight: 369.7},
+			request:    &models.CreateCollectionRandomRequest{Weight: 369.7, CleanedTrash: true},
+			collection: &models.Collection{CleanedTrash: true, Weight: 369.7},
 		},
 	}
 
@@ -318,6 +320,7 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 		c.Set("userId", candidates[i].creator.Id)
 
 		s.NoError(s.service.CreateCollection(c))
+		candidates[i].trash.Cleaned = true
 
 		resp := &models.Collection{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
@@ -326,10 +329,113 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 		candidates[i].collection.Id = resp.Id
 		candidates[i].collection.CreatedAt = resp.CreatedAt
 		s.EqualValues(candidates[i].collection, resp)
+
+		trash, err := s.service.GetTrash(candidates[i].trash.Id)
+		s.Nil(err)
+		s.EqualValues(candidates[i].trash.Cleaned, trash.Cleaned)
 	}
 }
 
 //TODO test get collections of user
+
+//TODO delete collection
+
+func (s *TrashSuite) Test_DeleteTrashWithComments() {
+	candidates := []struct {
+		creator *models.User
+		trash   *models.Trash
+		comment *models.TrashComment
+	}{
+		{
+			creator: &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "6ads", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:   &models.Trash{Location: models.Point{20, 30}},
+			comment: &models.TrashComment{Message: "prva message"},
+		},
+	}
+
+	for i, _ := range candidates {
+		var err error
+		candidates[i].creator, err = s.userAccess.CreateUser(candidates[i].creator)
+		s.Nil(err)
+		candidates[i].trash, err = s.service.TrashAccess.CreateTrash(candidates[i].trash)
+		s.Nil(err)
+
+		candidates[i].comment.Id = candidates[i].trash.Id
+		candidates[i].comment.UserId = candidates[i].creator.Id
+		candidates[i].comment, err = s.service.TrashAccess.CreateTrashComment(candidates[i].comment)
+		s.Nil(err)
+
+		//TODO add image
+	}
+
+	for _, candidate := range candidates {
+		req := httptest.NewRequest(echo.DELETE, "/trash/"+candidate.trash.Id, nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.SetParamNames("trashId")
+		c.SetParamValues(candidate.trash.Id)
+
+		s.NoError(s.service.DeleteTrash(c))
+
+		s.EqualValues(http.StatusOK, rec.Code)
+
+		err := s.db.Select(candidate.trash)
+		s.EqualValues(pg.ErrNoRows, err)
+	}
+}
+
+func (s *TrashSuite) Test_DeleteTrashWithCollection() {
+	candidates := []struct {
+		creator    *models.User
+		trash      *models.Trash
+		collection *models.CreateCollectionRandomRequest
+		error      error
+		code       int
+	}{
+		{
+			creator:    &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "6ads", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:      &models.Trash{Location: models.Point{20, 30}},
+			collection: &models.CreateCollectionRandomRequest{Weight: 694},
+			error:      fmt.Errorf("Error trash has some collections already "),
+			code:       http.StatusInternalServerError,
+		},
+	}
+
+	for i, _ := range candidates {
+		var err error
+		candidates[i].creator, err = s.userAccess.CreateUser(candidates[i].creator)
+		s.Nil(err)
+		candidates[i].trash, err = s.service.TrashAccess.CreateTrash(candidates[i].trash)
+		s.Nil(err)
+
+		candidates[i].collection.TrashId = candidates[i].trash.Id
+		_, err = s.service.TrashAccess.CreateCollectionRandom(candidates[i].collection, candidates[i].creator.Id)
+		s.Nil(err)
+
+		//TODO add image
+	}
+
+	for _, candidate := range candidates {
+		req := httptest.NewRequest(echo.PUT, "/trash/collection/update", nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+		c.SetParamNames("trashId")
+		c.SetParamValues(candidate.trash.Id)
+
+		s.NoError(s.service.DeleteTrash(c))
+
+		var resp custom_errors.ErrorModel
+		err := json.Unmarshal(rec.Body.Bytes(), &resp)
+		s.Nil(err)
+
+		s.EqualValues(candidate.code, rec.Code)
+		s.EqualValues(candidate.error.Error(), resp.Message)
+	}
+}
 
 func (s *TrashSuite) SetupTest() {
 	referencerTables := []string{
