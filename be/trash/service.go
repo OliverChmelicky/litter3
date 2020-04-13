@@ -33,7 +33,7 @@ func (s *trashService) CreateTrash(c echo.Context) error {
 }
 
 func (s *trashService) GetTrashById(c echo.Context) error {
-	//TODO relational mapping s collections
+	//TODO relational mapping s obrazkami
 	id := c.Param("id")
 
 	trash, err := s.TrashAccess.GetTrash(id)

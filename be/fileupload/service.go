@@ -4,19 +4,16 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	firebase "firebase.google.com/go"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
-	"io"
 )
 
 type fileuploadService struct {
-	bh *storage.BucketHandle
+	bh      *storage.BucketHandle
+	storage *storage.Client
 }
 
-func CreateService(firebsaeCredentials string, bucketName string) *fileuploadService {
-	//opt := option.WithCredentialsFile("../secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
-	opt := option.WithCredentialsFile(firebsaeCredentials)
+func CreateService(opt option.ClientOption, bucketName string) *fileuploadService {
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Fatalf("Fileupload service error initializing firebase app: %s\n", err.Error())
@@ -37,27 +34,47 @@ func CreateService(firebsaeCredentials string, bucketName string) *fileuploadSer
 		panic(err.Error())
 	}
 
-	return &fileuploadService{bh}
+	return &fileuploadService{bh, st}
 }
 
-func (s *fileuploadService) Upload(ctx context.Context, r io.Reader, name string) (string, error) {
-	obj := s.bh.Object(name)
-	w := obj.NewWriter(ctx)
-	if _, err := io.Copy(w, r); err != nil {
-		return "", err
-	}
-	if err := w.Close(); err != nil {
-		return "", err
-	}
+//func (s *fileuploadService) UploadUserImage() error {
+//
+//}
+//
+//func (s *fileuploadService) UploadSocietyImage() error {
+//
+//}
+//func (s *fileuploadService) UploadTrashImage() error {
+//
+//}
+//func (s *fileuploadService) UploadCollectionImage() error {
+//
+//}
 
-	if err := obj.ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
-		return "", err
-	}
+//func (s *fileuploadService) GetUserImage() error {
+//
+//}
+//
+//func (s *fileuploadService) GetSocietyImage() error {
+//
+//}
+//func (s *fileuploadService) GetTrashImages() error {
+//
+//}
+//func (s *fileuploadService) GetCollectionImages() error {
+//
+//}
 
-	attrs, err := obj.Attrs(ctx)
-	return objectURL(attrs), err
-}
-
-func objectURL(objAttrs *storage.ObjectAttrs) string {
-	return fmt.Sprintf("https://storage.googleapis.com/%s/%s", objAttrs.Bucket, objAttrs.Name)
-}
+//func (s *fileuploadService) DeleteUserImage() error {
+//
+//}
+//
+//func (s *fileuploadService) DeleteSocietyImage() error {
+//
+//}
+//func (s *fileuploadService) DeleteTrashImages() error {
+//
+//}
+//func (s *fileuploadService) DeleteCollectionImages() error {
+//
+//}

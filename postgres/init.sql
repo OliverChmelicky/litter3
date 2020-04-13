@@ -190,3 +190,17 @@ create table friend_requests
     PRIMARY KEY (user1_id, user2_id)
 );
 
+
+create table trash_images
+(
+    trash_id   VARCHAR REFERENCES trash (id) on delete cascade,
+    url        varchar,
+    PRIMARY KEY (trash_id, url)
+);
+
+create table collection_images
+(
+    collection_id   VARCHAR REFERENCES collections (id) on delete cascade,
+    url        varchar,
+    PRIMARY KEY (collection_id, url)
+);

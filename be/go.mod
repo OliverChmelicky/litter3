@@ -9,7 +9,6 @@ require (
 	firebase.google.com/go v3.12.0+incompatible
 	github.com/aodin/aspect v0.5.3
 	github.com/cridenour/go-postgis v1.0.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-pg/pg/v9 v9.1.4
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labstack/echo v3.3.10+incompatible
@@ -18,6 +17,7 @@ require (
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
+	github.com/spf13/viper v1.6.3 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.11 // indirect
