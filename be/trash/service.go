@@ -254,5 +254,5 @@ func (s *trashService) DeleteCollectionFromUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
 	}
 
-	return c.JSON(http.StatusOK, "")
+	return c.NoContent(http.StatusOK)
 }

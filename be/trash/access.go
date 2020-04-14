@@ -243,11 +243,25 @@ func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId strin
 	err = tx.Model(userCollection).Where("collection_id = ?", collectionId).Select()
 	if err == pg.ErrNoRows {
 		collection := &models.Collection{Id: collectionId}
+		if err = tx.Select(collection); err != nil {
+			return fmt.Errorf("Error checking collection for cleaned property: %w ", err)
+		}
+
+		//change trash back to be not cleaned
+		if collection.CleanedTrash {
+			trash := new(models.Trash)
+			trash.Cleaned = false
+			_, err = tx.Model(trash).Column("cleaned").Where("id = ?", collection.TrashId).Update()
+			if err != nil {
+				return fmt.Errorf("Error reverting trash cleaned property: %w ", err)
+			}
+		}
+
 		err = tx.Delete(collection)
 		if err != nil {
 			return fmt.Errorf("Error deleting collection: %w ", err)
 		}
-	} else {
+	} else if err != nil {
 		return fmt.Errorf("Error querry deleting collection: %w ", err)
 	}
 
@@ -256,9 +270,8 @@ func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId strin
 
 func (s *TrashAccess) isUserInCollection(collectionId string, userId string) (bool, error) {
 	userCollection := new(models.UserCollection)
-	userCollection.CollectionId = collectionId
-	userCollection.UserId = userId
-	err := s.Db.Select(userCollection)
+	err := s.Db.Model(userCollection).Where("collection_id = ? and user_id = ?", collectionId, userId).
+		Select()
 	if err == pg.ErrNoRows {
 		return false, fmt.Errorf("You are not a member of collection")
 	}

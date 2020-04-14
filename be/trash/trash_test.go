@@ -336,9 +336,77 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 	}
 }
 
-//TODO test get collections of user
+func (s *TrashSuite) Test_DeleteCollection() {
+	candidates := []struct {
+		creator    *models.User
+		trash      *models.Trash
+		request    *models.CreateCollectionRandomRequest
+		collection *models.Collection
+		friends    []*models.User
+	}{
+		{
+			creator:    &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "sds", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:      &models.Trash{Location: models.Point{20, 30}},
+			request:    &models.CreateCollectionRandomRequest{Weight: 369.7, CleanedTrash: true},
+			collection: &models.Collection{},
+		},
+		{
+			creator:    &models.User{FirstName: "Miro", LastName: "Motyka", Uid: "sdsw", Email: "Ja@kamo.comsa"},
+			trash:      &models.Trash{Location: models.Point{20, 30}},
+			request:    &models.CreateCollectionRandomRequest{Weight: 369.7, CleanedTrash: true},
+			collection: &models.Collection{},
+			friends: []*models.User{
+				{FirstName: "Miro", LastName: "Motyka", Uid: "me", Email: "Ja@kamo.in"},
+			},
+		},
+	}
 
-//TODO delete collection kde je jeden user
+	for i, cand := range candidates {
+		var err error
+		var friendsIds []string
+
+		for j, friend := range cand.friends {
+			candidates[i].friends[j], err = s.userAccess.CreateUser(friend)
+			friendsIds = append(friendsIds, candidates[i].friends[j].Id)
+		}
+		candidates[i].request.Friends = friendsIds
+
+		candidates[i].creator, err = s.userAccess.CreateUser(candidates[i].creator)
+		s.Nil(err)
+		candidates[i].trash, err = s.service.TrashAccess.CreateTrash(candidates[i].trash)
+		s.Nil(err)
+		candidates[i].request.TrashId = candidates[i].trash.Id
+		candidates[i].collection, err = s.service.TrashAccess.CreateCollectionRandom(candidates[i].request, candidates[i].creator.Id)
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.DELETE, "/trash/collection/"+candidates[i].collection.Id, nil)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+
+		c := s.e.NewContext(req, rec)
+		c.Set("userId", candidates[i].creator.Id)
+		c.SetParamNames("collectionId")
+		c.SetParamValues(candidates[i].collection.Id)
+
+		s.NoError(s.service.DeleteCollectionFromUser(c))
+		fmt.Println(rec.Body)
+
+		s.EqualValues(http.StatusOK, rec.Code)
+
+		if len(candidates[i].friends) == 0 {
+			collection, err := s.service.TrashAccess.GetCollection(candidates[i].collection.Id)
+			s.NotNil(err)
+			s.EqualValues(&models.Collection{}, collection)
+		} else {
+			collection, err := s.service.TrashAccess.GetCollection(candidates[i].collection.Id)
+			s.Nil(err)
+			tm := time.Now()
+			candidates[i].collection.CreatedAt = tm
+			collection.CreatedAt = tm
+			s.EqualValues(candidates[i].collection, collection)
+		}
+	}
+}
 
 func (s *TrashSuite) Test_DeleteTrashWithComments() {
 	candidates := []struct {
