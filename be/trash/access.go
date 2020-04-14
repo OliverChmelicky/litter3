@@ -3,7 +3,6 @@ package trash
 import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
-	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/olo/litter3/models"
 )
 
@@ -134,7 +133,7 @@ func (s *TrashAccess) CreateCollectionRandom(in *models.CreateCollectionRandomRe
 }
 
 func (s *TrashAccess) GetCollection(id string) (*models.Collection, error) {
-	s.Db.AddQueryHook(middlewareService.DbMiddleware{})
+	//TODO picture one to many chcem mat aj mapovanie collection-user? co ak je to z eventu? Zobrat ludi z eventu?
 	collection := new(models.Collection)
 	collection.Id = id
 	err := s.Db.Select(collection)
@@ -144,9 +143,8 @@ func (s *TrashAccess) GetCollection(id string) (*models.Collection, error) {
 	return collection, nil
 }
 
-func (s *TrashAccess) GetCollectionsOfUser(userId string) (*models.UserCollection, error) {
+func (s *TrashAccess) GetCollectionIdsOfUser(userId string) (*models.UserCollection, error) {
 	userCollection := new(models.UserCollection)
-	userCollection.UserId = userId
 	err := s.Db.Model(userCollection).Where("user_id = ?", userId).Select()
 	if err != nil {
 		return &models.UserCollection{}, err

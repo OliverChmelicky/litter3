@@ -251,7 +251,7 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 		c.SetParamNames("trashId")
 		c.SetParamValues(candidate.trash.Id)
 
-		s.NoError(s.service.GetTrashComments(c))
+		s.NoError(s.service.GetTrashCommentsByTrashId(c))
 
 		var resp []models.TrashComment
 		err := json.Unmarshal(rec.Body.Bytes(), &resp)
@@ -338,7 +338,7 @@ func (s *TrashSuite) Test_CreateCollectionRandom_GetCollection() {
 
 //TODO test get collections of user
 
-//TODO delete collection
+//TODO delete collection kde je jeden user
 
 func (s *TrashSuite) Test_DeleteTrashWithComments() {
 	candidates := []struct {

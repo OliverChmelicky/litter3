@@ -117,7 +117,7 @@ func (s *trashService) CreateTrashComment(c echo.Context) error {
 	return c.JSON(http.StatusOK, comment)
 }
 
-func (s *trashService) GetTrashComments(c echo.Context) error {
+func (s *trashService) GetTrashCommentsByTrashId(c echo.Context) error {
 	trashId := c.Param("trashId")
 
 	comments, err := s.TrashAccess.GetTrashComments(trashId)
@@ -166,7 +166,7 @@ func (s *trashService) DeleteTrashComment(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteComment, err))
 	}
 
-	return c.String(http.StatusOK, "")
+	return c.NoContent(http.StatusOK)
 }
 
 //
@@ -203,10 +203,10 @@ func (s *trashService) GetCollection(c echo.Context) error {
 	return c.JSON(http.StatusOK, collection)
 }
 
-func (s *trashService) GetCollectionsOfUser(c echo.Context) error {
+func (s *trashService) GetCollectionIdsOfUser(c echo.Context) error {
 	userId := c.Param("userId")
 
-	collection, err := s.TrashAccess.GetCollectionsOfUser(userId)
+	collection, err := s.TrashAccess.GetCollectionIdsOfUser(userId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
 	}
