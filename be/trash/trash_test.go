@@ -177,7 +177,7 @@ func (s *TrashSuite) Test_CreateCommentOnTrash() {
 		trashComments   []models.TrashComment
 	}{
 		{
-			creator:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			creator:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "8848", Email: "Ja@kamo.com", CreatedAt: time.Now()},
 			trash:           &models.Trash{Location: models.Point{20, 30}},
 			commentRequest:  &models.TrashCommentRequest{Message: "prva message"},
 			actualComment:   &models.TrashComment{Message: "prva message"},

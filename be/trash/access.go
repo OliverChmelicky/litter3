@@ -3,6 +3,7 @@ package trash
 import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v9/orm"
 	"github.com/olo/litter3/models"
 )
 
@@ -133,10 +134,11 @@ func (s *TrashAccess) CreateCollectionRandom(in *models.CreateCollectionRandomRe
 }
 
 func (s *TrashAccess) GetCollection(id string) (*models.Collection, error) {
-	//TODO picture one to many chcem mat aj mapovanie collection-user? co ak je to z eventu? Zobrat ludi z eventu?
 	collection := new(models.Collection)
-	collection.Id = id
-	err := s.Db.Select(collection)
+	err := s.Db.Model(collection).Where("id = ? ", id).
+		Relation("Images", func(q *orm.Query) (*orm.Query, error) {
+			return q.Where("collection_id = ?", id), nil
+		}).Select()
 	if err != nil {
 		return &models.Collection{}, err
 	}
