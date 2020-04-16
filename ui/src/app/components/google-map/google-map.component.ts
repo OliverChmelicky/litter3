@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {LocationService} from "../services/location/location.service";
-import {GPSlocationModel} from "../models/GPSlocation.model";
+import {LocationService} from "../../services/location/location.service";
+import {GPSlocationModel} from "../../models/GPSlocation.model";
 import {GoogleMap} from "@agm/core/services/google-maps-types";
-import {MarkerModel} from "src/app/google-map/Marker.model";
+import {MarkerModel} from "src/app/components/google-map/Marker.model";
 
 export const czechPosition: GPSlocationModel = {
   lat: 49.81500022397678,

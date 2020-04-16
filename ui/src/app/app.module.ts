@@ -12,13 +12,15 @@ import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AgmCoreModule } from '@agm/core';
 import { environment } from '../environments/environment';
 import {HttpClientModule} from "@angular/common/http";
-import { GoogleMapComponent } from './google-map/google-map.component';
+import { GoogleMapComponent } from './components/google-map/google-map.component';
 import {LocationService} from "./services/location/location.service";
+import { UserDetailComponent } from './components/user-detail/user-detail.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    GoogleMapComponent
+    GoogleMapComponent,
+    UserDetailComponent
   ],
   imports: [
     BrowserModule,
