@@ -204,3 +204,6 @@ create table collection_images
     url        varchar,
     PRIMARY KEY (collection_id, url)
 );
+
+INSERT INTO users (id, first_name, last_name, email, uid, created_at)
+VALUES ('1', 'Heinrich', 'Peter', 'oliver@chmelicky.me', '1', '2003-2-1');

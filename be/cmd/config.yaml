@@ -2,5 +2,5 @@ dbUsr: goo
 dbPass: goo
 dbName: goo
 dbAddr: localhost:5432
-firebaseCredentials: secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json
+firebaseCredentials: ../secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json
 gcpBucketName: litter3-olo-gcp.appspot.com

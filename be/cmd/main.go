@@ -21,7 +21,7 @@ func main() {
 	viper.SetDefault("dbPass", "goo")
 	viper.SetDefault("dbName", "goo")
 	viper.SetDefault("dbAddr", "localhost:5432")
-	viper.SetDefault("firebaseCredentials", "secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
+	viper.SetDefault("firebaseCredentials", "../secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
 	viper.SetDefault("gcpBucketName", "litter3-olo-gcp.appspot.com")
 
 	viper.SetConfigName("config")
@@ -46,7 +46,7 @@ func main() {
 	}
 	db.AddQueryHook(middlewareService.DbMiddleware{})
 
-	opt := option.WithCredentialsFile("secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
+	opt := option.WithCredentialsFile(viper.GetString("firebaseCredentials"))
 	firebaseAuth, err := getFirebaseAuth(opt)
 	if err != nil {
 		log.Fatal(err)
@@ -63,7 +63,7 @@ func main() {
 
 	userService := user.CreateService(db)
 	e.POST("/users/new", userService.CreateUser)
-	e.GET("users/:id", userService.GetUser, tokenMiddleware.FillUserContext)
+	e.GET("users/:id", userService.GetUser)
 	e.GET("users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 
