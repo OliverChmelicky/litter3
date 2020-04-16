@@ -53,3 +53,10 @@ func (s *MiddlewareService) FillUserContext(next echo.HandlerFunc) echo.HandlerF
 		return next(c)
 	}
 }
+
+func (s *MiddlewareService) CorsHeadder(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		c.Response().Header().Set(echo.HeaderAccessControlAllowOrigin, "*")
+		return next(c)
+	}
+}

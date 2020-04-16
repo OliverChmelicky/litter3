@@ -60,6 +60,7 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(tokenMiddleware.CorsHeadder)
 
 	userService := user.CreateService(db)
 	e.POST("/users/new", userService.CreateUser)
