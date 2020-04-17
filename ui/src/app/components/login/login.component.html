@@ -1,0 +1,21 @@
+<h3>LOGIN</h3>
+
+<form [formGroup]="checkoutForm" (ngSubmit)="login(checkoutForm.value)">
+
+  <div>
+    <label for="name">
+      Name
+    </label>
+    <input id="name" type="text" formControlName="name">
+  </div>
+
+  <div>
+    <label for="password">
+      Password
+    </label>
+    <input id="password" type="text" formControlName="password">
+  </div>
+
+  <button class="button" type="submit">Purchase</button>
+
+</form>

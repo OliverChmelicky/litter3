@@ -15,12 +15,15 @@ import {HttpClientModule} from "@angular/common/http";
 import { GoogleMapComponent } from './components/google-map/google-map.component';
 import {LocationService} from "./services/location/location.service";
 import { UserDetailComponent } from './components/user-detail/user-detail.component';
+import { LoginComponent } from './components/login/login.component';
+import {ReactiveFormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
     AppComponent,
     GoogleMapComponent,
-    UserDetailComponent
+    UserDetailComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
@@ -33,6 +36,7 @@ import { UserDetailComponent } from './components/user-detail/user-detail.compon
       apiKey: environment.googleMapsApiKey,
       libraries: ['places', 'geometry']
     }),
+    ReactiveFormsModule,
   ],
   providers: [LocationService],
   bootstrap: [AppComponent]
