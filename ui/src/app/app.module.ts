@@ -17,13 +17,16 @@ import {LocationService} from "./services/location/location.service";
 import { UserDetailComponent } from './components/user-detail/user-detail.component';
 import { LoginComponent } from './components/login/login.component';
 import {ReactiveFormsModule} from "@angular/forms";
+import { TopBarComponent } from './components/top-bar/top-bar.component';
+import { AppRoutingModule } from './app-routing.module';
 
 @NgModule({
   declarations: [
     AppComponent,
     GoogleMapComponent,
     UserDetailComponent,
-    LoginComponent
+    LoginComponent,
+    TopBarComponent
   ],
   imports: [
     BrowserModule,
@@ -37,6 +40,7 @@ import {ReactiveFormsModule} from "@angular/forms";
       libraries: ['places', 'geometry']
     }),
     ReactiveFormsModule,
+    AppRoutingModule,
   ],
   providers: [LocationService],
   bootstrap: [AppComponent]
