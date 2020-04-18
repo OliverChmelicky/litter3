@@ -28,10 +28,19 @@ func (s *UserAccess) CreateUser(in *models.User) (*models.User, error) {
 	return in, nil
 }
 
-func (s *UserAccess) GetUser(id string) (*models.User, error) {
+func (s *UserAccess) GetUserById(id string) (*models.User, error) {
 	user := new(models.User)
 	user.Id = id
-	err := s.Db.Model(user).Select()
+	err := s.Db.Select(user)
+	if err != nil {
+		return &models.User{}, err
+	}
+	return user, nil
+}
+
+func (s *UserAccess) GetUserByEmail(email string) (*models.User, error) {
+	user := new(models.User)
+	err := s.Db.Model(user).Where("email = ?", email).Select()
 	if err != nil {
 		return &models.User{}, err
 	}
@@ -39,7 +48,7 @@ func (s *UserAccess) GetUser(id string) (*models.User, error) {
 }
 
 func (s *UserAccess) UpdateUser(in *models.User) (*models.User, error) {
-	if _, err := s.GetUser(in.Id); err != nil {
+	if _, err := s.GetUserById(in.Id); err != nil {
 		return &models.User{}, err
 	}
 	return in, s.Db.Update(in)

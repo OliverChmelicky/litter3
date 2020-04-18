@@ -35,7 +35,7 @@ func (s *userService) CreateUser(c echo.Context) error {
 func (s *userService) GetUser(c echo.Context) error {
 	id := c.Param("id")
 
-	user, err := s.UserAccess.GetUser(id)
+	user, err := s.UserAccess.GetUserById(id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUser, err))
 	}
@@ -46,7 +46,7 @@ func (s *userService) GetUser(c echo.Context) error {
 func (s *userService) GetCurrentUser(c echo.Context) error {
 	id := c.Get("userId").(string)
 
-	user, err := s.UserAccess.GetUser(id)
+	user, err := s.UserAccess.GetUserById(id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetCurrentUser, err))
 	}
