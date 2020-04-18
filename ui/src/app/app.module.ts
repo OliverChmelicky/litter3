@@ -19,6 +19,8 @@ import { LoginComponent } from './components/login/login.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import { TopBarComponent } from './components/top-bar/top-bar.component';
 import { AppRoutingModule } from './app-routing.module';
+import { MyProfileComponent } from './components/my-profile/my-profile.component';
+import { RegisterComponent } from './components/register/register.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +28,9 @@ import { AppRoutingModule } from './app-routing.module';
     GoogleMapComponent,
     UserDetailComponent,
     LoginComponent,
-    TopBarComponent
+    TopBarComponent,
+    MyProfileComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,

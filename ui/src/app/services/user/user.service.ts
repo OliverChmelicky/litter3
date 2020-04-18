@@ -5,6 +5,7 @@ import {UserModel} from "../../models/user.model";
 import {catchError, tap} from "rxjs/operators";
 import {Observable, of} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
+import * as firebase from "firebase";
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,7 @@ export class UserService {
   apiUrl: string
 
   activeUser: UserModel;
+  activeUserFirebase: firebase.User;
 
 
   constructor(
@@ -28,6 +30,13 @@ export class UserService {
     );
   }
 
+  getUserByEmail(email: string): Observable<UserModel> {
+    const url = `${this.apiUrl}/${ApisModel.user}/${email}`;
+    return this.http.get<UserModel>(url).pipe(
+      catchError(this.handleError<UserModel>())
+    );
+  }
+
   private handleError<T>( result?: T) {
     return (error: any): Observable<T> => {
       console.error(error); // log to console instead
@@ -36,7 +45,8 @@ export class UserService {
     };
   }
 
-  getRegistered() {
-    return JSON.parse(localStorage.getItem('user'));
+  getMe(): Observable<UserModel> {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return this.getUserByEmail(user.email)
   }
 }

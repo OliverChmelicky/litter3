@@ -19,20 +19,7 @@ user: UserModel;
   }
 
   ngOnInit() {
-
-  }
-
-
-  testFetch(id :string) {
-    const isRegistered = this.userService.getRegistered()
-    console.log(isRegistered)
-    if (isRegistered){
-      this.user = isRegistered;
-    } else {
-      this.userService.getUser(id).
-      subscribe(user => this.user = user);
-    }
-
+    this.userService.getMe().subscribe(user  => this.user = user)
   }
 
 }

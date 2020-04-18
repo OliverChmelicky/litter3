@@ -1,8 +1,15 @@
-<a [routerLink]="['/']">
-  <h1>My Store</h1>
+<a [routerLink]="['/me']">
+  <h1>Me</h1>
+</a>
+<a [routerLink]="['/profile/tu-daj-user-id']">
+  <h1>Add friend</h1>
+</a>
+<a [routerLink]="['/register']">
+  <h1>REGISTER</h1>
+</a>
+<a [routerLink]="['/login']">
+  <h1>LOGIN</h1>
 </a>
 
 
-<a routerLink="/cart" class="button fancy-button">
-  <i class="material-icons">shopping_cart</i>Checkout
-</a>
+<button (click)="logout()">Logout</button>

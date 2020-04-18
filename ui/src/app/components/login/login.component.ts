@@ -17,7 +17,7 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder,
   ) {
     this.checkoutForm = this.formBuilder.group({
-      name: '',
+      email: '',
       password: ''
     });
   }
@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit {
 
   login(customerData) {
     this.checkoutForm.reset();
-    const usr = this.authService.login('idem@plavat.tu', 'Heslo123').
+    const usr = this.authService.login(customerData.email, customerData.password).
     then(value => console.log(value)).
     then(_ => console.log('hotovo')).catch(err => console.log('Error ', err));
     console.warn('Zaslany loggin', customerData);
