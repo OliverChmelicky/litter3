@@ -1,17 +1,14 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
 import { AppComponent } from './app.component';
+import { AgmCoreModule } from '@agm/core';
 import {RouterModule} from '@angular/router';
 
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
-
-// import { environment } from '../environments/environment';
-import { AgmCoreModule } from '@agm/core';
 import { environment } from '../environments/environment';
-import {HttpClientModule} from "@angular/common/http";
+import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import { GoogleMapComponent } from './components/google-map/google-map.component';
 import {LocationService} from "./services/location/location.service";
 import { UserDetailComponent } from './components/user-detail/user-detail.component';
@@ -21,6 +18,7 @@ import { TopBarComponent } from './components/top-bar/top-bar.component';
 import { AppRoutingModule } from './app-routing.module';
 import { MyProfileComponent } from './components/my-profile/my-profile.component';
 import { RegisterComponent } from './components/register/register.component';
+//import {TokenHeadders} from "./interceptors/token-headders";
 
 @NgModule({
   declarations: [
@@ -46,7 +44,10 @@ import { RegisterComponent } from './components/register/register.component';
     ReactiveFormsModule,
     AppRoutingModule,
   ],
-  providers: [LocationService],
+  providers: [
+    LocationService,
+//    { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
