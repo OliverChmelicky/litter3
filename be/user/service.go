@@ -24,24 +24,15 @@ func CreateService(db *pg.DB, firebase *auth.Client) *userService {
 }
 
 func (s *userService) CreateUser(c echo.Context) error {
-	fmt.Println("Dostal som usera")
-
 	user := new(models.User)
 	if err := c.Bind(user); err != nil {
-		fmt.Println("ERR")
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
 	}
-
-	fmt.Println("Nie err")
-	user.LastName = "testovicz"
-	user.FirstName = "test"
 
 	user, err := s.UserAccess.CreateUser(user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
 	}
-
-	fmt.Println("User vytvoreny")
 
 	claims := map[string]interface{}{}
 	claims["userId"] = user.Id
@@ -51,7 +42,7 @@ func (s *userService) CreateUser(c echo.Context) error {
 	err = s.Firebase.SetCustomUserClaims(ctx, user.Uid, claims)
 	if err != nil {
 		errDel := s.UserAccess.DeleteUser(user.Id)
-		err = fmt.Errorf(err.Error() + " ERROR user deleted %w", errDel)
+		err = fmt.Errorf(err.Error()+" ERROR user deleted %w", errDel)
 		return c.JSON(http.StatusGatewayTimeout, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
 	}
 

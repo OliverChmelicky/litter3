@@ -34,7 +34,7 @@ func (s *EventService) CreateEvent(c echo.Context) error {
 	if request.AsSociety {
 		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
 		}
 		if !isAdmin {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
@@ -135,7 +135,7 @@ func (s *EventService) UpdateEvent(c echo.Context) error {
 	if request.AsSociety {
 		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
 		}
 		if !isAdmin {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
