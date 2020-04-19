@@ -29,9 +29,7 @@ export class LoginComponent implements OnInit {
     this.checkoutForm.reset();
     const usr = this.authService.login(customerData.email, customerData.password).
     then(value => console.log(value)).
-    then(_ => console.log('hotovo')).catch(err => console.log('Error ', err));
-    console.warn('Zaslany loggin', customerData);
-    console.warn('Usr mame...', usr);
+    catch(err => console.log('Error ', err));
   }
 
 }

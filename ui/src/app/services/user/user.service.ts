@@ -2,8 +2,8 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 
 import {UserModel} from "../../models/user.model";
-import {catchError, tap} from "rxjs/operators";
-import {Observable, of, throwError} from "rxjs";
+import {catchError} from "rxjs/operators";
+import {Observable, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
 import * as firebase from "firebase";
 
@@ -13,34 +13,43 @@ import * as firebase from "firebase";
 export class UserService {
   apiUrl: string
 
-  activeUser: UserModel;
-
   constructor(
     private readonly http: HttpClient,
   ) {
     this.apiUrl = ApisModel.apiUrl
   }
 
+  createUser(userDetails: UserModel) {
+    console.log('vytvaram usr')
+    const url = `${this.apiUrl}/${ApisModel.user}/new`;
+    return this.http.post<UserModel>(url, userDetails).pipe(
+      catchError(err => UserService.handleError<UserModel>(err))
+    );
+  }
+
   getUser(id: string): Observable<UserModel> {
     const url = `${this.apiUrl}/${ApisModel.user}/${id}`;
     return this.http.get<UserModel>(url).pipe(
-      catchError(err => this.handleError<UserModel>(err))
+      catchError(err => UserService.handleError<UserModel>(err))
     );
   }
 
   getUserByEmail(email: string): Observable<UserModel> {
     const url = `${this.apiUrl}/${ApisModel.user}/${email}`;
     return this.http.get<UserModel>(url).pipe(
-      catchError(err => this.handleError<UserModel>(err))
+      catchError(err => UserService.handleError<UserModel>(err))
     );
   }
 
   getMe(): Observable<UserModel> {
     const user = JSON.parse(localStorage.getItem('user'));
-    return this.getUserByEmail(user.email)
+    const url = `${this.apiUrl}/${ApisModel.user}/me`;
+    return this.http.get<UserModel>(url).pipe(
+      catchError(err => UserService.handleError<UserModel>(err))
+    );
   }
 
-  private handleError<T>(error: HttpErrorResponse, result?: T) {
+  private static handleError<T>(error: HttpErrorResponse, result?: T) {
     if (error.error instanceof ErrorEvent) {
       // A client-side or network error occurred. Handle it accordingly.
       console.error('An error occurred:', error.error.message);
@@ -49,7 +58,7 @@ export class UserService {
       // The response body may contain clues as to what went wrong,
       console.error(
         `Backend returned code ${error.status}, ` +
-        `body was: ${error.error}`);
+        `body was: ${error.error.body}`);
     }
     // return an observable with a user-facing error message
     return throwError(

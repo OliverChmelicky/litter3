@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {AuthService} from "../../services/auth/auth.service";
 import {FormBuilder} from "@angular/forms";
 
@@ -15,7 +15,8 @@ export class RegisterComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
-  ) { }
+  ) {
+  }
 
   ngOnInit() {
     this.registerForm = this.formBuilder.group({
@@ -24,17 +25,21 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  tryRegiser(value){
-    this.authService.register(value.email, value.password)
+  tryRegiser(value) {
+    this.authService.register(value)
       .then(res => {
-        console.log(res);
+        console.log(res)
+        console.log('Your aaccount created')
         this.errorMessage = "";
         this.successMessage = "Your account has been created";
       }, err => {
-        console.log(err);
+        console.log(err)
+        console.log(err.message);
+        console.log('Your ERRR ')
         this.errorMessage = err.message;
         this.successMessage = "";
       })
+    console.log('odislo skoro')
   }
 
 
