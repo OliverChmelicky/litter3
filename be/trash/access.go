@@ -70,6 +70,15 @@ func (s *TrashAccess) DeleteTrash(trashId string) error {
 		return fmt.Errorf("Error trash has some collections already ")
 	}
 
+	var eventTrash []models.EventTrash
+	err = tx.Model(&eventTrash).Where("trash_id = ?", trashId).Select()
+	if err != nil {
+		return fmt.Errorf("Error events relelevant to trash: %w ", err)
+	}
+	if len(collections) != 0 {
+		return fmt.Errorf("Error events are organized to trash ")
+	}
+
 	err = s.DeleteTrashComments(trashId, tx)
 	if err != nil {
 		return err
