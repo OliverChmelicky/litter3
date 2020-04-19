@@ -265,7 +265,7 @@ func (s *eventAccess) EditEventRights(request *models.EventPermissionRequest, us
 	}
 
 	if request.ChangingRightsTo == userWhoDoesOperation || request.ChangingRightsTo == request.SocietyId {
-		return &models.EventPermissionRequest{}, fmt.Errorf("You cannot alter your permission")
+		return &models.EventPermissionRequest{}, fmt.Errorf("You cannot alter your permission ")
 	}
 
 	if isCreator && request.Permission == models.EventPermission("creator") {
@@ -341,6 +341,7 @@ func (s *eventAccess) DeleteEvent(request *models.EventPickerRequest, userWhoDoe
 		return fmt.Errorf("Error delete trash from event %w ", err)
 	}
 
+	//TODO navr=a+t stav ak nie je later collection
 	collection := new(models.Collection)
 	_, err = tx.Model(collection).Where("event_id = ?", request.EventId).Delete()
 	if err != nil {
