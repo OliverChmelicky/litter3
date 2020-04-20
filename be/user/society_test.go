@@ -38,7 +38,7 @@ func (s *SocietySuite) SetupSuite() {
 		log.Error("PostgresSQL is down")
 	}
 
-	s.service = CreateService(db)
+	s.service = CreateService(db, nil)
 	s.db = db
 
 	s.e = echo.New()

@@ -9,8 +9,7 @@ import (
 )
 
 type fileuploadService struct {
-	bh      *storage.BucketHandle
-	storage *storage.Client
+	bh *storage.BucketHandle
 }
 
 func CreateService(opt option.ClientOption, bucketName string) *fileuploadService {
@@ -34,7 +33,7 @@ func CreateService(opt option.ClientOption, bucketName string) *fileuploadServic
 		panic(err.Error())
 	}
 
-	return &fileuploadService{bh, st}
+	return &fileuploadService{bh}
 }
 
 //func (s *fileuploadService) UploadUserImage() error {

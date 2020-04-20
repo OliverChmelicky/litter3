@@ -22,20 +22,20 @@ CREATE TYPE accessibility AS ENUM (
     'underWater'
     );
 
-CREATE TYPE trashType AS ENUM (
-    'unknown',
-    'household',
-    'automotive',
-    'construction',
-    'plastics',
-    'electronic',
-    'glass',
-    'metal',
-    'liquid',
-    'dangerous',
-    'carcass',
-    'organic'
-    );
+-- CREATE TYPE trashType AS ENUM (
+--     'unknown',
+--     'household',
+--     'automotive',
+--     'construction',
+--     'plastics',
+--     'electronic',
+--     'glass',
+--     'metal',
+--     'liquid',
+--     'dangerous',
+--     'carcass',
+--     'organic'
+--     );
 
 CREATE TYPE membership AS ENUM (
     'admin',
@@ -77,7 +77,7 @@ create table trash
     cleaned       BOOLEAN       default false,
     size          size          default 'unknown',
     accessibility accessibility default 'unknown',
-    trash_type    trashType     default 'unknown',
+    trash_type    numeric,
     location      GEOGRAPHY(POINT, 4326) NOT NULL,
     description   VARCHAR,
     finder_id     VARCHAR                REFERENCES users (id) on delete set null,
@@ -193,15 +193,15 @@ create table friend_requests
 
 create table trash_images
 (
-    trash_id   VARCHAR REFERENCES trash (id) on delete cascade,
-    url        varchar,
+    trash_id VARCHAR REFERENCES trash (id) on delete cascade,
+    url      varchar,
     PRIMARY KEY (trash_id, url)
 );
 
 create table collection_images
 (
-    collection_id   VARCHAR REFERENCES collections (id) on delete cascade,
-    url        varchar,
+    collection_id VARCHAR REFERENCES collections (id) on delete cascade,
+    url           varchar,
     PRIMARY KEY (collection_id, url)
 );
 

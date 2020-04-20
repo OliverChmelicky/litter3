@@ -40,6 +40,7 @@ func (s *TrashAccess) GetTrashInRange(request *models.RangeRequest) ([]models.Tr
 		Column("trash.*").
 		Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).
 		Relation("Images").
+		Relation("Collections").
 		Select()
 	if err != nil {
 		return nil, err
@@ -261,7 +262,7 @@ func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId strin
 		//change trash back to be not cleaned if there are no later collections
 		//TODO test aj na toto. Nezmazem/zmazem kolekciu ak ma/nema odpad este neskorsiu kolekciu
 		var laterCollections []models.Collection
-		err = s.Db.Model(&laterCollections).Where("trash_id = ? and date > ?", collection.TrashId, collection.CreatedAt).Select()
+		err = s.Db.Model(&laterCollections).Where("trash_id = ? and created_at > ?", collection.TrashId, collection.CreatedAt).Select()
 		if err != nil {
 			return fmt.Errorf("Error checking if no later collections: %w ", err)
 		}
