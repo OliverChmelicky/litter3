@@ -8,6 +8,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
+	"github.com/olo/litter3/fileupload"
 	"github.com/olo/litter3/models"
 	"net/http"
 	"time"
@@ -16,11 +17,12 @@ import (
 type userService struct {
 	UserAccess *UserAccess
 	Firebase   *auth.Client
+	fileupload *fileupload.FileuploadService
 }
 
-func CreateService(db *pg.DB, firebase *auth.Client) *userService {
+func CreateService(db *pg.DB, firebase *auth.Client, fileupload *fileupload.FileuploadService) *userService {
 	access := &UserAccess{Db: db}
-	return &userService{access, firebase}
+	return &userService{access, firebase, fileupload}
 }
 
 func (s *userService) CreateUser(c echo.Context) error {
@@ -88,6 +90,33 @@ func (s *userService) UpdateUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, user)
+}
+
+func (s *userService) UploadUserImage(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	objectName, err := s.fileupload.Upload(c)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
+	}
+
+	user := new(models.User)
+	_, err = s.UserAccess.Db.Model(user).Set("avatar = ?", objectName).Where("id = ?", userId).Update()
+	if err != nil {
+		_ = s.fileupload.DeleteImage(objectName)
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
+	}
+
+	return c.NoContent(http.StatusCreated)
+}
+
+func (s *userService) GetUserImage(c echo.Context) error {
+	contentType, object, err := s.fileupload.LoadImage(c.Param("name"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrLoadImage, err))
+	}
+
+	return c.Stream(http.StatusOK, contentType, object)
 }
 
 func (s *userService) ApplyForMembership(c echo.Context) error {

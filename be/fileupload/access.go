@@ -1,38 +1,49 @@
 package fileupload
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
+	"github.com/labstack/echo"
+	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"io"
+	"mime"
+	"path/filepath"
 	"time"
 )
 
-func (s *fileuploadService) Upload(ctx context.Context, r io.Reader, name string) (string, error) {
-	obj := s.bh.Object(name)
-	w := obj.NewWriter(ctx)
-	if _, err := io.Copy(w, r); err != nil {
-		return "", err
+func (s *FileuploadService) Upload(ctx echo.Context) (string, error) {
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		log.Error("FORM_FILE_ERROR", err)
+		return "", fmt.Errorf("Error extracting image %w ", err)
+	}
+
+	src, err := file.Open()
+	if err != nil {
+		log.Error("FILE_OPEN_ERROR", err)
+		return "", fmt.Errorf("Error opening image %w ", err)
+	}
+	defer src.Close()
+
+	sufix := filepath.Ext(file.Filename)
+	objectName := uuid.NewV4().String() + sufix
+
+	w := s.bh.Object(objectName).NewWriter(context.Background())
+	w.ContentType = mime.TypeByExtension(sufix)
+	if _, err := io.Copy(w, src); err != nil {
+		return "", fmt.Errorf("Error saving image %w ", err)
 	}
 	if err := w.Close(); err != nil {
-		return "", err
+		_ = s.DeleteImage(objectName)
+		return "", fmt.Errorf("Error closing image %w ", err)
 	}
 
-	if err := obj.ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
-		return "", err
-	}
-
-	attrs, err := obj.Attrs(ctx)
-	return objectURL(attrs), err
+	return objectName, err
 }
 
-func objectURL(objAttrs *storage.ObjectAttrs) string {
-	return fmt.Sprintf("https://storage.googleapis.com/%s/%s", objAttrs.Bucket, objAttrs.Name)
-}
-
-func (s *fileuploadService) LoadImage(bucketName, objectName string) (string, io.Reader, error) {
-	oh := s.storage.Bucket(bucketName).Object(objectName)
+func (s *FileuploadService) LoadImage(objectName string) (string, io.Reader, error) {
+	oh := s.bh.Object(objectName)
 	attr, err := oh.Attrs(context.Background())
 	if err != nil {
 		log.Error("ATTR_OBJECT_ERROR", err)
@@ -48,4 +59,8 @@ func (s *fileuploadService) LoadImage(bucketName, objectName string) (string, io
 	}
 
 	return attr.ContentType, reader, nil
+}
+
+func (s *FileuploadService) DeleteImage(objectName string) error {
+	return nil
 }

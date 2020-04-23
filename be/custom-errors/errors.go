@@ -66,4 +66,8 @@ var (
 	ErrCannotAttendEvent         = "ERROR CANNOT EVENT"
 	ErrUpdateEvent               = "ERROR UPDATE EVENT"
 	ErrDeleteEvent               = "ERROR DELETE EVENT"
+
+	ErrUploadImage = "ERROR UPLOAD IMAGE"
+	ErrLoadImage   = "ERROR LOAD IMAGE"
+	ErrDeleteImage = "ERROR DELETE IMAGE"
 )

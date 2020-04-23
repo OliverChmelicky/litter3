@@ -4,15 +4,17 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	firebase "firebase.google.com/go"
+	"github.com/go-pg/pg/v9"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 )
 
-type fileuploadService struct {
+type FileuploadService struct {
+	db *pg.DB
 	bh *storage.BucketHandle
 }
 
-func CreateService(opt option.ClientOption, bucketName string) *fileuploadService {
+func CreateService(db *pg.DB, opt option.ClientOption, bucketName string) *FileuploadService {
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Fatalf("Fileupload service error initializing firebase app: %s\n", err.Error())
@@ -33,47 +35,47 @@ func CreateService(opt option.ClientOption, bucketName string) *fileuploadServic
 		panic(err.Error())
 	}
 
-	return &fileuploadService{bh}
+	return &FileuploadService{
+		db: db,
+		bh: bh,
+	}
 }
 
-//func (s *fileuploadService) UploadUserImage() error {
+//
+//func (s *FileuploadService) UploadSocietyImage() error {
 //
 //}
-//
-//func (s *fileuploadService) UploadSocietyImage() error {
-//
-//}
-//func (s *fileuploadService) UploadTrashImage() error {
+//func (s *FileuploadService) UploadTrashImages() error {
 //
 //}
-//func (s *fileuploadService) UploadCollectionImage() error {
+//func (s *FileuploadService) UploadCollectionImages() error {
 //
 //}
 
-//func (s *fileuploadService) GetUserImage() error {
+//func (s *FileuploadService) GetUserImage() error {
 //
 //}
 //
-//func (s *fileuploadService) GetSocietyImage() error {
+//func (s *FileuploadService) GetSocietyImage() error {
 //
 //}
-//func (s *fileuploadService) GetTrashImages() error {
+//func (s *FileuploadService) GetTrashImages() error {
 //
 //}
-//func (s *fileuploadService) GetCollectionImages() error {
+//func (s *FileuploadService) GetCollectionImages() error {
 //
 //}
 
-//func (s *fileuploadService) DeleteUserImage() error {
+//func (s *FileuploadService) DeleteUserImage() error {
 //
 //}
 //
-//func (s *fileuploadService) DeleteSocietyImage() error {
+//func (s *FileuploadService) DeleteSocietyImage() error {
 //
 //}
-//func (s *fileuploadService) DeleteTrashImages() error {
+//func (s *FileuploadService) DeleteTrashImages() error {
 //
 //}
-//func (s *fileuploadService) DeleteCollectionImages() error {
+//func (s *FileuploadService) DeleteCollectionImages() error {
 //
 //}

@@ -8,6 +8,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/olo/litter3/fileupload"
 	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
@@ -53,6 +54,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fileuploadService := fileupload.CreateService(db, opt, viper.GetString("gcpBucketName"))
+
 	e := echo.New()
 	tokenMiddleware, err := middlewareService.NewMiddlewareService(firebaseAuth)
 	if err != nil {
@@ -66,7 +69,7 @@ func main() {
 		AllowMethods: []string{http.MethodOptions},
 	}))
 
-	userService := user.CreateService(db, firebaseAuth)
+	userService := user.CreateService(db, firebaseAuth, fileuploadService)
 	e.POST("/users/new", userService.CreateUser)
 	e.GET("users/:id", userService.GetUser)
 	e.GET("users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
@@ -81,8 +84,6 @@ func main() {
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)
 	e.POST("/trash", trashService.CreateTrash)
-
-	//fileuploadService := fileupload.CreateService(opt,"litter3-olo-gcp.appspot.com")
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
