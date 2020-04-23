@@ -1,68 +1,85 @@
 //Source which seems to be better https://www.techiediaries.com/angular-firebase/angular-9-firebase-authentication-email-google-and-password/
 
 import {Injectable} from '@angular/core';
+import * as firebase from 'firebase/app';
 import {auth} from 'firebase/app';
 import {AngularFireAuth} from "@angular/fire/auth";
-import {User} from 'firebase';
+import {UserService} from "../user/user.service";
+import {MemberModel, SocietyModel, UserModel} from "../../models/user.model";
 
-//z 2. zdroja https://angular-templates.io/tutorials/about/firebase-authentication-with-angular
-import * as firebase from 'firebase/app';
-//end z
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  user: User;
+  firebaseUser: firebase.User
 
   constructor(
-    public  afAuth: AngularFireAuth,
+    private  afAuth: AngularFireAuth,
+    private userService: UserService,
   ) {
     this.afAuth.authState.subscribe(user => {
       if (user) {
-        this.user = user;
-        localStorage.setItem('user', JSON.stringify(this.user));
+        localStorage.setItem('firebaseUser', JSON.stringify(user));
+
+        user.getIdToken().then(token => localStorage.setItem('token', token))
+          .catch(() => localStorage.setItem('token', null));
       } else {
-        localStorage.setItem('user', null);
+        localStorage.setItem('firebaseUser', null);
+        localStorage.setItem('token', null);
       }
     })
   }
 
 
   async login(email: string, password: string) {
-    await this.afAuth.auth.signInWithEmailAndPassword(email, password)
+    await this.afAuth.signInWithEmailAndPassword(email, password)
       .then(res => {
-        this.user = res.user;
-        localStorage.setItem('user', JSON.stringify(this.user));
+        res.user.getIdToken().then(token => localStorage.setItem('token', token))
+          .catch(() => localStorage.setItem('token', null));
+        localStorage.setItem('firebaseUser', JSON.stringify(res.user));
         return res.user;
       }).catch(() => {
-          this.user = null;
-          localStorage.setItem('user', null);
+          localStorage.setItem('firebaseUser', null);
+          localStorage.setItem('token', null);
           return null;
         }
       )
   }
 
-  async register(email: string, password: string): Promise<firebase.auth.UserCredential> {
-    return this.afAuth.auth.createUserWithEmailAndPassword(email, password)
+  async register(value) {
+    await this.afAuth.createUserWithEmailAndPassword(value.email, value.password)
       .then(res => {
-        this.user = res.user;
-        localStorage.setItem('user', JSON.stringify(this.user));
-        return res.user;
-      }).catch(() => {
-          this.user = null;
-          localStorage.setItem('user', null);
+          this.firebaseUser = res.user;
+          localStorage.setItem('firebaseUser', JSON.stringify(res.user));
+        }
+      ).then(() =>
+        this.userService.createUser({
+          Id: '',
+          FirstName: value.FirstName,
+          LastName: value.LastName,
+          Email: value.email,
+          Uid: this.firebaseUser.uid,
+          Avatar: '',
+          CreatedAt: new Date()
+        }).subscribe(usr => console.log('newUser: ', usr))
+      )
+      .catch(err => {
+          console.log(err)
+          this.firebaseUser = null;
+          localStorage.setItem('firebaseUser', null);
+          localStorage.setItem('token', null);
           return null;
         }
       )
   }
 
   async sendPasswordResetEmail(passwordResetEmail: string) {
-    return await this.afAuth.auth.sendPasswordResetEmail(passwordResetEmail);
+    return await this.afAuth.sendPasswordResetEmail(passwordResetEmail);
   }
 
   async logout() {
-    await this.afAuth.auth.signOut();
+    await this.afAuth.signOut();
     localStorage.removeItem('user');
   }
 
@@ -72,10 +89,12 @@ export class AuthService {
   }
 
   async loginWithGoogle() {
-    await this.afAuth.auth.signInWithPopup(new auth.GoogleAuthProvider())
+    await this.afAuth.signInWithPopup(new auth.GoogleAuthProvider())
   }
 
-
+  getToken() {
+    return localStorage.getItem('token')
+  }
 }
 
 //zdroj Č. 2

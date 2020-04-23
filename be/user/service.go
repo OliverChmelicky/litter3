@@ -1,22 +1,26 @@
 package user
 
 import (
+	"context"
 	"errors"
+	"firebase.google.com/go/auth"
 	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
 	"net/http"
+	"time"
 )
 
 type userService struct {
 	UserAccess *UserAccess
+	Firebase   *auth.Client
 }
 
-func CreateService(db *pg.DB) *userService {
+func CreateService(db *pg.DB, firebase *auth.Client) *userService {
 	access := &UserAccess{Db: db}
-	return &userService{access}
+	return &userService{access, firebase}
 }
 
 func (s *userService) CreateUser(c echo.Context) error {
@@ -29,6 +33,19 @@ func (s *userService) CreateUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
 	}
+
+	claims := map[string]interface{}{}
+	claims["userId"] = user.Id
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	err = s.Firebase.SetCustomUserClaims(ctx, user.Uid, claims)
+	if err != nil {
+		errDel := s.UserAccess.DeleteUser(user.Id)
+		err = fmt.Errorf(err.Error()+" ERROR user deleted %w", errDel)
+		return c.JSON(http.StatusGatewayTimeout, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
+	}
+
 	return c.JSON(http.StatusOK, user)
 }
 

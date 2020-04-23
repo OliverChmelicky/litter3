@@ -54,9 +54,9 @@ func (s *TrashSuite) Test_CreateTrash() {
 		updating *models.Trash
 	}{
 		{
-			creator:  &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:    &models.Trash{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
-			updating: &models.Trash{Location: models.Point{99, 69}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("unknown"), TrashType: models.TrashType("organic")},
+			creator:  &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "4f6f", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			trash:    &models.Trash{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType(1)},
+			updating: &models.Trash{Location: models.Point{99, 69}, Cleaned: true, Size: models.Size("bag"), Accessibility: models.Accessibility("unknown"), TrashType: models.TrashType(1)},
 		},
 	}
 
@@ -121,7 +121,7 @@ func (s *TrashSuite) Test_GetAround() {
 	}{
 		{
 			creator:           &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "Velikonoce", Email: "Ja@kamo.com", CreatedAt: time.Now()},
-			trash:             &models.Trash{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType("organic")},
+			trash:             &models.Trash{Location: models.Point{20, 30}, Cleaned: false, Size: models.Size("bag"), Accessibility: models.Accessibility("car"), TrashType: models.TrashType(1)},
 			rangeRequest:      &models.RangeRequest{Location: models.Point{20, 29.99}, Radius: 5000.0},
 			collectionRequest: &models.CreateCollectionRandomRequest{Weight: 32},
 			randomImg:         &models.TrashImage{Url: "dasd"},

@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/api/option"
+	"net/http"
 )
 
 func main() {
@@ -61,8 +62,11 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(tokenMiddleware.CorsHeadder)
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowMethods: []string{http.MethodOptions},
+	}))
 
-	userService := user.CreateService(db)
+	userService := user.CreateService(db, firebaseAuth)
 	e.POST("/users/new", userService.CreateUser)
 	e.GET("users/:id", userService.GetUser)
 	e.GET("users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)

@@ -40,6 +40,7 @@ func (s *TrashAccess) GetTrashInRange(request *models.RangeRequest) ([]models.Tr
 		Column("trash.*").
 		Where("ST_DWithin(location, 'SRID=4326;POINT(? ?)', ?)", request.Location[0], request.Location[1], request.Radius).
 		Relation("Images").
+		Relation("Collections").
 		Select()
 	if err != nil {
 		return nil, err
@@ -68,6 +69,15 @@ func (s *TrashAccess) DeleteTrash(trashId string) error {
 	}
 	if len(collections) != 0 {
 		return fmt.Errorf("Error trash has some collections already ")
+	}
+
+	var eventTrash []models.EventTrash
+	err = tx.Model(&eventTrash).Where("trash_id = ?", trashId).Select()
+	if err != nil {
+		return fmt.Errorf("Error events relelevant to trash: %w ", err)
+	}
+	if len(eventTrash) != 0 {
+		return fmt.Errorf("Error events are organized to trash ")
 	}
 
 	err = s.DeleteTrashComments(trashId, tx)
@@ -249,13 +259,21 @@ func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId strin
 			return fmt.Errorf("Error checking collection for cleaned property: %w ", err)
 		}
 
-		//change trash back to be not cleaned
-		if collection.CleanedTrash {
-			trash := new(models.Trash)
-			trash.Cleaned = false
-			_, err = tx.Model(trash).Column("cleaned").Where("id = ?", collection.TrashId).Update()
-			if err != nil {
-				return fmt.Errorf("Error reverting trash cleaned property: %w ", err)
+		//change trash back to be not cleaned if there are no later collections
+		//TODO test aj na toto. Nezmazem/zmazem kolekciu ak ma/nema odpad este neskorsiu kolekciu
+		var laterCollections []models.Collection
+		err = s.Db.Model(&laterCollections).Where("trash_id = ? and created_at > ?", collection.TrashId, collection.CreatedAt).Select()
+		if err != nil {
+			return fmt.Errorf("Error checking if no later collections: %w ", err)
+		}
+		if len(laterCollections) > 0 {
+			if collection.CleanedTrash {
+				trash := new(models.Trash)
+				trash.Cleaned = false
+				_, err = tx.Model(trash).Column("cleaned").Where("id = ?", collection.TrashId).Update()
+				if err != nil {
+					return fmt.Errorf("Error reverting trash cleaned property: %w ", err)
+				}
 			}
 		}
 
