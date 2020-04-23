@@ -92,33 +92,6 @@ func (s *userService) UpdateUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, user)
 }
 
-func (s *userService) UploadUserImage(c echo.Context) error {
-	userId := c.Get("userId").(string)
-
-	objectName, err := s.fileupload.Upload(c)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
-	}
-
-	user := new(models.User)
-	_, err = s.UserAccess.Db.Model(user).Set("avatar = ?", objectName).Where("id = ?", userId).Update()
-	if err != nil {
-		_ = s.fileupload.DeleteImage(objectName)
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
-	}
-
-	return c.NoContent(http.StatusCreated)
-}
-
-func (s *userService) GetUserImage(c echo.Context) error {
-	contentType, object, err := s.fileupload.LoadImage(c.Param("name"))
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrLoadImage, err))
-	}
-
-	return c.Stream(http.StatusOK, contentType, object)
-}
-
 func (s *userService) ApplyForMembership(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 
@@ -463,4 +436,54 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "Implement me")
+}
+
+//
+//
+//
+//	FILEUPLOAD
+//
+//
+
+func (s *userService) UploadUserImage(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	objectName, err := s.fileupload.Upload(c)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
+	}
+
+	user := new(models.User)
+	_, err = s.UserAccess.Db.Model(user).Set("avatar = ?", objectName).Where("id = ?", userId).Update()
+	if err != nil {
+		_ = s.fileupload.DeleteImage(objectName)
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
+	}
+
+	return c.NoContent(http.StatusCreated)
+}
+
+func (s *userService) GetUserImage(c echo.Context) error {
+	contentType, object, err := s.fileupload.LoadImage(c.Param("name"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrLoadImage, err))
+	}
+
+	return c.Stream(http.StatusOK, contentType, object)
+}
+
+func (s *userService) DeleteUserImage(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	user, err := s.UserAccess.GetUserById(userId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+	}
+
+	err = s.fileupload.DeleteImage(user.Avatar)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+	}
+
+	return c.NoContent(http.StatusOK)
 }

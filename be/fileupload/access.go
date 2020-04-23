@@ -62,5 +62,12 @@ func (s *FileuploadService) LoadImage(objectName string) (string, io.Reader, err
 }
 
 func (s *FileuploadService) DeleteImage(objectName string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	o := s.bh.Object(objectName)
+	if err := o.Delete(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
