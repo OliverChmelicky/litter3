@@ -260,22 +260,22 @@ func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId strin
 		}
 
 		//change trash back to be not cleaned if there are no later collections
-		//TODO test aj na toto. Nezmazem/zmazem kolekciu ak ma/nema odpad este neskorsiu kolekciu
-		var laterCollections []models.Collection
-		err = s.Db.Model(&laterCollections).Where("trash_id = ? and created_at > ?", collection.TrashId, collection.CreatedAt).Select()
-		if err != nil {
-			return fmt.Errorf("Error checking if no later collections: %w ", err)
-		}
-		if len(laterCollections) > 0 {
-			if collection.CleanedTrash {
-				trash := new(models.Trash)
-				trash.Cleaned = false
-				_, err = tx.Model(trash).Column("cleaned").Where("id = ?", collection.TrashId).Update()
-				if err != nil {
-					return fmt.Errorf("Error reverting trash cleaned property: %w ", err)
-				}
-			}
-		}
+		//test aj na toto ak to chcem pouzit. Nezmazem/zmazem kolekciu ak ma/nema odpad este neskorsiu kolekciu
+		//var laterCollections []models.Collection
+		//err = s.Db.Model(&laterCollections).Where("trash_id = ? and created_at > ?", collection.TrashId, collection.CreatedAt).Select()
+		//if err != nil {
+		//	return fmt.Errorf("Error checking if no later collections: %w ", err)
+		//}
+		//if len(laterCollections) == 0 {
+		//	if collection.CleanedTrash {
+		//		trash := new(models.Trash)
+		//		trash.Cleaned = false
+		//		_, err = tx.Model(trash).Column("cleaned").Where("id = ?", collection.TrashId).Update()
+		//		if err != nil {
+		//			return fmt.Errorf("Error reverting trash cleaned property: %w ", err)
+		//		}
+		//	}
+		//}
 
 		err = tx.Delete(collection)
 		if err != nil {

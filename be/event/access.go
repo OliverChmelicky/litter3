@@ -341,7 +341,7 @@ func (s *eventAccess) DeleteEvent(request *models.EventPickerRequest, userWhoDoe
 		return fmt.Errorf("Error delete trash from event %w ", err)
 	}
 
-	//TODO navr=a+t stav ak nie je later collection
+	//maybe navráť stav ak nie je later collection
 	collection := new(models.Collection)
 	_, err = tx.Model(collection).Where("event_id = ?", request.EventId).Delete()
 	if err != nil {
