@@ -28,7 +28,10 @@ func (s *MiddlewareService) AuthorizeUser(next echo.HandlerFunc) echo.HandlerFun
 			return c.String(http.StatusUnauthorized, "Invalid authorization")
 		}
 
-		userId := firebaseToken.Claims["userId"]
+		userId, ok := firebaseToken.Claims["userId"].(string)
+		if !ok {
+			return c.String(http.StatusUnauthorized, "Invalid authorization")
+		}
 		c.Set("userId", userId)
 
 		return next(c)

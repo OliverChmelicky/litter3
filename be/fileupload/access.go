@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-func (s *FileuploadService) Upload(ctx echo.Context) (string, error) {
-	file, err := ctx.FormFile("file")
+func (s *FileuploadService) Upload(c echo.Context) (string, error) {
+	file, err := c.FormFile("file")
 	if err != nil {
 		log.Error("FORM_FILE_ERROR", err)
 		return "", fmt.Errorf("Error extracting image %w ", err)

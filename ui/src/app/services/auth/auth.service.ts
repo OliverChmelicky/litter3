@@ -47,29 +47,39 @@ export class AuthService {
       )
   }
 
+  renewToken(): void {
+    this.afAuth.idTokenResult.subscribe(token => {
+      localStorage.setItem('token', token.token);
+      console.log(token.token);
+    })
+  }
+
   async register(value) {
     await this.afAuth.createUserWithEmailAndPassword(value.email, value.password)
       .then(res => {
-          this.firebaseUser = res.user;
-          localStorage.setItem('firebaseUser', JSON.stringify(res.user));
-        }
-      ).then(() =>
+        this.firebaseUser = res.user;
+        localStorage.setItem('firebaseUser', JSON.stringify(res.user));
         this.userService.createUser({
           Id: '',
-          FirstName: value.FirstName,
-          LastName: value.LastName,
+          FirstName: 'Olo',//value.FirstName,
+          LastName: 'Chmelo',//value.LastName,
           Email: value.email,
           Uid: this.firebaseUser.uid,
           Avatar: '',
           CreatedAt: new Date()
-        }).subscribe(usr => console.log('newUser: ', usr))
-      )
+        }).subscribe(usr => {
+          console.log('newUser: ', usr);
+          console.log(localStorage.getItem('token'))
+          console.log('bol stary a teraz novy')
+          this.renewToken();
+        });
+      })
       .catch(err => {
           console.log(err)
           this.firebaseUser = null;
           localStorage.setItem('firebaseUser', null);
           localStorage.setItem('token', null);
-          return null;
+          throw err;
         }
       )
   }
@@ -83,7 +93,7 @@ export class AuthService {
     localStorage.removeItem('user');
   }
 
-  get isLoggedIn(): boolean {
+  isLoggedIn(): boolean {
     const user = JSON.parse(localStorage.getItem('user'));
     return user !== null;
   }

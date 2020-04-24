@@ -36,8 +36,9 @@ func (s *userService) CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
 	}
 
-	claims := map[string]interface{}{}
-	claims["userId"] = user.Id
+	claims := map[string]interface{}{
+		"userId": user.Id,
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()

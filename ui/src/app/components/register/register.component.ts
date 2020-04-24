@@ -30,16 +30,14 @@ export class RegisterComponent implements OnInit {
       .then(res => {
         console.log(res)
         console.log('Your aaccount created')
-        this.errorMessage = "";
+        this.errorMessage = null;
         this.successMessage = "Your account has been created";
       }, err => {
-        console.log(err)
         console.log(err.message);
         console.log('Your ERRR ')
         this.errorMessage = err.message;
-        this.successMessage = "";
+        this.successMessage = null;
       })
-    console.log('odislo skoro')
   }
 
 
