@@ -35,23 +35,34 @@ export class AuthService {
   async login(email: string, password: string) {
     await this.afAuth.signInWithEmailAndPassword(email, password)
       .then(res => {
-        res.user.getIdToken().then(token => localStorage.setItem('token', token))
-          .catch(() => localStorage.setItem('token', null));
         localStorage.setItem('firebaseUser', JSON.stringify(res.user));
-        return res.user;
+        this.firebaseUser = res.user;
+        res.user.getIdToken().then(token => {
+          localStorage.setItem('token', token)
+        })
+          .catch(() =>
+            localStorage.setItem('token', null)
+          );
       }).catch(() => {
-          localStorage.setItem('firebaseUser', null);
-          localStorage.setItem('token', null);
-          return null;
-        }
-      )
+        localStorage.setItem('firebaseUser', null);
+        localStorage.setItem('token', null);
+        return null;
+      })
   }
 
-  renewToken(): void {
-    this.afAuth.idTokenResult.subscribe(token => {
-      localStorage.setItem('token', token.token);
-      console.log(token.token);
+  renewToken() {
+    this.afAuth.currentUser.then(user => {
+      user.getIdToken(true)
+        .then((token) =>
+          localStorage.setItem('token', token)
+        ).catch(
+        err => {
+          console.log('error custom renew token ' + err);
+        })
     })
+      .catch(err => {
+        console.log('error custom renew token ' + err);
+      })
   }
 
   async register(value) {
@@ -91,6 +102,7 @@ export class AuthService {
   async logout() {
     await this.afAuth.signOut();
     localStorage.removeItem('user');
+    this.firebaseUser = null;
   }
 
   isLoggedIn(): boolean {
