@@ -3,7 +3,9 @@ package middleware
 import (
 	"context"
 	"firebase.google.com/go/auth"
+	"fmt"
 	"github.com/labstack/echo"
+	custom_errors "github.com/olo/litter3/custom-errors"
 	"net/http"
 )
 
@@ -20,17 +22,17 @@ func (s *MiddlewareService) AuthorizeUser(next echo.HandlerFunc) echo.HandlerFun
 	return func(c echo.Context) error {
 		token := c.Request().Header.Get("Authorization")
 		if token == "" {
-			return c.JSON(http.StatusUnauthorized, "error missing token")
+			return c.JSON(http.StatusUnauthorized, custom_errors.WrapError(custom_errors.ErrNoToken, fmt.Errorf("No token was provided ")))
 		}
 
 		firebaseToken, err := s.Connection.VerifyIDToken(context.Background(), token)
 		if err != nil {
-			return c.String(http.StatusUnauthorized, "Invalid authorization")
+			return c.JSON(http.StatusUnauthorized, custom_errors.WrapError(custom_errors.ErrUnauthorized, err))
 		}
 
 		userId, ok := firebaseToken.Claims["userId"].(string)
 		if !ok {
-			return c.String(http.StatusUnauthorized, "Invalid authorization")
+			return c.JSON(http.StatusUnauthorized, custom_errors.WrapError(custom_errors.ErrUnauthorized, err))
 		}
 		c.Set("userId", userId)
 

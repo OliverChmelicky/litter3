@@ -12,3 +12,9 @@
   </label>
   <button (click)="sendFriendRequest()">Send Request</button>
 </div>
+
+<li *ngFor="let request of friendRequests">
+  <p>{{request.User1Id}}</p>
+  <p>{{request.User2Id}}</p>
+  <p>------------</p>
+</li>

@@ -16,6 +16,8 @@ var (
 	ErrBindingRequest         = "ERROR BINDING REQUEST"
 	ErrConflict               = "CONFLICT"
 	ErrInsufficientPermission = "INSUFFICIENT PERMISSION"
+	ErrNoToken                = "NO AUTHORIZATION TOKEN"
+	ErrUnauthorized           = "UNAUTHORIZED"
 
 	ErrCreateUser     = "ERROR CREATE USER"
 	ErrGetUser        = "ERROR GET USER"

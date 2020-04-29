@@ -11,6 +11,7 @@ import (
 	"github.com/olo/litter3/fileupload"
 	"github.com/olo/litter3/models"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -61,6 +62,21 @@ func (s *userService) GetUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, user)
+}
+
+func (s *userService) GetUsers(c echo.Context) error {
+	idsString := c.QueryParam("Ids")
+	ids := strings.Split(idsString, ",")
+	fmt.Println(ids)
+
+	users, err := s.UserAccess.GetUsersByIds(ids)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUser, err))
+	}
+
+	fmt.Println(users)
+
+	return c.JSON(http.StatusOK, users)
 }
 
 func (s *userService) GetCurrentUser(c echo.Context) error {
@@ -141,6 +157,17 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 //
 //
 
+func (s *userService) GetMyFriendRequests(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	requests, err := s.UserAccess.GetUserFriendshipRequests(userId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
+	}
+
+	return c.JSON(http.StatusOK, requests)
+}
+
 func (s *userService) ApplyForFriendshipById(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
 
@@ -149,11 +176,14 @@ func (s *userService) ApplyForFriendshipById(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "Invalid arguments")
 	}
 
-	isRequestSend, err := s.UserAccess.AreFriends(&models.Friends{User1Id: requesterId, User2Id: request.Id})
+	if requesterId == request.Id {
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("YOU CANNOT BE FRIEND WITH YOURSELF")))
+	}
+	areFriendsAlready, err := s.UserAccess.AreFriends(&models.Friends{User1Id: requesterId, User2Id: request.Id})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
 	}
-	if isRequestSend {
+	if areFriendsAlready {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("YOU ARE FIENDS ALREADY")))
 	}
 
@@ -179,11 +209,14 @@ func (s *userService) ApplyForFriendshipByEmail(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUser, errors.New("YOU ARE FIENDS ALREADY")))
 	}
 
-	isRequestSend, err := s.UserAccess.AreFriends(&models.Friends{User1Id: requesterId, User2Id: wantsToBeFriendWith.Id})
+	if requesterId == wantsToBeFriendWith.Id {
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("YOU CANNOT BE FRIEND WITH YOURSELF")))
+	}
+	areFriends, err := s.UserAccess.AreFriends(&models.Friends{User1Id: requesterId, User2Id: wantsToBeFriendWith.Id})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
 	}
-	if isRequestSend {
+	if areFriends {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("YOU ARE FIENDS ALREADY")))
 	}
 

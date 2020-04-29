@@ -38,6 +38,21 @@ func (s *UserAccess) GetUserById(id string) (*models.User, error) {
 	return user, nil
 }
 
+func (s *UserAccess) GetUsersByIds(ids []string) ([]models.User, error) {
+	//TODO pg.rec.nofound
+	users := []models.User{}
+	err := s.Db.Model(&users).Where("id IN (?)", pg.In(ids)).Select()
+	if err != nil {
+		return []models.User{}, err
+	}
+
+	if len(users) == 0 {
+		return []models.User{}, fmt.Errorf("No record GetUsersByIds")
+	}
+
+	return users, nil
+}
+
 func (s *UserAccess) GetUserByEmail(email string) (*models.User, error) {
 	user := new(models.User)
 	err := s.Db.Model(user).Where("email = ?", email).Select()
@@ -282,8 +297,23 @@ func (s *UserAccess) DeleteSociety(in string) error {
 //
 //
 
+func (s *UserAccess) GetUserFriendshipRequests(userId string) ([]models.FriendRequest, error) {
+	//TODO pg.rec.nofound
+	var requests []models.FriendRequest
+	err := s.Db.Model(&requests).Where("user1_id = ? OR user2_id = ?", userId, userId).Select()
+	if err != nil {
+		return []models.FriendRequest{}, err
+	}
+
+	if len(requests) == 0 {
+		return []models.FriendRequest{}, fmt.Errorf("No record GetUserFriendshipRequests")
+	}
+
+	return requests, nil
+}
+
 func (s *UserAccess) AreFriends(friendship *models.Friends) (bool, error) {
-	err := s.Db.Model(friendship).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", friendship.User1Id, friendship.User2Id, friendship.User2Id, friendship.User1Id).Select()
+	err := s.Db.Model(friendship).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", friendship.User1Id, friendship.User2Id, friendship.User2Id, friendship.User1Id).Limit(1).Select()
 	if err == pg.ErrNoRows { //record was not found
 		return false, nil
 	}
@@ -360,6 +390,7 @@ func (s *UserAccess) RemoveFriend(friendship *models.Friends) error {
 	return err
 }
 
+//HELPERS
 func (s *UserAccess) IsUserSocietyAdmin(userId, societyId string) (bool, int, error) {
 	admins, err := s.GetSocietyAdmins(societyId)
 	if err != nil {

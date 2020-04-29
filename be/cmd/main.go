@@ -71,17 +71,19 @@ func main() {
 
 	userService := user.CreateService(db, firebaseAuth, fileuploadService)
 	e.POST("/users/new", userService.CreateUser)
-	e.GET("users/:id", userService.GetUser)
-	e.GET("users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
-	e.PUT("users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
+	e.GET("/users/:id", userService.GetUser)
+	e.GET("/users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
+	e.PUT("/users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 	e.POST("/users/friend/add/email", userService.ApplyForFriendshipByEmail, tokenMiddleware.AuthorizeUser)
 	e.POST("/users/friend/add/id", userService.ApplyForFriendshipById, tokenMiddleware.AuthorizeUser)
+	e.GET("/users/my/requests/friendship", userService.GetMyFriendRequests, tokenMiddleware.AuthorizeUser)
+	e.GET("/users/details", userService.GetUsers)
 
 	e.POST("/societies/new", userService.CreateUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)
 
-	e.POST("membership", userService.ApplyForMembership, tokenMiddleware.AuthorizeUser)
-	e.DELETE("membership/:societyId", userService.RemoveApplicationForMembership, tokenMiddleware.AuthorizeUser)
+	e.POST("/membership", userService.ApplyForMembership, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/membership/:societyId", userService.RemoveApplicationForMembership, tokenMiddleware.AuthorizeUser)
 
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)

@@ -63,6 +63,10 @@ type IdMessage struct {
 	Id string
 }
 
+type IdsMessage struct {
+	Ids []string
+}
+
 type EmailMessage struct {
 	Email string
 }

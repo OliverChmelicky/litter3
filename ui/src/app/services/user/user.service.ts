@@ -1,7 +1,14 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 
-import {UserModel, FriendRequestModel, EmailMessageModel, MemberModel, SocietyModel} from "../../models/user.model";
+import {
+  UserModel,
+  FriendRequestModel,
+  EmailMessageModel,
+  MemberModel,
+  SocietyModel,
+  IdsMessageModel
+} from "../../models/user.model";
 import {catchError} from "rxjs/operators";
 import {Observable, of, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
@@ -45,6 +52,23 @@ export class UserService {
     const url = `${this.apiUrl}/${ApisModel.user}/me`;
     return this.http.get<UserModel>(url).pipe(
       catchError(err => UserService.handleError<UserModel>(err)
+      )
+    );
+  }
+
+  getMyFriendRequests(): Observable<FriendRequestModel[]> {
+    const url = `${this.apiUrl}/${ApisModel.user}/my/requests/friendship`;
+    return this.http.get<FriendRequestModel[]>(url).pipe(
+      catchError(err => UserService.handleError<FriendRequestModel[]>(err, [])
+      )
+    );
+  }
+
+  getUsersDetails(ids: string[]): Observable<UserModel[]> {
+    const idsQueryParam = ids.join();
+    const url = `${this.apiUrl}/${ApisModel.user}/details?Ids=${idsQueryParam}`;
+    return this.http.get<UserModel[]>(url).pipe(
+      catchError(err => UserService.handleError<UserModel[]>(err)
       )
     );
   }
