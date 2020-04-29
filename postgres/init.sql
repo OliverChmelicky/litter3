@@ -205,8 +205,8 @@ create table collection_images
     PRIMARY KEY (collection_id, url)
 );
 
--- INSERT INTO users (id, first_name, last_name, email, uid, created_at)
--- VALUES ('ad10c133-f18f-417d-be04-795e290683c1', 'Heinrich', 'Herrer', 'a@a.cz', 'vBP3XYCYQPZGMYAJVeVgd9pttkr2', '2003-2-1');
---
--- INSERT INTO users (id, first_name, last_name, email, uid, created_at)
--- VALUES ('92a99679-9e9f-401c-8ae4-eb9c869c2120', 'Peter', 'Aufschneider', 'b@b.cz', 'fCtIJKvNRbXAulI9IFScKoJcyuk2', '2003-2-1');
+INSERT INTO users (id, first_name, last_name, email, uid, created_at)
+VALUES ('ad10c133-f18f-417d-be04-795e290683c1', 'Heinrich', 'Herrer', 'a@a.cz', 'vBP3XYCYQPZGMYAJVeVgd9pttkr2', '2003-2-1');
+
+INSERT INTO users (id, first_name, last_name, email, uid, created_at)
+VALUES ('92a99679-9e9f-401c-8ae4-eb9c869c2120', 'Peter', 'Aufschneider', 'b@b.cz', 'fCtIJKvNRbXAulI9IFScKoJcyuk2', '2003-2-1');
