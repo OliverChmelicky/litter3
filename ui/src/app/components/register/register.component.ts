@@ -27,14 +27,10 @@ export class RegisterComponent implements OnInit {
 
   tryRegiser(value) {
     this.authService.register(value)
-      .then(res => {
-        console.log(res)
-        console.log('Your aaccount created')
+      .then(() => {
         this.errorMessage = null;
         this.successMessage = "Your account has been created";
       }, err => {
-        console.log(err.message);
-        console.log('Your ERRR ')
         this.errorMessage = err.message;
         this.successMessage = null;
       })

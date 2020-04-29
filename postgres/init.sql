@@ -206,4 +206,7 @@ create table collection_images
 );
 
 INSERT INTO users (id, first_name, last_name, email, uid, created_at)
-VALUES ('1', 'Heinrich', 'Peter', 'idem@plavat.tu', '3Iv828kkpdXtZv1F339nQwC4MlB3', '2003-2-1');
+VALUES ('1', 'Heinrich', 'Peter', 'a@a.cz', '3Iv828kkpdXtZv1F339nQwC4MlB3', '2003-2-1');
+
+INSERT INTO users (id, first_name, last_name, email, uid, created_at)
+VALUES ('2', 'Heinrich', 'Peter', 'b@b.cz', '123', '2003-2-1');

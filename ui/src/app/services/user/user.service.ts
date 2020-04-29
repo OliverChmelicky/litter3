@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 
-import {UserModel, FriendRequestModel, EmailMessageModel} from "../../models/user.model";
+import {UserModel, FriendRequestModel, EmailMessageModel, MemberModel, SocietyModel} from "../../models/user.model";
 import {catchError} from "rxjs/operators";
-import {Observable, throwError} from "rxjs";
+import {Observable, of, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
 import * as firebase from "firebase";
 
@@ -42,20 +42,20 @@ export class UserService {
   }
 
   getMe(): Observable<UserModel> {
-    const user = JSON.parse(localStorage.getItem('user'));
     const url = `${this.apiUrl}/${ApisModel.user}/me`;
     return this.http.get<UserModel>(url).pipe(
-      catchError(err => UserService.handleError<UserModel>(err))
+      catchError(err => UserService.handleError<UserModel>(err)
+      )
     );
   }
 
   requestFriend(email: string): Observable<EmailMessageModel> {
     const url = `${this.apiUrl}/${ApisModel.user}/friend/add/email`;
-    const request = {
-      Email : email
+    const request = <EmailMessageModel>{
+      Email: email
     }
     return this.http.post<EmailMessageModel>(url, request).pipe(
-      catchError(err => UserService.handleError<FriendRequestModel>(err))
+      catchError(err => UserService.handleError<EmailMessageModel>(err))
     )
   }
 
@@ -68,17 +68,14 @@ export class UserService {
       // The backend returned an unsuccessful response code.
       // The response body may contain clues as to what went wrong,
       console.error(
-        `Backend returned code ${error.status}, ` +
-        `body was: ${error.error.message}`);
+        `Backend returned code ${error.status} \n` +
+        `TITLE: ${error.error.errorMessage} \n` +
+        `TYPE ${error.error.errorType} `);
     }
     // return an observable with a user-facing error message
-    return throwError(
-      'Something bad happened; please try again later.');
-
-    // Let the app keep running by returning an empty result.
-    // return (error: any): Observable<T> => {
-    //   console.error(error); // log to console instead
-    //   return of(result as T);
-    // };
+    if (result === null) {
+      return throwError(error);
+    }
+    return of(result as T);
   };
 }

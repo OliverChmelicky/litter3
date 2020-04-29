@@ -24,7 +24,10 @@ export class MyProfileComponent implements OnInit {
   sendFriendRequest() {
     console.log('Sme dnu')
     if (this.newFriendEmail != '') {
-      this.userService.requestFriend(this.newFriendEmail).subscribe(reqest => console.log(reqest))
+      this.userService.requestFriend(this.newFriendEmail).subscribe(
+        reqest => console.log(reqest),
+        err => console.log(err)
+      )
     }
   }
 

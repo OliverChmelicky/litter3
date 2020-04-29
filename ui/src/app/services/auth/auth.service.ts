@@ -6,6 +6,7 @@ import {auth} from 'firebase/app';
 import {AngularFireAuth} from "@angular/fire/auth";
 import {UserService} from "../user/user.service";
 import {MemberModel, SocietyModel, UserModel} from "../../models/user.model";
+import {throwError} from "rxjs";
 
 
 @Injectable({
@@ -57,11 +58,13 @@ export class AuthService {
           localStorage.setItem('token', token)
         ).catch(
         err => {
-          console.log('error custom renew token ' + err);
+          console.log('error custom renew token inside ' + err);
+          throwError(err)
         })
     })
       .catch(err => {
-        console.log('error custom renew token ' + err);
+        console.log('error custom renew token first ' + err);
+        throwError(err)
       })
   }
 
@@ -78,15 +81,12 @@ export class AuthService {
           Uid: this.firebaseUser.uid,
           Avatar: '',
           CreatedAt: new Date()
-        }).subscribe(usr => {
-          console.log('newUser: ', usr);
-          console.log(localStorage.getItem('token'))
-          console.log('bol stary a teraz novy')
-          this.renewToken();
-        });
+        }).subscribe(
+          () => this.renewToken(),
+          err => throwError(err)
+        );
       })
       .catch(err => {
-          console.log(err)
           this.firebaseUser = null;
           localStorage.setItem('firebaseUser', null);
           localStorage.setItem('token', null);
@@ -114,7 +114,7 @@ export class AuthService {
     await this.afAuth.signInWithPopup(new auth.GoogleAuthProvider())
   }
 
-  getToken() {
+  getToken(): string {
     return localStorage.getItem('token')
   }
 }

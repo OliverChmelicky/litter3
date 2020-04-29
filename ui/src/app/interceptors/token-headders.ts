@@ -16,9 +16,8 @@ export class TokenHeadders implements HttpInterceptor {
   constructor(public auth: AuthService) {}
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
-    console.log('tak ide ten interkokot?')
     const token = this.auth.getToken()
-    console.log('Token je: ',token)
+    console.log('Interceptor token je: ',token)
 
     if (token) {
       request = request.clone({
@@ -27,8 +26,6 @@ export class TokenHeadders implements HttpInterceptor {
         }
       });
     }
-
-    console.log('Token je: ',token)
 
     return next.handle(request);
   }
