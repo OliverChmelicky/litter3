@@ -4,3 +4,11 @@
   <p>{{me.LastName}}</p>
   <p>{{me.Email}}</p>
 </div>
+
+<div>
+  <label>
+    <p>Request for friend</p>
+    <input [(ngModel)]="newFriendEmail" placeholder="fill email"/> <br>
+  </label>
+  <button (click)="sendFriendRequest()">Send Request</button>
+</div>

@@ -9,6 +9,7 @@ import {UserService} from "../../services/user/user.service";
 })
 export class MyProfileComponent implements OnInit {
   me: UserModel;
+  newFriendEmail: string;
 
   constructor(
     private userService: UserService,
@@ -18,6 +19,13 @@ export class MyProfileComponent implements OnInit {
 
   ngOnInit() {
     this.userService.getMe().subscribe(user => this.me = user)
+  }
+
+  sendFriendRequest() {
+    console.log('Sme dnu')
+    if (this.newFriendEmail != '') {
+      this.userService.requestFriend(this.newFriendEmail).subscribe(reqest => console.log(reqest))
+    }
   }
 
 }

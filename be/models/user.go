@@ -63,6 +63,10 @@ type IdMessage struct {
 	Id string
 }
 
+type EmailMessage struct {
+	Email string
+}
+
 type UserGroupRequest struct {
 	UserId    string
 	SocietyId string

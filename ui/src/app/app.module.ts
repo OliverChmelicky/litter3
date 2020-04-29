@@ -13,7 +13,7 @@ import {GoogleMapComponent} from './components/google-map/google-map.component';
 import {LocationService} from "./services/location/location.service";
 import {UserDetailComponent} from './components/user-detail/user-detail.component';
 import {LoginComponent} from './components/login/login.component';
-import {ReactiveFormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import { TopBarComponent } from './components/top-bar/top-bar.component';
 import { AppRoutingModule } from './app-routing.module';
 import { MyProfileComponent } from './components/my-profile/my-profile.component';
@@ -30,20 +30,21 @@ import {TokenHeadders} from "./interceptors/token-headders";
     MyProfileComponent,
     RegisterComponent
   ],
-  imports: [
-    BrowserModule,
-    RouterModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule,
-    AngularFireAuthModule,
-    HttpClientModule,
-    AgmCoreModule.forRoot({
-      apiKey: environment.googleMapsApiKey,
-      libraries: ['places', 'geometry']
-    }),
-    ReactiveFormsModule,
-    AppRoutingModule,
-  ],
+    imports: [
+        BrowserModule,
+        RouterModule,
+        AngularFireModule.initializeApp(environment.firebaseConfig),
+        AngularFirestoreModule,
+        AngularFireAuthModule,
+        HttpClientModule,
+        AgmCoreModule.forRoot({
+            apiKey: environment.googleMapsApiKey,
+            libraries: ['places', 'geometry']
+        }),
+        ReactiveFormsModule,
+        AppRoutingModule,
+        FormsModule,
+    ],
   providers: [
     LocationService,
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },

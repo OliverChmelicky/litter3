@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 
-import {UserModel} from "../../models/user.model";
+import {UserModel, FriendRequestModel, EmailMessageModel} from "../../models/user.model";
 import {catchError} from "rxjs/operators";
 import {Observable, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
@@ -48,6 +48,17 @@ export class UserService {
       catchError(err => UserService.handleError<UserModel>(err))
     );
   }
+
+  requestFriend(email: string): Observable<EmailMessageModel> {
+    const url = `${this.apiUrl}/${ApisModel.user}/friend/add/email`;
+    const request = {
+      Email : email
+    }
+    return this.http.post<EmailMessageModel>(url, request).pipe(
+      catchError(err => UserService.handleError<FriendRequestModel>(err))
+    )
+  }
+
 
   private static handleError<T>(error: HttpErrorResponse, result?: T) {
     if (error.error instanceof ErrorEvent) {

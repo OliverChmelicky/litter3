@@ -22,6 +22,10 @@ export interface IdMessageModel {
   Id: string;
 }
 
+export interface EmailMessageModel {
+  Email: string;
+}
+
 export interface UserGroupRequestModel {
   UserId: string;
   SocietyId: string;
