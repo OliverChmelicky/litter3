@@ -72,6 +72,7 @@ func main() {
 	userService := user.CreateService(db, firebaseAuth, fileuploadService)
 	e.POST("/users/new", userService.CreateUser)
 	e.GET("/users/:id", userService.GetUser)
+	e.GET("/users/email/:email", userService.GetUserByEmail)
 	e.GET("/users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("/users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/details", userService.GetUsers)
@@ -81,8 +82,8 @@ func main() {
 	e.GET("/users/friends", userService.GetMyFriends, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/friend/requests", userService.GetMyFriendRequests, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/users/friend/remove/:notWanted", userService.RemoveFriend, tokenMiddleware.AuthorizeUser)
-	e.GET("/users/friend/accept/:wantedUser", userService.AcceptFriendship, tokenMiddleware.AuthorizeUser)
-	e.GET("/users/friend/deny/:notWanted", userService.RemoveApplicationForFriendship, tokenMiddleware.AuthorizeUser)
+	e.POST("/users/friend/accept/:wantedUser", userService.AcceptFriendship, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/users/friend/deny/:notWanted", userService.RemoveApplicationForFriendship, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/societies/new", userService.CreateUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)

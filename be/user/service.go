@@ -58,7 +58,18 @@ func (s *userService) GetUser(c echo.Context) error {
 
 	user, err := s.UserAccess.GetUserById(id)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUser, err))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUserById, err))
+	}
+
+	return c.JSON(http.StatusOK, user)
+}
+
+func (s *userService) GetUserByEmail(c echo.Context) error {
+	email := c.Param("email")
+
+	user, err := s.UserAccess.GetUserByEmail(email)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUserByEmail, err))
 	}
 
 	return c.JSON(http.StatusOK, user)
@@ -71,7 +82,7 @@ func (s *userService) GetUsers(c echo.Context) error {
 
 	users, err := s.UserAccess.GetUsersByIds(ids)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUser, err))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUsers, err))
 	}
 
 	fmt.Println(users)
@@ -225,7 +236,7 @@ func (s *userService) ApplyForFriendshipByEmail(c echo.Context) error {
 
 	wantsToBeFriendWith, err := s.UserAccess.GetUserByEmail(request.Email)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUser, errors.New("YOU ARE FIENDS ALREADY")))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUserById, errors.New("YOU ARE FIENDS ALREADY")))
 	}
 
 	if requesterId == wantsToBeFriendWith.Id {

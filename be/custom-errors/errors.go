@@ -20,7 +20,9 @@ var (
 	ErrUnauthorized           = "UNAUTHORIZED"
 
 	ErrCreateUser     = "ERROR CREATE USER"
-	ErrGetUser        = "ERROR GET USER"
+	ErrGetUserById    = "ERROR GET USER BY ID"
+	ErrGetUsers       = "ERROR GET BATCH USERS BY ID"
+	ErrGetUserByEmail = "ERROR GET USER BY EMAIL"
 	ErrGetCurrentUser = "ERROR GET CURRENT USER"
 	ErrUpdateUser     = "ERR UPDATE USER"
 	ErrDeleteUser     = "ERROR DELETE USER"

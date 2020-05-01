@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {AuthService} from "../../services/auth/auth.service";
+import {Observable} from "rxjs";
 
 
 @Component({
@@ -9,12 +10,16 @@ import {AuthService} from "../../services/auth/auth.service";
 })
 export class TopBarComponent implements OnInit {
 
+  isLoggedIn$: Observable<boolean>;
+
   constructor(
     private authService: AuthService
   ) { }
 
   ngOnInit() {
+    this.isLoggedIn$ = this.authService.isLoggedIn;
   }
+
 
   logout(){
     this.authService.logout()

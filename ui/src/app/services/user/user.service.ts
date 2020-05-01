@@ -7,7 +7,7 @@ import {
   EmailMessageModel,
   MemberModel,
   SocietyModel,
-  IdsMessageModel
+  IdsMessageModel, FriendsModel
 } from "../../models/user.model";
 import {catchError} from "rxjs/operators";
 import {Observable, of, throwError} from "rxjs";
@@ -42,7 +42,7 @@ export class UserService {
   }
 
   getUserByEmail(email: string): Observable<UserModel> {
-    const url = `${this.apiUrl}/${ApisModel.user}/${email}`;
+    const url = `${this.apiUrl}/${ApisModel.user}/email/${email}`;
     return this.http.get<UserModel>(url).pipe(
       catchError(err => UserService.handleError<UserModel>(err))
     );
@@ -57,9 +57,17 @@ export class UserService {
   }
 
   getMyFriendRequests(): Observable<FriendRequestModel[]> {
-    const url = `${this.apiUrl}/${ApisModel.user}/my/requests/friendship`;
+    const url = `${this.apiUrl}/${ApisModel.user}/friend/requests`;
     return this.http.get<FriendRequestModel[]>(url).pipe(
       catchError(err => UserService.handleError<FriendRequestModel[]>(err, [])
+      )
+    );
+  }
+
+  getMyFriends(): Observable<FriendsModel[]> {
+    const url = `${this.apiUrl}/${ApisModel.user}/friends`;
+    return this.http.get<FriendsModel[]>(url).pipe(
+      catchError(err => UserService.handleError<FriendsModel[]>(err, [])
       )
     );
   }
@@ -73,16 +81,36 @@ export class UserService {
     );
   }
 
-  requestFriend(email: string): Observable<EmailMessageModel> {
+  requestFriend(email: string): Observable<FriendRequestModel> {
     const url = `${this.apiUrl}/${ApisModel.user}/friend/add/email`;
     const request = <EmailMessageModel>{
       Email: email
     }
-    return this.http.post<EmailMessageModel>(url, request).pipe(
-      catchError(err => UserService.handleError<EmailMessageModel>(err))
+    return this.http.post<FriendRequestModel>(url, request).pipe(
+      catchError(err => UserService.handleError<FriendRequestModel>(err))
     )
   }
 
+  removeFriend(userId: string) {
+    const url = `${this.apiUrl}/${ApisModel.user}/friend/remove/${userId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => UserService.handleError(err))
+    )
+  }
+
+  acceptFriend(userId: string): Observable<FriendsModel> {
+    const url = `${this.apiUrl}/${ApisModel.user}/friend/accept/${userId}`;
+    return this.http.post<FriendsModel>(url, null).pipe(
+      catchError(err => UserService.handleError<FriendsModel>(err))
+    )
+  }
+
+  denyFriend(userId: string) {
+    const url = `${this.apiUrl}/${ApisModel.user}/friend/deny/${userId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => UserService.handleError(err))
+    )
+  }
 
   private static handleError<T>(error: HttpErrorResponse, result?: T) {
     if (error.error instanceof ErrorEvent) {
@@ -97,9 +125,10 @@ export class UserService {
         `TYPE ${error.error.errorType} `);
     }
     // return an observable with a user-facing error message
-    if (result === null) {
+    if (result == null) {
       return throwError(error);
     }
     return of(result as T);
   };
+
 }

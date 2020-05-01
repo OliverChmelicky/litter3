@@ -1,15 +1,15 @@
-<a [style.visibility]="this.authService.firebaseUser ? 'visible' : 'hidden'" [routerLink]="['/me']">
+<a *ngIf="isLoggedIn$ | async" [routerLink]="['/me']">
   <h1>Me</h1>
 </a>
-<a [style.visibility]="this.authService.firebaseUser ? 'visible' : 'hidden'" [routerLink]="['/profile/tu-daj-user-id']">
+<a *ngIf="isLoggedIn$ | async" [routerLink]="['/profile/tu-daj-user-id']">
   <h1>Add friend</h1>
 </a>
-<a [style.visibility]="this.authService.firebaseUser ? 'hidden' : 'visible'" [routerLink]="['/register']">
+<a *ngIf="!(isLoggedIn$ | async)"  [routerLink]="['/register']">
   <h1>REGISTER</h1>
 </a>
-<a [style.visibility]="this.authService.firebaseUser ? 'hidden' : 'visible'"  [routerLink]="['/login']">
+<a *ngIf="!(isLoggedIn$ | async)" [routerLink]="['/login']">
   <h1>LOGIN</h1>
 </a>
 
 
-<button [style.visibility]="this.authService.firebaseUser ? 'visible' : 'hidden'" (click)="logout()">Logout</button>
+<button *ngIf="isLoggedIn$ | async" (click)="logout()">Logout</button>

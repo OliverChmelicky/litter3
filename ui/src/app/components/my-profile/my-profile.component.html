@@ -13,8 +13,26 @@
   <button (click)="sendFriendRequest()">Send Request</button>
 </div>
 
-<li *ngFor="let request of friendRequests">
-  <p>{{request.User1Id}}</p>
-  <p>{{request.User2Id}}</p>
+<h3>Received requests</h3>
+<li *ngFor="let request of IreceivedFriendRequests">
+  <p>{{request.Email}}</p>
+  <p>{{request.CreatedAt}}</p>
+  <button (click)="acceptFriendRequest(request.UserId)">Accept</button>
+  <button (click)="denyFriendRequest(request.UserId)">Deny</button>
+</li>
+
+<h3>Send requests</h3>
+<li *ngFor="let request of IsendFriendRequests">
+  <p>{{request.Email}}</p>
+  <p>{{request.CreatedAt}}</p>
+  <button (click)="cancelFriendRequest(request.UserId)">Cancel</button>
+  <p>------------</p>
+</li>
+
+<h3>My friends</h3>
+<li *ngFor="let friend of myFriendsView">
+  <p>{{friend.FirstName}}</p>
+  <p>{{friend.LastName}}</p>
+  <button (click)="removeFriend(friend.UserId)">Remove Friend</button>
   <p>------------</p>
 </li>
