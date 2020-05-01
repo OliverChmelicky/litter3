@@ -157,12 +157,23 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 //
 //
 
+func (s *userService) GetMyFriends(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	requests, err := s.UserAccess.GetUserFriends(userId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUserFriends, err))
+	}
+
+	return c.JSON(http.StatusOK, requests)
+}
+
 func (s *userService) GetMyFriendRequests(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
 	requests, err := s.UserAccess.GetUserFriendshipRequests(userId)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetMyReqForFriendship, err))
 	}
 
 	return c.JSON(http.StatusOK, requests)
@@ -185,6 +196,14 @@ func (s *userService) ApplyForFriendshipById(c echo.Context) error {
 	}
 	if areFriendsAlready {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("YOU ARE FIENDS ALREADY")))
+	}
+
+	isrequestAlreadySend, err := s.UserAccess.IsFriendRequestSendAlready(&models.FriendRequest{User1Id: requesterId, User2Id: request.Id})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
+	}
+	if isrequestAlreadySend {
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("REQUEST IS SEND ALREADY")))
 	}
 
 	friendRequest := &models.FriendRequest{User1Id: requesterId, User2Id: request.Id}
@@ -220,6 +239,14 @@ func (s *userService) ApplyForFriendshipByEmail(c echo.Context) error {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("YOU ARE FIENDS ALREADY")))
 	}
 
+	isFriendRequestSendAlready, err := s.UserAccess.IsFriendRequestSendAlready(&models.FriendRequest{User1Id: requesterId, User2Id: wantsToBeFriendWith.Id})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForFriendship, err))
+	}
+	if isFriendRequestSendAlready {
+		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("REQUEST IS SEND ALREADY")))
+	}
+
 	friendRequest := &models.FriendRequest{User1Id: requesterId, User2Id: wantsToBeFriendWith.Id}
 	applicant, err := s.UserAccess.AddFriendshipRequest(friendRequest)
 	if err != nil {
@@ -231,7 +258,7 @@ func (s *userService) ApplyForFriendshipByEmail(c echo.Context) error {
 
 func (s *userService) RemoveApplicationForFriendship(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
-	notWanted := c.Param("unfriendId")
+	notWanted := c.Param("notWanted")
 
 	application := &models.FriendRequest{User1Id: notWanted, User2Id: requesterId}
 
@@ -244,18 +271,12 @@ func (s *userService) RemoveApplicationForFriendship(c echo.Context) error {
 }
 
 func (s *userService) AcceptFriendship(c echo.Context) error {
-	requesterId := c.Get("userId").(string)
+	acceptorId := c.Get("userId").(string)
 
-	request := new(models.FriendRequest)
-	if err := c.Bind(request); err != nil {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
-	}
+	requesterId := c.Param("wantedUser")
+	fmt.Println(requesterId)
 
-	if requesterId != request.User1Id && requesterId != request.User2Id {
-		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are not in this relation")))
-	}
-
-	friendship := &models.Friends{User1Id: request.User1Id, User2Id: request.User2Id}
+	friendship := &models.Friends{User1Id: requesterId, User2Id: acceptorId}
 	areFriends, err := s.UserAccess.AreFriends(friendship)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
@@ -264,7 +285,7 @@ func (s *userService) AcceptFriendship(c echo.Context) error {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrConflict, errors.New("You are friends already")))
 	}
 
-	newMember, err := s.UserAccess.ConfirmFriendship(request.User1Id, request.User2Id)
+	newMember, err := s.UserAccess.ConfirmFriendship(requesterId, acceptorId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrApplyForMembership, err))
 	}
@@ -274,7 +295,7 @@ func (s *userService) AcceptFriendship(c echo.Context) error {
 
 func (s *userService) RemoveFriend(c echo.Context) error {
 	requesterId := c.Get("userId").(string)
-	unfriend := c.Param("unfriendId")
+	unfriend := c.Param("notWanted")
 
 	friendship := &models.Friends{User1Id: requesterId, User2Id: unfriend}
 

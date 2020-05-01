@@ -33,6 +33,8 @@ var (
 	ErrRemoveApplicationForMembership = "ERROR REMOVE APPLICATION FOR MEMBERSHIP"
 	ErrAcceptApplicant                = "ERROR ACCEPT APPLICANT"
 	ErrDismissApplicant               = "ERROR DISMISS APPLICANT"
+	ErrGetUserFriends                 = "ERROR GET USER FRIENDS"
+	ErrGetMyReqForFriendship          = "ERROR GET MY REQUESTS FOR FRIENDSHIP"
 
 	ErrApplyForFriendship             = "ERROR APPLY FOR FRIENDSHIP"
 	ErrRemoveApplicationForFriendship = "ERROR REMOVE APPLICATION FOR FRIENDSHIP"

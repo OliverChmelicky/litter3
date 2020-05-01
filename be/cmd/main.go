@@ -66,7 +66,7 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(tokenMiddleware.CorsHeadder)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowMethods: []string{http.MethodOptions},
+		AllowMethods: []string{http.MethodOptions, http.MethodDelete},
 	}))
 
 	userService := user.CreateService(db, firebaseAuth, fileuploadService)
@@ -74,10 +74,15 @@ func main() {
 	e.GET("/users/:id", userService.GetUser)
 	e.GET("/users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("/users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
-	e.POST("/users/friend/add/email", userService.ApplyForFriendshipByEmail, tokenMiddleware.AuthorizeUser)
-	e.POST("/users/friend/add/id", userService.ApplyForFriendshipById, tokenMiddleware.AuthorizeUser)
-	e.GET("/users/my/requests/friendship", userService.GetMyFriendRequests, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/details", userService.GetUsers)
+
+	e.POST("/users/friend/add/id", userService.ApplyForFriendshipById, tokenMiddleware.AuthorizeUser)
+	e.POST("/users/friend/add/email", userService.ApplyForFriendshipByEmail, tokenMiddleware.AuthorizeUser)
+	e.GET("/users/friends", userService.GetMyFriends, tokenMiddleware.AuthorizeUser)
+	e.GET("/users/friend/requests", userService.GetMyFriendRequests, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/users/friend/remove/:notWanted", userService.RemoveFriend, tokenMiddleware.AuthorizeUser)
+	e.GET("/users/friend/accept/:wantedUser", userService.AcceptFriendship, tokenMiddleware.AuthorizeUser)
+	e.GET("/users/friend/deny/:notWanted", userService.RemoveApplicationForFriendship, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/societies/new", userService.CreateUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)
@@ -89,7 +94,7 @@ func main() {
 	e.GET("/trash/:id", trashService.GetTrashById)
 	e.POST("/trash", trashService.CreateTrash)
 
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":8080"))
 }
 
 func getFirebaseAuth(opt option.ClientOption) (*auth.Client, error) {

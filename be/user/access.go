@@ -297,16 +297,22 @@ func (s *UserAccess) DeleteSociety(in string) error {
 //
 //
 
+func (s *UserAccess) GetUserFriends(userId string) ([]models.Friends, error) {
+	var friends []models.Friends
+	err := s.Db.Model(&friends).Where("user1_id = ? OR user2_id = ?", userId, userId).Select()
+	if err != nil {
+		return []models.Friends{}, err
+	}
+
+	return friends, nil
+}
+
 func (s *UserAccess) GetUserFriendshipRequests(userId string) ([]models.FriendRequest, error) {
 	//TODO pg.rec.nofound
 	var requests []models.FriendRequest
 	err := s.Db.Model(&requests).Where("user1_id = ? OR user2_id = ?", userId, userId).Select()
 	if err != nil {
 		return []models.FriendRequest{}, err
-	}
-
-	if len(requests) == 0 {
-		return []models.FriendRequest{}, fmt.Errorf("No record GetUserFriendshipRequests")
 	}
 
 	return requests, nil
@@ -356,8 +362,8 @@ func (s *UserAccess) RemoveApplicationForFriendship(request *models.FriendReques
 	return err
 }
 
-func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*models.Friends, error) {
-	request := &models.FriendRequest{User1Id: user1Id, User2Id: user2Id}
+func (s *UserAccess) ConfirmFriendship(requesterId, acceptorId string) (*models.Friends, error) {
+	request := &models.FriendRequest{}
 
 	tx, err := s.Db.Begin()
 	if err != nil {
@@ -365,12 +371,15 @@ func (s *UserAccess) ConfirmFriendship(user1Id, user2Id string) (*models.Friends
 	}
 	defer tx.Rollback()
 
-	_, err = tx.Model(request).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", request.User1Id, request.User2Id, request.User2Id, request.User1Id).Delete()
+	res, err := tx.Model(request).Where("user1_id = ? and user2_id = ?", requesterId, acceptorId).Delete()
 	if err != nil {
 		return &models.Friends{}, fmt.Errorf("Error deleting Friendship request %w", err)
 	}
+	if res.RowsAffected() == 0 {
+		return &models.Friends{}, fmt.Errorf("Request did not exist before %w ", err)
+	}
 
-	friendship := &models.Friends{User1Id: request.User1Id, User2Id: request.User2Id}
+	friendship := &models.Friends{User1Id: requesterId, User2Id: acceptorId}
 	err = s.Db.Insert(friendship)
 	if err != nil {
 		return &models.Friends{}, fmt.Errorf("Error creating Friendship %w", err)
