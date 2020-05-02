@@ -1,8 +1,8 @@
 <a *ngIf="isLoggedIn$ | async" [routerLink]="['/me']">
   <h1>Me</h1>
 </a>
-<a *ngIf="isLoggedIn$ | async" [routerLink]="['/profile/tu-daj-user-id']">
-  <h1>Add friend</h1>
+<a *ngIf="isLoggedIn$ | async" [routerLink]="['/societies']">
+  <h1>Societies</h1>
 </a>
 <a *ngIf="!(isLoggedIn$ | async)"  [routerLink]="['/register']">
   <h1>REGISTER</h1>

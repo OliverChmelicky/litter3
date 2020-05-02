@@ -4,15 +4,12 @@ import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {
   UserModel,
   FriendRequestModel,
-  EmailMessageModel,
-  MemberModel,
-  SocietyModel,
-  IdsMessageModel, FriendsModel
+  FriendsModel
 } from "../../models/user.model";
 import {catchError} from "rxjs/operators";
 import {Observable, of, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
-import * as firebase from "firebase";
+import {EmailMessageModel} from "../../models/shared.models";
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +24,6 @@ export class UserService {
   }
 
   createUser(userDetails: UserModel) {
-    console.log('vytvaram usr')
     const url = `${this.apiUrl}/${ApisModel.user}/new`;
     return this.http.post<UserModel>(url, userDetails).pipe(
       catchError(err => UserService.handleError<UserModel>(err))

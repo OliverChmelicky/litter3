@@ -6,7 +6,6 @@ import {auth} from 'firebase/app';
 import {AngularFireAuth} from "@angular/fire/auth";
 import {UserService} from "../user/user.service";
 import { Router } from '@angular/router';
-import {MemberModel, SocietyModel, UserModel} from "../../models/user.model";
 import {BehaviorSubject, throwError} from "rxjs";
 
 

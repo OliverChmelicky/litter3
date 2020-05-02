@@ -19,6 +19,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { MyProfileComponent } from './components/my-profile/my-profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import {TokenHeadders} from "./interceptors/token-headders";
+import { SocietiesComponent } from './components/societies/societies/societies.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatPaginatorModule} from "@angular/material/paginator";
+import {MatFormFieldModule} from "@angular/material/form-field";
 
 @NgModule({
   declarations: [
@@ -28,23 +32,26 @@ import {TokenHeadders} from "./interceptors/token-headders";
     LoginComponent,
     TopBarComponent,
     MyProfileComponent,
-    RegisterComponent
+    RegisterComponent,
+    SocietiesComponent
   ],
-    imports: [
-        BrowserModule,
-        RouterModule,
-        AngularFireModule.initializeApp(environment.firebaseConfig),
-        AngularFirestoreModule,
-        AngularFireAuthModule,
-        HttpClientModule,
-        AgmCoreModule.forRoot({
-            apiKey: environment.googleMapsApiKey,
-            libraries: ['places', 'geometry']
-        }),
-        ReactiveFormsModule,
-        AppRoutingModule,
-        FormsModule,
-    ],
+  imports: [
+    BrowserModule,
+    RouterModule,
+    AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFirestoreModule,
+    AngularFireAuthModule,
+    HttpClientModule,
+    AgmCoreModule.forRoot({
+      apiKey: environment.googleMapsApiKey,
+      libraries: ['places', 'geometry']
+    }),
+    ReactiveFormsModule,
+    AppRoutingModule,
+    FormsModule,
+    BrowserAnimationsModule,
+    MatPaginatorModule,
+  ],
   providers: [
     LocationService,
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },
