@@ -127,6 +127,24 @@ func (s *UserAccess) CreateSocietyWithAdmin(in *models.Society, adminId string) 
 	return in, tx.Commit()
 }
 
+func (s *UserAccess) GetSocietiesWithPaging(from, to int) ([]models.Society, error) {
+	limit := to - from
+	societies := []models.Society{}
+	err := s.Db.Model(&societies).Order("created_at DESC").Select()
+	if err != nil {
+		return []models.Society{}, err
+	}
+
+	if len(societies) < from {
+		return []models.Society{}, fmt.Errorf("No records starting from FROM ")
+	}
+	if len(societies[from:]) < limit {
+		to = from + len(societies[from:])
+	}
+
+	return societies[from:to], nil
+}
+
 func (s *UserAccess) GetSociety(id string) (*models.Society, error) {
 	society := &models.Society{Id: id}
 	err := s.Db.Model(society).Column("society.*").

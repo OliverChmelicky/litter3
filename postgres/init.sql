@@ -210,3 +210,27 @@ VALUES ('ad10c133-f18f-417d-be04-795e290683c1', 'Heinrich', 'Herrer', 'a@a.cz', 
 
 INSERT INTO users (id, first_name, last_name, email, uid, created_at)
 VALUES ('92a99679-9e9f-401c-8ae4-eb9c869c2120', 'Peter', 'Aufschneider', 'b@b.cz', 'fCtIJKvNRbXAulI9IFScKoJcyuk2', '2003-2-1');
+
+
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('1', 'Prve', 'Aufschneider', '2003-2-1');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('2', 'Druhe', 'Aufschneider', '2003-2-2');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('3', 'Tetie', 'Aufschneider', '2003-2-3');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('4', 'Stvrte', 'Aufschneider', '2003-2-4');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('5', 'Piate', 'Aufschneider', '2003-2-5');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('6', 'Sieste', 'Aufschneider', '2003-2-6');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('7', 'Siedme', 'Aufschneider', '2003-2-7');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('8', 'Osme', 'Aufschneider', '2003-2-8');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('9', 'Deviate', 'Aufschneider', '2003-2-9');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('10', 'Desiate', 'Aufschneider', '2003-2-10');
+INSERT INTO societies (id, name, avatar, created_at)
+VALUES ('11', 'Jedenast', 'Aufschneider', '2003-2-11');

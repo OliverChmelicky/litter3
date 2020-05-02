@@ -86,6 +86,7 @@ func main() {
 	e.DELETE("/users/friend/deny/:notWanted", userService.RemoveApplicationForFriendship, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/societies/new", userService.CreateUser, tokenMiddleware.AuthorizeUser)
+	e.GET("/societies", userService.GetSocietiesWithPaging)
 	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/membership", userService.ApplyForMembership, tokenMiddleware.AuthorizeUser)

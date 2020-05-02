@@ -11,6 +11,7 @@ import (
 	"github.com/olo/litter3/fileupload"
 	"github.com/olo/litter3/models"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -339,6 +340,34 @@ func (s *userService) CreateSociety(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, society)
+}
+
+func (s *userService) GetSocietiesWithPaging(c echo.Context) error {
+	//can call also unregistered user
+	f := c.QueryParam("from")
+	t := c.QueryParam("to")
+
+	from, err := strconv.Atoi(f)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+	to, err := strconv.Atoi(t)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+	if to-from < 0 {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, fmt.Errorf("To is smaller than from")))
+	}
+
+	societies, err := s.UserAccess.GetSocietiesWithPaging(from, to)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetSociety, err))
+	}
+
+	return c.JSON(http.StatusOK, models.SocietyPagingAnsw{
+		Societies: societies,
+		Paging:    models.Paging{From: from, To: to, TotalCount: len(societies)},
+	})
 }
 
 func (s *userService) GetSociety(c echo.Context) error {

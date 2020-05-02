@@ -47,6 +47,11 @@ type Society struct {
 	CreatedAt time.Time `pg:"default:now()"`
 }
 
+type SocietyPagingAnsw struct {
+	Societies []Society
+	Paging    Paging
+}
+
 var _ pg.BeforeInsertHook = (*Society)(nil)
 
 func (u *Society) BeforeInsert(ctx context.Context) (context.Context, error) {
