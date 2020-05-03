@@ -6,9 +6,11 @@ import {MyProfileComponent} from "./components/my-profile/my-profile.component";
 import {RegisterComponent} from "./components/register/register.component";
 import {SocietiesComponent} from "./components/societies/societies.component";
 import {SocietyDetailsComponent} from "./components/society-details/society-details.component";
+import {GoogleMapComponent} from "./components/google-map/google-map.component";
 
 const routes: Routes = [
-  { path: '', redirectTo:'me', pathMatch: 'full'},
+  { path: '', redirectTo:'map', pathMatch: 'full'},
+  { path: 'map', component: GoogleMapComponent},
   { path: 'me', component: MyProfileComponent},
   { path: 'societies', component: SocietiesComponent},
   //{ path: 'profile/tu-daj-user-id', component: UserDetailComponent },

@@ -4,6 +4,9 @@
 <a *ngIf="isLoggedIn$ | async" [routerLink]="['/societies']">
   <h1>Societies</h1>
 </a>
+<a *ngIf="isLoggedIn$ | async" [routerLink]="['/map']">
+  <h1>Trash map</h1>
+</a>
 <a *ngIf="!(isLoggedIn$ | async)"  [routerLink]="['/register']">
   <h1>REGISTER</h1>
 </a>

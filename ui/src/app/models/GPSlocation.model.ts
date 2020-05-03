@@ -1,4 +1,4 @@
-export interface GPSlocationModel {
+export interface MapLocationModel {
   lat: number;
   lng: number;
   zoom: number;

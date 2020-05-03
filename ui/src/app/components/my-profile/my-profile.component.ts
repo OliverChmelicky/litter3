@@ -127,8 +127,6 @@ export class MyProfileComponent implements OnInit {
   }
 
   private fetchUserDetailsForFriends(friends: FriendsModel[]) {
-    console.log('Pri prvom spusteni to je vrajundefined')
-    console.log(friends)
     const userIds = friends.map(friend => {
       if (friend.User1Id !== this.me.Id)
         return friend.User1Id;
