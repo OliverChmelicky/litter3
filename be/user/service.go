@@ -359,14 +359,14 @@ func (s *userService) GetSocietiesWithPaging(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, fmt.Errorf("To is smaller than from")))
 	}
 
-	societies, err := s.UserAccess.GetSocietiesWithPaging(from, to)
+	societies, allSocieties, err := s.UserAccess.GetSocietiesWithPaging(from, to)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetSociety, err))
 	}
 
 	return c.JSON(http.StatusOK, models.SocietyPagingAnsw{
 		Societies: societies,
-		Paging:    models.Paging{From: from, To: to, TotalCount: len(societies)},
+		Paging:    models.Paging{From: from, To: to, TotalCount: allSocieties},
 	})
 }
 

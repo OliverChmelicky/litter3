@@ -22,7 +22,7 @@ import {TokenHeadders} from "./interceptors/token-headders";
 import { SocietiesComponent } from './components/societies/societies/societies.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatPaginatorModule} from "@angular/material/paginator";
-import {MatFormFieldModule} from "@angular/material/form-field";
+import {MatTableModule} from "@angular/material/table";
 
 @NgModule({
   declarations: [
@@ -33,7 +33,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
     TopBarComponent,
     MyProfileComponent,
     RegisterComponent,
-    SocietiesComponent
+    SocietiesComponent,
   ],
   imports: [
     BrowserModule,
@@ -51,6 +51,7 @@ import {MatFormFieldModule} from "@angular/material/form-field";
     FormsModule,
     BrowserAnimationsModule,
     MatPaginatorModule,
+    MatTableModule,
   ],
   providers: [
     LocationService,
