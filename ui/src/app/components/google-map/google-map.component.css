@@ -2,3 +2,21 @@ agm-map {
   height: 100%;
   width: 100%;
 }
+
+
+.mymap {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+#child {
+  position: absolute;
+  right: 40px;
+  top: 100px;
+  width: 200px;
+  height: 200px;
+  background-color: #fafafa;
+  border: solid 3px #78e382;
+  font-size: 24px;
+  text-align: center;
+}

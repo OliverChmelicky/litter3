@@ -1,18 +1,21 @@
-<agm-map
-  [latitude]="location.lat"
-  [longitude]="location.lng"
-  [zoom]="location.zoom"
-  (mapDblClick)="addMarker($event.coords.lat, $event.coords.lng)"
-  (mapReady)="onMapReady($event)"
-  disableDoubleClickZoom="true">
+<div class="mymap">
+  <agm-map
+    [latitude]="location.lat"
+    [longitude]="location.lng"
+    [zoom]="location.zoom"
+    (mapDblClick)="addMarker($event.coords.lat, $event.coords.lng)"
+    (mapReady)="onMapReady($event)"
+    disableDoubleClickZoom="true">
 
-  <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng"
-              [markerDraggable]="marker.new"
-              (markerClick)="selectMarker($event)"
-              (dragEnd)="markerDragEnd(marker, i, $event)">
-    <agm-info-window [disableAutoPan]="true">
-    <button (click)="createTrash(marker)">Report dump</button>
-    </agm-info-window>
+    <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng"
+                [markerDraggable]="marker.new"
+                (markerClick)="selectMarker($event)"
+                (dragEnd)="markerDragEnd(marker, i, $event)">
+      <agm-info-window [disableAutoPan]="true">
+        <button (click)="createTrash(marker)">Report dump</button>
+      </agm-info-window>
 
-  </agm-marker>
-</agm-map>
+    </agm-marker>
+  </agm-map>
+  <button id="child">Díky Šišo</button>
+</div>
