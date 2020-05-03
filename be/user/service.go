@@ -365,7 +365,7 @@ func (s *userService) GetSocietiesWithPaging(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, models.SocietyPagingAnsw{
-		Societies: societies,
+		Societies: s.mapSocietyToSocietyAnswSimple(societies),
 		Paging:    models.Paging{From: from, To: to, TotalCount: allSocieties},
 	})
 }
@@ -611,4 +611,18 @@ func (s *userService) DeleteUserImage(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func (s *userService) mapSocietyToSocietyAnswSimple(societies []models.Society) []models.SocietyAnswSimple {
+	var societiesAnsw []models.SocietyAnswSimple
+	for _, society := range societies {
+		societiesAnsw = append(societiesAnsw, models.SocietyAnswSimple{
+			Id: society.Id,
+			Name: society.Name,
+			Avatar: society.Avatar,
+			UsersNumb: len(society.Users),
+			CreatedAt: society.CreatedAt,
+		})
+	}
+	return societiesAnsw
 }

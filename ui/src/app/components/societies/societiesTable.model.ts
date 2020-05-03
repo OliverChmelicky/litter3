@@ -1,4 +1,4 @@
-import {SocietyModel} from "../../../models/society.model";
+import {SocietyModel} from "../../models/society.model";
 
 export interface SocietiesTableElementModel {
   Society: SocietyModel,

@@ -6,11 +6,21 @@ export interface SocietyModel {
   Name: string;
   Avatar: string;
   Users?: UserModel[];
+  Description?: string;
+  CreatedAt: Date;
+}
+
+export interface SocietyAnswSimpleModel {
+  Id: string;
+  Name: string;
+  Avatar: string;
+  UsersNumb: number;
+  Description?: string;
   CreatedAt: Date;
 }
 
 export interface SocietyWithPagingAnsw {
-  Societies: SocietyModel[];
+  Societies: SocietyAnswSimpleModel[];
   Paging: PagingModel;
 }
 

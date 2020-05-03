@@ -19,10 +19,11 @@ import { AppRoutingModule } from './app-routing.module';
 import { MyProfileComponent } from './components/my-profile/my-profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import {TokenHeadders} from "./interceptors/token-headders";
-import { SocietiesComponent } from './components/societies/societies/societies.component';
+import { SocietiesComponent } from './components/societies/societies.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatTableModule} from "@angular/material/table";
+import { SocietyDetailsComponent } from './components/society-details/society-details.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import {MatTableModule} from "@angular/material/table";
     MyProfileComponent,
     RegisterComponent,
     SocietiesComponent,
+    SocietyDetailsComponent,
   ],
   imports: [
     BrowserModule,

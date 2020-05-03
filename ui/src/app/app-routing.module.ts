@@ -4,13 +4,15 @@ import {UserDetailComponent} from "./components/user-detail/user-detail.componen
 import {LoginComponent} from "./components/login/login.component";
 import {MyProfileComponent} from "./components/my-profile/my-profile.component";
 import {RegisterComponent} from "./components/register/register.component";
-import {SocietiesComponent} from "./components/societies/societies/societies.component";
+import {SocietiesComponent} from "./components/societies/societies.component";
+import {SocietyDetailsComponent} from "./components/society-details/society-details.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'me', pathMatch: 'full'},
   { path: 'me', component: MyProfileComponent},
   { path: 'societies', component: SocietiesComponent},
   //{ path: 'profile/tu-daj-user-id', component: UserDetailComponent },
+  {path: 'societies/:societyId', component: SocietyDetailsComponent},
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
 ];

@@ -47,8 +47,16 @@ type Society struct {
 	CreatedAt time.Time `pg:"default:now()"`
 }
 
+type SocietyAnswSimple struct {
+	Id        string
+	Name      string
+	Avatar    string
+	UsersNumb int
+	CreatedAt time.Time
+}
+
 type SocietyPagingAnsw struct {
-	Societies []Society
+	Societies []SocietyAnswSimple
 	Paging    Paging
 }
 

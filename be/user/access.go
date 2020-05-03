@@ -142,6 +142,17 @@ func (s *UserAccess) GetSocietiesWithPaging(from, to int) ([]models.Society, int
 		to = from + len(societies[from:])
 	}
 
+	var ids []string
+	for _, society := range societies {
+		ids = append(ids, society.Id)
+	}
+	err = s.Db.Model(&societies).Column("society.*").
+		Relation("Users").
+		Where("id IN (?)", pg.In(ids)).Select()
+	if err != nil {
+		return []models.Society{}, 0, err
+	}
+
 	return societies[from:to], len(societies), nil
 }
 

@@ -28,6 +28,13 @@ export class SocietyService {
     );
   }
 
+  getSociety(id: string): Observable<SocietyModel> {
+    const url = `${this.apiUrl}/${this.societyUrl}/${id}`;
+    return this.http.get<SocietyModel>(url).pipe(
+      catchError(err => SocietyService.handleError<SocietyModel>(err))
+    );
+  }
+
   getSocieties(pagingRequest: PagingModel): Observable<SocietyWithPagingAnsw> {
     const url = `${this.apiUrl}/${this.societyUrl}?from=${pagingRequest.From}&to=${pagingRequest.To}`;
     return this.http.get<SocietyWithPagingAnsw>(url).pipe(
@@ -60,5 +67,6 @@ export class SocietyService {
     }
     return of(result as T);
   };
+
 
 }
