@@ -10,7 +10,6 @@ import {CreateTrashComponent} from "./components/create-trash/create-trash.compo
 
 const routes: Routes = [
   { path: '', redirectTo:'report', pathMatch: 'full'},
-  { path: '**', component:  CreateTrashComponent},
   { path: 'report', component: CreateTrashComponent},
   { path: 'report/:lat/:lng', component: CreateTrashComponent},
   { path: 'map', component: GoogleMapComponent},
