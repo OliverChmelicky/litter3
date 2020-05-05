@@ -24,6 +24,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatTableModule} from "@angular/material/table";
 import { SocietyDetailsComponent } from './components/society-details/society-details.component';
+import { CreateTrashComponent } from './components/create-trash/create-trash.component';
+import {MatSliderModule} from "@angular/material/slider";
+import {MatSelectModule} from "@angular/material/select";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {MatButtonModule} from "@angular/material/button";
+import { NavListComponent } from './components/nav-list/nav-list.component';
+import {MatListModule} from "@angular/material/list";
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
   declarations: [
@@ -36,6 +44,8 @@ import { SocietyDetailsComponent } from './components/society-details/society-de
     RegisterComponent,
     SocietiesComponent,
     SocietyDetailsComponent,
+    CreateTrashComponent,
+    NavListComponent,
   ],
   imports: [
     BrowserModule,
@@ -54,6 +64,12 @@ import { SocietyDetailsComponent } from './components/society-details/society-de
     BrowserAnimationsModule,
     MatPaginatorModule,
     MatTableModule,
+    MatSliderModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatListModule,
+    MatIconModule,
   ],
   providers: [
     LocationService,

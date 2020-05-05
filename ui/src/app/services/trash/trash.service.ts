@@ -12,7 +12,6 @@ export class TrashService {
   constructor(
     private http: HttpClient,
   ) {
-    this.getTest()
   }
 
   getTest(): Observable<string> {

@@ -1,0 +1,59 @@
+<div class="report-container">
+
+  <div class="report-items">
+    <form [formGroup]="trashForm" (ngSubmit)="onSubmit()">
+      <input type="text" [value]="markerLat" formControlName="lat"><br>
+      <input type="text" [value]="markerLng" formControlName="lng">
+
+      <div>
+        <label>
+          Size:
+        </label>
+        <mat-slider
+          class="slider-margin"
+          [max]="3"
+          [min]="0"
+          [step]="1"
+          formControlName="size"
+        >
+        </mat-slider>
+        <p>{{printSize()}}</p>
+      </div>
+
+      <div>
+        <mat-form-field>
+          <mat-label>Types of trash</mat-label>
+          <mat-select formControlName="trashTypes" multiple>
+            <mat-option *ngFor="let choice of trashTypesChoices" [value]="choice">{{choice}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <label>Description</label><br>
+      <textarea placeholder="Write your description here"
+                class="description" type="text" formControlName="description"> </textarea><br>
+
+      <mat-checkbox formControlName="anonymously">Report anonymously</mat-checkbox><br>
+
+      <button mat-stroked-button color="primary" type="submit">Submit</button>
+
+    </form>
+  </div>
+
+  <div class="report-items">
+    <agm-map
+      [latitude]="initMapLat"
+      [longitude]="initMapLng"
+      [zoom]="5"
+      (mapReady)="onMapReady($event)"
+      disableDoubleClickZoom="true">
+
+      <agm-marker [latitude]="markerLat" [longitude]="markerLng"
+                  [markerDraggable]="true"
+                  (drag)="onDragging($event)">
+      </agm-marker>
+    </agm-map>
+  </div>
+
+
+</div>

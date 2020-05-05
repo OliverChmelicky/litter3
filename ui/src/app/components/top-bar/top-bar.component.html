@@ -1,3 +1,6 @@
+<a *ngIf="isLoggedIn$ | async" [routerLink]="['/report']">
+  <h1>Report dump</h1>
+</a>
 <a *ngIf="isLoggedIn$ | async" [routerLink]="['/me']">
   <h1>Me</h1>
 </a>

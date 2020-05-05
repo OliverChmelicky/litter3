@@ -1,10 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {LocationService} from "../../services/location/location.service";
 import {MapLocationModel} from "../../models/GPSlocation.model";
-import {google, GoogleMap} from "@agm/core/services/google-maps-types";
+import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MarkerModel} from "src/app/components/google-map/Marker.model";
-import {NgZone} from '@angular/core';
 import {MouseEvent} from '@agm/core';
+import {Router} from "@angular/router";
 
 export const czechPosition: MapLocationModel = {
   lat: 49.81500022397678,
@@ -26,7 +26,7 @@ export class GoogleMapComponent implements OnInit {
 
   constructor(
     private readonly locationService: LocationService,
-    private ngZone: NgZone,
+    private router: Router,
   ) {
   }
 
@@ -43,27 +43,30 @@ export class GoogleMapComponent implements OnInit {
   }
 
   addMarker(lat: number, lng: number) {
-    this.markers.push({
+    this.selectedMarker = {
       lat: lat,
       lng: lng,
       new: true,
-    });
+    };
+    this.markers.push(this.selectedMarker)
   }
 
   createTrash(marker: MarkerModel) {
-    window.alert(marker.lng + ' ' + marker.lat)
+    this.router.navigate(['report', marker.lat, marker.lng])
   }
 
-  selectMarker(event) {
+  selectMarker(i: number, event) {
     this.selectedMarker = {
       lat: event.latitude,
-      lng: event.longitude
+      lng: event.longitude,
+      new: this.markers[i].new
     }
   }
 
-  markerDragEnd(m: MarkerModel, i: number, $event: MouseEvent) {
+  dragging(i: number, $event: MouseEvent) {
     this.markers[i].lat = $event.coords.lat;
     this.markers[i].lng = $event.coords.lng;
-    window.alert(this.markers[i].lat + ' ' + this.markers[i].lng)
+    this.selectedMarker.lat = $event.coords.lat;
+    this.selectedMarker.lng = $event.coords.lng;
   }
 }

@@ -1,0 +1,34 @@
+.slider-margin {
+  margin: 8px;
+  width: 15%;
+}
+
+.description{
+  width: 500px;
+  height: 100px;
+}
+
+textarea {
+  resize: none;
+}
+agm-map{
+  margin: auto;
+  height: 300px;
+  width: 500px;
+}
+
+.report-container {
+  display: flex;
+  justify-content: center;
+  margin: 100px;
+  /*align-items: baseline;*/
+  /*align-content: flex-start;*/
+}
+
+.report-items {
+  display: flex;
+  justify-content: center;
+  margin: 100px;
+  /*align-items: baseline;*/
+  /*align-content: flex-start;*/
+}

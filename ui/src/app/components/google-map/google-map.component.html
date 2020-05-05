@@ -9,13 +9,20 @@
 
     <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng"
                 [markerDraggable]="marker.new"
-                (markerClick)="selectMarker($event)"
-                (dragEnd)="markerDragEnd(marker, i, $event)">
+                (markerClick)="selectMarker(i, $event)"
+                (drag)="dragging(i, $event)">
       <agm-info-window [disableAutoPan]="true">
-        <button (click)="createTrash(marker)">Report dump</button>
+        <button *ngIf="marker.new" (click)="createTrash(marker)">Report dump</button>
       </agm-info-window>
 
     </agm-marker>
   </agm-map>
-  <button id="child">Díky Šišo</button>
+  <div id="child">
+    <button>Díky Šišo</button>
+    <div *ngIf="selectedMarker">
+      <p *ngIf="selectedMarker.new">{{selectedMarker.lat}}</p>
+      <p *ngIf="selectedMarker.new">{{selectedMarker.lng}}</p>
+    </div>
+  </div>
+
 </div>
