@@ -1,21 +1,30 @@
-<h3>LOGIN</h3>
+<div class="report-container">
 
-<form [formGroup]="checkoutForm" (ngSubmit)="login(checkoutForm.value)">
-
-  <div>
-    <label for="email">
-      Name
-    </label>
-    <input id="email" type="text" formControlName="email">
+  <div class="report-items">
+    <h3>LOGIN</h3>
   </div>
 
-  <div>
-    <label for="password">
-      Password
-    </label>
-    <input id="password" type="text" formControlName="password">
-  </div>
+<div class="report-items">
 
-  <button class="button" type="submit">Purchase</button>
+  <form [formGroup]="checkoutForm" (ngSubmit)="login(checkoutForm.value)">
 
-</form>
+    <div>
+      <label for="email">
+        Name
+      </label>
+      <input id="email" type="text" formControlName="email">
+    </div>
+
+    <div>
+      <label for="password">
+        Password
+      </label>
+      <input id="password" type="text" formControlName="password">
+    </div>
+
+    <button class="button" type="submit">Purchase</button>
+
+  </form>
+</div>
+
+</div>

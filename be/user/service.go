@@ -570,23 +570,6 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 //
 //
 
-func (s *userService) UploadUserImage(c echo.Context) error {
-	userId := c.Get("userId").(string)
-
-	objectName, err := s.fileupload.Upload(c)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
-	}
-
-	user := new(models.User)
-	_, err = s.UserAccess.Db.Model(user).Set("avatar = ?", objectName).Where("id = ?", userId).Update()
-	if err != nil {
-		_ = s.fileupload.DeleteImage(objectName)
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
-	}
-
-	return c.NoContent(http.StatusCreated)
-}
 
 func (s *userService) GetUserImage(c echo.Context) error {
 	contentType, object, err := s.fileupload.LoadImage(c.Param("name"))
@@ -613,16 +596,3 @@ func (s *userService) DeleteUserImage(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (s *userService) mapSocietyToSocietyAnswSimple(societies []models.Society) []models.SocietyAnswSimple {
-	var societiesAnsw []models.SocietyAnswSimple
-	for _, society := range societies {
-		societiesAnsw = append(societiesAnsw, models.SocietyAnswSimple{
-			Id: society.Id,
-			Name: society.Name,
-			Avatar: society.Avatar,
-			UsersNumb: len(society.Users),
-			CreatedAt: society.CreatedAt,
-		})
-	}
-	return societiesAnsw
-}

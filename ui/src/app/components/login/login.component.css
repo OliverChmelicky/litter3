@@ -1,0 +1,15 @@
+.report-container {
+  display: flex;
+  justify-content: center;
+  margin: 100px;
+  /*align-items: baseline;*/
+  /*align-content: flex-start;*/
+}
+
+.report-items {
+  display: flex;
+  justify-content: center;
+  margin: 100px;
+  /*align-items: baseline;*/
+  /*align-content: flex-start;*/
+}

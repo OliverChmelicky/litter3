@@ -2,8 +2,9 @@
 
   <div class="report-items">
     <form [formGroup]="trashForm" (ngSubmit)="onSubmit()">
-      <input type="text" [value]="markerLat" formControlName="lat"><br>
-      <input type="text" [value]="markerLng" formControlName="lng">
+
+      <input disabled="true" type="text" [value]="markerLat" formControlName="lat"><br>
+      <input disabled="true" type="text" [value]="markerLng" formControlName="lng">
 
       <div>
         <label>
@@ -38,6 +39,9 @@
       <button mat-stroked-button color="primary" type="submit">Submit</button>
 
     </form>
+
+    <input type="file" (change)="onFileSelected($event)" multiple>
+
   </div>
 
   <div class="report-items">

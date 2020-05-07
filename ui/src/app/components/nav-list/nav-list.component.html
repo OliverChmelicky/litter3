@@ -11,4 +11,10 @@
       <a [routerLink]=[link.url]>{{ link.name }}</a>
     </div>
   </mat-list-item>
+
+  <mat-list-item class="sidenav-text">
+    <div *ngIf="isLoggedIn$ | async">
+      <button (click)="logout()">Logout</button>
+    </div>
+  </mat-list-item>
 </mat-nav-list>

@@ -42,6 +42,41 @@ func (s *FileuploadService) Upload(c echo.Context) (string, error) {
 	return objectName, err
 }
 
+func (s *FileuploadService) UploadImages(c echo.Context) ([]string,error) {
+	form, err := c.MultipartForm()
+	if err != nil {
+		return []string{},err
+	}
+	files := form.File["files"]
+
+	var fileNames []string
+	for _,file := range files {
+		src, err := file.Open()
+		if err != nil {
+			log.Error("FILE_OPEN_ERROR", err)
+			return []string{}, fmt.Errorf("Error opening image %w ", err)
+		}
+		defer src.Close()
+
+		sufix := filepath.Ext(file.Filename)
+		objectName := uuid.NewV4().String() + sufix
+
+		w := s.bh.Object(objectName).NewWriter(context.Background())
+		w.ContentType = mime.TypeByExtension(sufix)
+		if _, err := io.Copy(w, src); err != nil {
+			return []string{}, fmt.Errorf("Error saving image %w ", err)
+		}
+		if err := w.Close(); err != nil {
+			_ = s.DeleteImage(objectName)
+			return []string{}, fmt.Errorf("Error closing image %w ", err)
+		}
+
+		fileNames = append(fileNames, objectName)
+	}
+
+	return fileNames, err
+}
+
 func (s *FileuploadService) LoadImage(objectName string) (string, io.Reader, error) {
 	oh := s.bh.Object(objectName)
 	attr, err := oh.Attrs(context.Background())

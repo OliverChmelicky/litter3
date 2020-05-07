@@ -95,7 +95,8 @@ func main() {
 
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)
-	e.POST("/trash", trashService.CreateTrash)
+	e.POST("/trash/new", trashService.CreateTrash)
+	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

@@ -234,3 +234,6 @@ INSERT INTO societies (id, name, avatar, created_at)
 VALUES ('10', 'Desiate', 'Aufschneider', '2003-2-10');
 INSERT INTO societies (id, name, avatar, created_at)
 VALUES ('11', 'Jedenast', 'Aufschneider', '2003-2-11');
+
+insert into trash (id, cleaned, size, accessibility, trash_type, location, description, finder_id, created_at)
+values ('1', false, 'bag', 'easy', 0, ST_GeomFromText('POINT(-71.060316 48.432044)', 4326), '', null, '2003-2-11');

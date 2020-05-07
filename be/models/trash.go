@@ -106,14 +106,14 @@ func (u *Collection) BeforeInsert(ctx context.Context) (context.Context, error) 
 
 type TrashImage struct {
 	tableName struct{} `pg:"trash_images"json:"-"`
-	TrashId   string
-	Url       string
+	TrashId   string `pg:",pk"`
+	Url       string `pg:",pk"`
 }
 
 type CollectionImage struct {
 	tableName    struct{} `pg:"collection_images"json:"-"`
-	CollectionId string
-	Url          string
+	CollectionId string `pg:",pk"`
+	Url          string `pg:",pk"`
 }
 
 type UserCollection struct {
