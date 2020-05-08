@@ -90,8 +90,40 @@ func (s *UserAccess) RemoveApplicationForMembership(in *models.Applicant) error 
 	return err
 }
 
-func (s *UserAccess) DeleteUser(in string) error {
-	return nil
+func (s *UserAccess) DeleteUser(userId string) error {
+	tx, err := s.Db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	var members []models.Member
+	err = tx.Model(&members).Where("user_id = ? and permission = ?", userId, "admin").Select()
+	if err != nil {
+		return err
+	}
+
+	var societies []string
+	for _, member := range members {
+		societies = append(societies, member.SocietyId)
+	}
+	err = s.DeleteSocieties(societies)
+	if err != nil {
+		return err
+	}
+
+	var eventOrganizers []models.EventUser
+	_, err = tx.Model(&eventOrganizers).Where("user_id = ? and permission = ?", userId, "creator").Delete()
+	if err != nil {
+		return err
+	}
+
+	_, err = s.Db.Model(&eventOrganizers).Where("id = ?", userId).Delete()
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 //
@@ -310,24 +342,33 @@ func (s *UserAccess) IsMember(userId, societyId string) (bool, error) {
 }
 
 func (s *UserAccess) DeleteSociety(id string) error {
-	tx, err := s.Db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
 	socEvent := new(models.EventSociety)
-	_, err = tx.Model(&socEvent).Where("society_id = ? and permission = ?", id, "creator").Delete()
+	_, err := s.Db.Model(&socEvent).Where("society_id = ? and permission = ?", id, "creator").Delete()
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Model(&socEvent).Where("id = ?", id).Delete()
+	_, err = s.Db.Model(&socEvent).Where("id = ?", id).Delete()
 	if err != nil {
 		return err
 	}
 
-	return tx.Commit()
+	return nil
+}
+
+func (s *UserAccess) DeleteSocieties(ids []string) error {
+	socEvent := new(models.EventSociety)
+	_, err := s.Db.Model(&socEvent).Where("society_id IN (?) and permission = ?", ids, "creator").Delete()
+	if err != nil {
+		return err
+	}
+
+	_, err = s.Db.Model(&socEvent).Where("id IN (?)", ids).Delete()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //

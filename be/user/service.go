@@ -319,6 +319,17 @@ func (s *userService) RemoveFriend(c echo.Context) error {
 	return c.String(http.StatusOK, "")
 }
 
+func (s *userService) DeleteUser(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	err := s.UserAccess.DeleteUser(userId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteUser, err))
+	}
+
+	return nil
+}
+
 //
 //
 //
@@ -525,7 +536,7 @@ func (s *userService) RemoveMember(c echo.Context) error {
 				return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveMember, err))
 			}
 		}
-		return c.String(http.StatusOK, "")
+		return c.NoContent(http.StatusOK)
 
 	} else { //admin removes someone
 		if !admin {
@@ -541,22 +552,21 @@ func (s *userService) RemoveMember(c echo.Context) error {
 }
 
 func (s *userService) DeleteSociety(c echo.Context) error {
-	id := c.Get("userId")
-	userId := fmt.Sprintf("%v", id)
+	userId := c.Get("userId").(string)
 	societyId := c.Param("id")
 
 	admin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, societyId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUnauthorized, err))
 	}
 
 	if !admin {
-		return c.String(http.StatusUnauthorized, "You are not an admin")
+		return c.JSON(http.StatusUnauthorized, custom_errors.WrapError(custom_errors.ErrUnauthorized, fmt.Errorf("You are not an admin of society ")))
 	}
 
 	err = s.UserAccess.DeleteSociety(societyId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteSociety, err))
 	}
 
 	return c.JSON(http.StatusOK, "Implement me")
