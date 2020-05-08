@@ -309,14 +309,25 @@ func (s *UserAccess) IsMember(userId, societyId string) (bool, error) {
 	return true, nil
 }
 
-func (s *UserAccess) DeleteSociety(in string) error {
-	//TODO
-	//transaction
+func (s *UserAccess) DeleteSociety(id string) error {
+	tx, err := s.Db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
 
-	//what with events
-	//what with collected trash --> removedSociety
+	socEvent := new(models.EventSociety)
+	_, err = tx.Model(&socEvent).Where("society_id = ? and permission = ?", id, "creator").Delete()
+	if err != nil {
+		return err
+	}
 
-	return errors.New("Uninplemented")
+	_, err = tx.Model(&socEvent).Where("id = ?", id).Delete()
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 //

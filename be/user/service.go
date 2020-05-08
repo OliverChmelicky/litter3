@@ -541,7 +541,6 @@ func (s *userService) RemoveMember(c echo.Context) error {
 }
 
 func (s *userService) DeleteSociety(c echo.Context) error {
-	//TODO check pred tym ci nahodou neorganizuje event a vymaz event potom
 	id := c.Get("userId")
 	userId := fmt.Sprintf("%v", id)
 	societyId := c.Param("id")
@@ -570,7 +569,6 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 //
 //
 
-
 func (s *userService) GetUserImage(c echo.Context) error {
 	contentType, object, err := s.fileupload.LoadImage(c.Param("name"))
 	if err != nil {
@@ -595,4 +593,3 @@ func (s *userService) DeleteUserImage(c echo.Context) error {
 
 	return c.NoContent(http.StatusOK)
 }
-
