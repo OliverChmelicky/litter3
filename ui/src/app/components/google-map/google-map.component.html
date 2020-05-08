@@ -3,8 +3,11 @@
     [latitude]="location.lat"
     [longitude]="location.lng"
     [zoom]="location.zoom"
+    [minZoom]="location.minZoom"
     (mapDblClick)="addMarker($event.coords.lat, $event.coords.lng)"
+    (boundsChange)="onBoundsChange()"
     (mapReady)="onMapReady($event)"
+    (mapRightClick)="hideMarkerWindows()"
     disableDoubleClickZoom="true">
 
     <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng"

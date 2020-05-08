@@ -45,12 +45,14 @@ func (s *trashService) GetTrashById(c echo.Context) error {
 }
 
 func (s *trashService) GetTrashInRange(c echo.Context) error {
+	var err error
 	request := new(models.RangeRequest)
-	lng, err := strconv.ParseFloat(c.QueryParam("lng"), 64)
+
+	lat, err := strconv.ParseFloat(c.QueryParam("lat"), 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
-	lat, err := strconv.ParseFloat(c.QueryParam("lat"), 64)
+	lng, err := strconv.ParseFloat(c.QueryParam("lng"), 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
@@ -58,7 +60,11 @@ func (s *trashService) GetTrashInRange(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
-	request.Location = models.Point{lng, lat}
+
+	fmt.Println("Radius v metroch")
+	fmt.Println(radius)
+
+	request.Location = models.Point{lat, lng}
 	request.Radius = radius
 
 	trash, err := s.TrashAccess.GetTrashInRange(request)

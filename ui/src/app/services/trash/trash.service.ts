@@ -5,6 +5,7 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {ApisModel} from "../../api/api-urls";
 import {UserModel} from "../../models/user.model";
 import {TrashModel} from "../../models/trash.model";
+import {MarkerModel} from "../../components/google-map/Marker.model";
 
 @Injectable({
   providedIn: 'root'
@@ -33,6 +34,13 @@ export class TrashService {
     const url = `${this.apiUrl}/${ApisModel.trash}/new`;
     return this.http.post<TrashModel>(url, trash).pipe(
       catchError(err => TrashService.handleError<TrashModel>(err))
+    );
+  }
+
+  getTrashInRange(lat,lng: number,d: number): Observable<TrashModel[]> {
+    const url = `${this.apiUrl}/${ApisModel.trash}/range?lat=${lat}&lng=${lng}&radius=${d}`;
+    return this.http.get<TrashModel[]>(url).pipe(
+      catchError(err => TrashService.handleError<TrashModel[]>(err))
     );
   }
 

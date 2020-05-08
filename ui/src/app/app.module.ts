@@ -10,7 +10,6 @@ import {AngularFireAuthModule} from '@angular/fire/auth';
 import {environment} from '../environments/environment';
 import {HTTP_INTERCEPTORS, HttpClientModule} from "@angular/common/http";
 import {GoogleMapComponent} from './components/google-map/google-map.component';
-import {LocationService} from "./services/location/location.service";
 import {UserDetailComponent} from './components/user-detail/user-detail.component';
 import {LoginComponent} from './components/login/login.component';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
@@ -72,7 +71,6 @@ import {MatIconModule} from "@angular/material/icon";
     MatIconModule,
   ],
   providers: [
-    LocationService,
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },
   ],
   bootstrap: [AppComponent]

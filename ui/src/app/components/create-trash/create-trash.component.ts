@@ -8,6 +8,7 @@ import {LocationService} from "../../services/location/location.service";
 import {TrashModel} from "../../models/trash.model";
 import {HttpClient} from "@angular/common/http";
 import {ApisModel} from "../../api/api-urls";
+import {FileuploadService} from "../../services/fileupload/fileupload.service";
 
 @Component({
   selector: 'app-create-trash',
@@ -45,11 +46,13 @@ export class CreateTrashComponent implements OnInit {
   initMapLng: number;
   markerLat: number;
   markerLng: number;
+  fd: FormData = new FormData();
 
 
   constructor(
     private route: ActivatedRoute,
     private trashService: TrashService,
+    private fileuploadService: FileuploadService,
     private formBuilder: FormBuilder,
     private readonly locationService: LocationService,
     private http: HttpClient,
@@ -91,15 +94,6 @@ export class CreateTrashComponent implements OnInit {
   }
 
   onSubmit() {
-    this.trashForm.value["lat"] = this.markerLat
-    this.trashForm.value["lng"] = this.markerLng
-    console.log(this.trashForm.value)
-  }
-
-
-  onFileSelected(event) {
-    console.log(event)
-
     this.trash = {
       Id: '',
       Cleaned: false,
@@ -113,25 +107,26 @@ export class CreateTrashComponent implements OnInit {
 
     this.trashService.createTrash(this.trash).subscribe(
       trash => {
-        if (event.target.files.length !== 0) {
-          const fd = new FormData();
-          for(let i =0; i < event.target.files.length; i++){
-            fd.append("files", event.target.files[i], event.target.files[i].name);
-          }
-          //fd.append('file', event.target.files[0], event.target.files[0].name);
-          const url = `${ApisModel.apiUrl}/${ApisModel.fileupload}/${ApisModel.trash}/${trash.Id}`;
-          return this.http.post(url, fd).subscribe(
-            res => {
-              console.log('Huraaa uploadlo')
-              console.log(res)
-            },
-            error => console.log(error)
-          )
+        if (this.fd.getAll('files').length !== 0) {
+          this.fileuploadService.uploadTrashImages(this.fd, trash.Id).subscribe(
+            () => {
+              this.fd.delete('files')
+              //this.trashForm.reset()
+            })
         } else {
           console.log('Less then 0 pictures')
+          //this.trashForm.reset()
         }
       })
+  }
 
+
+  onFileSelected(event) {
+    this.fd.delete('files')
+    for (let i = 0; i < event.target.files.length; i++) {
+      this.fd.append("files", event.target.files[i], event.target.files[i].name);
+    }
+    console.log(this.fd.getAll('files').length)
   }
 
   printSize() {

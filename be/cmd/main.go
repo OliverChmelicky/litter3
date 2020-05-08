@@ -95,10 +95,11 @@ func main() {
 
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)
+	e.GET("/trash/range", trashService.GetTrashInRange)
 	e.POST("/trash/new", trashService.CreateTrash)
 	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":8081"))
 }
 
 func getFirebaseAuth(opt option.ClientOption) (*auth.Client, error) {
