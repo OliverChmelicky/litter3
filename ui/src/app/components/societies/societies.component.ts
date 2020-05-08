@@ -21,7 +21,7 @@ import {Router} from "@angular/router";
 export class SocietiesComponent implements OnInit {
   actualPaging: PagingModel;
   pageEvent: PageEvent;
-  displayedColumns: string[] = ['position', 'name', 'members', 'createdAt'];
+  displayedColumns: string[] = ['position', 'name', 'members', 'createdAt', 'showMore'];
   dataSource: SocietiesTableElementModel[];
   expandedElement: SocietiesTableElementModel | null;
 

@@ -1,5 +1,16 @@
-<app-nav-list class="sidenav" id="leftpane"></app-nav-list>
-<router-outlet class="main" id="rightpane"></router-outlet>
+<div class="platform-container">
+  <app-nav-list class="sidenav" id="leftpane"></app-nav-list>
+  <div class="main-container">
+    <router-outlet class="main" id="rightpane"></router-outlet>
+    <div id="child">
+      <button>Díky Šišo</button>
+<!--      <div *ngIf="selectedMarker">-->
+<!--        <p *ngIf="selectedMarker.new">{{selectedMarker.lat}}</p>-->
+<!--        <p *ngIf="selectedMarker.new">{{selectedMarker.lng}}</p>-->
+<!--      </div>-->
+    </div>
+  </div>
+</div>
 
 <!--I want to have buttton logout on upper right corner whenever user wants to log out-->
 <!--Maybe also Me button should be there-->

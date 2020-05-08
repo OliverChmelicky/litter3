@@ -3,6 +3,20 @@
 
 }
 
+.societies-table {
+  width: 100%;
+}
+:host {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+}
+
+.table-wrapper {
+ width: 100%;
+}
+
 /*Angular material*/
 table {
   width: 100%;
@@ -41,6 +55,11 @@ tr.example-element-row:not(.example-expanded-row):active {
 #example-element-diagram .image {
   min-width: 80px;
   height: 104px;
+}
+
+.image-row {
+  width: 100px;
+  height: 100px;
 }
 
 .example-element-symbol {

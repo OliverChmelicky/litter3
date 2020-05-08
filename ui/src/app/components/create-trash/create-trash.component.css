@@ -1,21 +1,17 @@
 agm-map{
-  margin: auto;
   height: 300px;
   width: 500px;
 }
 
 .report-container {
   display: flex;
-  justify-content: center;
-  margin: 100px;
-  /*align-items: baseline;*/
-  /*align-content: flex-start;*/
+  flex-wrap: wrap;
 }
 
 .report-items {
   display: flex;
   justify-content: center;
-  margin: 100px;
+  margin-bottom: 20px;
   /*align-items: baseline;*/
   /*align-content: flex-start;*/
 }
