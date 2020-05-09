@@ -393,6 +393,17 @@ func (s *userService) GetSociety(c echo.Context) error {
 	return c.JSON(http.StatusOK, society)
 }
 
+func (s *userService) GetMySocieties(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	societies, err := s.UserAccess.GetUserSocieties(userId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUserSocieties, err))
+	}
+
+	return c.JSON(http.StatusOK, societies)
+}
+
 func (s *userService) GetSocietyAdmins(c echo.Context) error {
 	//can call also unregistered user
 	societyId := c.Param("societyId")

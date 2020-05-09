@@ -15,19 +15,8 @@ type User struct {
 	Email     string
 	Uid       string
 	Avatar    string
-	Admins    []Member
 	Societies []Society `pg:"many2many:societies_members"`
 	CreatedAt time.Time `pg:"default:now()"`
-}
-
-//from users move property admins and replace with this
-type Admins struct {
-	tableName struct{} `pg:"users"json:"-"`
-	Id        string   `pg:",pk"`
-	FirstName string
-	LastName  string
-	Avatar    string
-	Admins    []Member
 }
 
 var _ pg.BeforeInsertHook = (*User)(nil)

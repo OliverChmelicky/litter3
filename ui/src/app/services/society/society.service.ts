@@ -3,7 +3,7 @@ import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {catchError} from "rxjs/operators";
 import {Observable, of, throwError} from "rxjs";
 
-import {SocietyModel, SocietyWithPagingAnsw} from "../../models/society.model";
+import {MemberModel, SocietyModel, SocietyWithPagingAnsw} from "../../models/society.model";
 import {ApisModel} from "../../api/api-urls";
 import {PagingModel} from "../../models/shared.models";
 
@@ -28,6 +28,14 @@ export class SocietyService {
     );
   }
 
+  getMySocietiesIds(): Observable<MemberModel[]> {
+    const url = `${this.apiUrl}/${ApisModel.user}/societies`;
+    return this.http.get<MemberModel[]>(url).pipe(
+      catchError(err => SocietyService.handleError<MemberModel[]>(err, [])
+      )
+    );
+  }
+
   getSociety(id: string): Observable<SocietyModel> {
     const url = `${this.apiUrl}/${this.societyUrl}/${id}`;
     return this.http.get<SocietyModel>(url).pipe(
@@ -46,6 +54,20 @@ export class SocietyService {
           To: 10,
         }
       }))
+    );
+  }
+
+  getSocietiesByIds(ids: string[]): Observable<SocietyModel[]> {
+    const url = `${this.apiUrl}/${this.societyUrl}/${ids}`;
+    return this.http.get<SocietyModel[]>(url).pipe(
+      catchError(err => SocietyService.handleError<SocietyModel[]>(err, []))
+    );
+  }
+
+  leaveSociety(societyId, userId: string) {
+    const url = `${this.apiUrl}/${ApisModel.user}/${this.societyUrl}/${societyId}/${userId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => SocietyService.handleError(err))
     );
   }
 

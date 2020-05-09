@@ -42,10 +42,11 @@ var (
 	ErrRemoveApplicationForFriendship = "ERROR REMOVE APPLICATION FOR FRIENDSHIP"
 	ErrRemoveFriend                   = "ERROR REMOVE FRIEND"
 
-	ErrCreateSociety = "ERROR CREATE SOCIETY"
-	ErrGetSociety    = "ERROR GET SOCIETY"
-	ErrUpdateSociety = "ERROR UPDATE SOCIETY"
-	ErrDeleteSociety = "ERROR DELETE SOCIETY"
+	ErrCreateSociety    = "ERROR CREATE SOCIETY"
+	ErrGetSociety       = "ERROR GET SOCIETY"
+	ErrGetUserSocieties = "ERROR GET USER SOCIETIES"
+	ErrUpdateSociety    = "ERROR UPDATE SOCIETY"
+	ErrDeleteSociety    = "ERROR DELETE SOCIETY"
 
 	ErrCreateComment = "ERROR CREATE COMMENT"
 	ErrGetComment    = "ERROR GET COMMENT"

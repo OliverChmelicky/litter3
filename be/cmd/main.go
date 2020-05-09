@@ -77,6 +77,9 @@ func main() {
 	e.PUT("/users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/details", userService.GetUsers)
 
+	e.GET("/users/societies", userService.GetMySocieties, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/users/societies/:societyId/:removingId", userService.RemoveMember,tokenMiddleware.AuthorizeUser)
+
 	e.POST("/users/friend/add/id", userService.ApplyForFriendshipById, tokenMiddleware.AuthorizeUser)
 	e.POST("/users/friend/add/email", userService.ApplyForFriendshipByEmail, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/friends", userService.GetMyFriends, tokenMiddleware.AuthorizeUser)

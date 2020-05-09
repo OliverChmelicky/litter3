@@ -10,6 +10,7 @@ import {catchError} from "rxjs/operators";
 import {Observable, of, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
 import {EmailMessageModel} from "../../models/shared.models";
+import {MemberModel, SocietyModel} from "../../models/society.model";
 
 @Injectable({
   providedIn: 'root'
@@ -60,7 +61,7 @@ export class UserService {
     );
   }
 
-  getMyFriends(): Observable<FriendsModel[]> {
+  getMyFriendsIds(): Observable<FriendsModel[]> {
     const url = `${this.apiUrl}/${ApisModel.user}/friends`;
     return this.http.get<FriendsModel[]>(url).pipe(
       catchError(err => UserService.handleError<FriendsModel[]>(err, [])

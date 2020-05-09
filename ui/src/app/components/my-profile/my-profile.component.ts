@@ -2,7 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {UserModel, FriendRequestModel, FriendsModel} from "../../models/user.model";
 import {UserService} from "../../services/user/user.service";
 import {UserViewModel} from "./friendRequestView";
-import {friendsColumnsDefinition} from "./table-definitions";
+import {friendsColumnsDefinition, requestsSendColumnsDefinition, societiesColumnsDefinition, requestsReceivedColumnsDefinition} from "./table-definitions";
+import {MemberModel, SocietyModel} from "../../models/society.model";
+import {SocietyService} from "../../services/society/society.service";
 
 @Component({
   selector: 'app-my-profile',
@@ -11,27 +13,30 @@ import {friendsColumnsDefinition} from "./table-definitions";
 })
 export class MyProfileComponent implements OnInit {
   me: UserModel;
-  IsendFriendRequests: UserViewModel[];
-  IreceivedFriendRequests: UserViewModel[];
-  myFriends: FriendsModel[];
-  myFriendsView: UserViewModel[];
+  IsendFriendRequests: UserViewModel[] = [];
+  IreceivedFriendRequests: UserViewModel[] = [];
+  myFriendsIds: FriendsModel[] = [];
+  mySocietiesIds: MemberModel[] = []
+  myFriendsView: UserViewModel[] = [];
+  mySocietiesView: SocietyModel[];
   newFriendEmail: string;
 
   friendsColumns = friendsColumnsDefinition;
+  societiesColumns = societiesColumnsDefinition;
+  requestsSendColumns = requestsSendColumnsDefinition;
+  requestsReceivedColumns = requestsReceivedColumnsDefinition;
 
   constructor(
     private userService: UserService,
+    private societyService: SocietyService,
   ) {
-    this.IsendFriendRequests = [];
-    this.IreceivedFriendRequests = [];
-    this.myFriends = [];
-    this.myFriendsView = [];
   }
 
   ngOnInit() {
     this.userService.getMe().subscribe(
       user => {
         this.me = user;
+        this.mySocietiesView = user.Societies
         this.userService.getMyFriendRequests().subscribe(
           requests => {
             if (requests != null) {
@@ -44,15 +49,16 @@ export class MyProfileComponent implements OnInit {
         )
       })
 
-    this.userService.getMyFriends().subscribe(
-      friends => {
-        if (friends != null) {
-          this.myFriends = friends;
-          this.fetchUserDetailsForFriends(friends)
+    this.userService.getMyFriendsIds().subscribe(
+      relationship => {
+        if (relationship != null) {
+          this.myFriendsIds = relationship;
+          this.fetchUserDetailsForFriends(relationship)
         }
       },
       error => console.log('Error GetMyFriends ', error)
     )
+
   }
 
   removeFriend(userId: string) {
@@ -146,8 +152,22 @@ export class MyProfileComponent implements OnInit {
     }
   }
 
+  // private fetchSocietyDetails(relationship: MemberModel[]) {
+  //   const societiesIds = relationship.map(rel => {
+  //       return rel.SocietyId;
+  //   });
+  //   if (societiesIds.length !== 0) {
+  //     this.societyService.getSocietiesByIds(societiesIds).subscribe(
+  //       societies => {
+  //         this.mySocietiesView = societies
+  //       },
+  //       err => console.log('Error fetching user details ', err)
+  //     );
+  //   }
+  // }
+
   private pushUserToMyFriends(users: UserModel[]) {
-    this.myFriends.map(friendship => {
+    this.myFriendsIds.map(friendship => {
       users.map(user => {
           if (user.Id === friendship.User1Id || user.Id === friendship.User2Id) {
             this.myFriendsView.push(
@@ -196,4 +216,9 @@ export class MyProfileComponent implements OnInit {
     })
   }
 
+  leaveSociety(socId: string) {
+    this.societyService.leaveSociety(socId, this.me.Id).subscribe(
+      () => this.mySocietiesView.filter( soc => soc.Id !== socId)
+    )
+  }
 }

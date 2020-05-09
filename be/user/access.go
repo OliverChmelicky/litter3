@@ -31,7 +31,11 @@ func (s *UserAccess) CreateUser(in *models.User) (*models.User, error) {
 func (s *UserAccess) GetUserById(id string) (*models.User, error) {
 	user := new(models.User)
 	user.Id = id
-	err := s.Db.Select(user)
+
+	err := s.Db.Model(user).Column("user.*").
+		Relation("Societies").
+		Where("id = ?", id).First()
+
 	if err != nil {
 		return &models.User{}, err
 	}
@@ -39,7 +43,6 @@ func (s *UserAccess) GetUserById(id string) (*models.User, error) {
 }
 
 func (s *UserAccess) GetUsersByIds(ids []string) ([]models.User, error) {
-	//TODO pg.rec.nofound
 	users := []models.User{}
 	err := s.Db.Model(&users).Where("id IN (?)", pg.In(ids)).Select()
 	if err != nil {
@@ -197,6 +200,28 @@ func (s *UserAccess) GetSociety(id string) (*models.Society, error) {
 		return &models.Society{}, err
 	}
 	return society, nil
+}
+
+func (s *UserAccess) GetUserSocieties(id string) ([]models.Society, error) {
+	var societies []models.Society
+	var tableBetween []models.Member
+
+	err := s.Db.Model(&tableBetween).Where("user_id = ?", id).Select()
+	if err != nil {
+		return []models.Society{}, err
+	}
+
+	var societiesIds []string
+	for _, relation := range tableBetween {
+		societiesIds = append(societiesIds, relation.SocietyId)
+	}
+
+	err = s.Db.Model(&societies).Where("id IN (?)", societiesIds).
+		Where("id = ?", id).Select()
+	if err != nil {
+		return []models.Society{}, err
+	}
+	return []models.Society{}, nil
 }
 
 //worth thinking more how to explicitly involve my friends who are in the wanted society
