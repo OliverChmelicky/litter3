@@ -1,11 +1,67 @@
-<div *ngIf="me">
-  <p>{{me.Id}}</p>
-  <p>{{me.FirstName}}</p>
-  <p>{{me.LastName}}</p>
-  <p>{{me.Email}}</p>
+
+<div class="user-container">
+
+</div>
+<div class="user-item">
+  <img src="{{me.Avatar ? me.Avatar : 'https://geode.science/wp-content/uploads/2018/11/profil-chercheur.png'}}">
 </div>
 
-<div>
+<div class="user-item" *ngIf="me">
+  <form>
+    <label>
+      First name:
+      <input [(ngModel)]="me.FirstName">
+    </label>
+    <label>
+      Last name:
+      <input [(ngModel)]="me.LastName">
+    </label>
+    <label>
+      Email:
+      <input [(ngModel)]="me.Email">
+    </label>
+  </form>
+</div>
+
+
+<div class="user-item">
+  <h3>My friends</h3>
+  <table mat-table [dataSource]="myFriendsView" class="mat-elevation-z8">
+    <ng-container matColumnDef="first-name">
+      <th mat-header-cell *matHeaderCellDef> First name </th>
+      <td mat-cell *matCellDef="let element"> {{element.FirstName}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="last-name">
+      <th mat-header-cell *matHeaderCellDef> Last name </th>
+      <td mat-cell *matCellDef="let element"> {{element.LastName}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="button">
+      <th mat-header-cell *matHeaderCellDef> Remove </th>
+      <td mat-cell *matCellDef="let element">
+        <button (click)="removeFriend(element.UserId)">Remove</button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="friendsColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: friendsColumns;"></tr>
+  </table>
+
+</div>
+
+<div class="user-item">
+  <h3>My Societies</h3>
+  <li *ngFor="let friend of myFriendsView">
+    <p>{{friend.FirstName}}</p>
+    <p>{{friend.LastName}}</p>
+    <button (click)="removeFriend(friend.UserId)">Remove Friend</button>
+    <p>------------</p>
+  </li>
+</div>
+
+
+<div class="user-item">
   <label>
     <p>Request for friend</p>
     <input [(ngModel)]="newFriendEmail" placeholder="fill email"/> <br>
@@ -29,10 +85,3 @@
   <p>------------</p>
 </li>
 
-<h3>My friends</h3>
-<li *ngFor="let friend of myFriendsView">
-  <p>{{friend.FirstName}}</p>
-  <p>{{friend.LastName}}</p>
-  <button (click)="removeFriend(friend.UserId)">Remove Friend</button>
-  <p>------------</p>
-</li>

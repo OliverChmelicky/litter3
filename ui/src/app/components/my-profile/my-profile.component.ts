@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {UserModel, FriendRequestModel, FriendsModel} from "../../models/user.model";
 import {UserService} from "../../services/user/user.service";
 import {UserViewModel} from "./friendRequestView";
+import {friendsColumnsDefinition} from "./table-definitions";
 
 @Component({
   selector: 'app-my-profile',
@@ -15,6 +16,8 @@ export class MyProfileComponent implements OnInit {
   myFriends: FriendsModel[];
   myFriendsView: UserViewModel[];
   newFriendEmail: string;
+
+  friendsColumns = friendsColumnsDefinition;
 
   constructor(
     private userService: UserService,
