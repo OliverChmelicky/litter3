@@ -19,17 +19,6 @@ export class TrashService {
     this.apiUrl = ApisModel.apiUrl
   }
 
-
-  // getViaPromise(url: string): Promise<any> {
-  //   return this.http.get(this.heroesUrl).toPromise().then(data => doSomethingWithData(data)).catch(err => console.error(err))
-  // }
-  //
-  // doSomethingWithData()
-
-  private log(fetchedHeroes: string) {
-    console.log(fetchedHeroes)
-  }
-
   createTrash(trash: TrashModel): Observable<TrashModel> {
     const url = `${this.apiUrl}/${ApisModel.trash}/new`;
     return this.http.post<TrashModel>(url, trash).pipe(
@@ -41,6 +30,13 @@ export class TrashService {
     const url = `${this.apiUrl}/${ApisModel.trash}/range?lat=${lat}&lng=${lng}&radius=${d}`;
     return this.http.get<TrashModel[]>(url).pipe(
       catchError(err => TrashService.handleError<TrashModel[]>(err))
+    );
+  }
+
+  getTrashById(trashId: string): Observable<TrashModel> {
+    const url = `${this.apiUrl}/${ApisModel.trash}/${trashId}`;
+    return this.http.get<TrashModel>(url).pipe(
+      catchError(err => TrashService.handleError<TrashModel>(err))
     );
   }
 

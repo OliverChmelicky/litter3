@@ -9,6 +9,7 @@ import {TrashModel} from "../../models/trash.model";
 import {HttpClient} from "@angular/common/http";
 import {ApisModel} from "../../api/api-urls";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
+import {accessibilityChoces} from "./accessibilityChocies";
 
 @Component({
   selector: 'app-create-trash',
@@ -21,25 +22,25 @@ export class CreateTrashComponent implements OnInit {
     lat: [''],
     lng: [''],
     size: [1],
-    trashTypes: [''],
+
+    trashTypeHousehold: [''],
+    trashTypeAutomotive: [''],
+    trashTypeConstruction: [''],
+    trashTypePlastics: [''],
+    trashTypeElectronic: [''],
+    trashTypeGlass: [''],
+    trashTypeMetal: [''],
+    trashTypeDangerous: [''],
+    trashTypeCarcass: [''],
+    trashTypeOrganic: [''],
+    trashTypeOther: [''],
+
     accessibility: [''],
     description: [''],
     anonymously: [''],
   });
 
-  trashTypesChoices: string[] = [
-    '---other---',
-    'household',
-    'automotive',
-    'construction',
-    'plastics',
-    'electronic',
-    'glass',
-    'metal',
-    'dangerous',
-    'carcass',
-    'organic',
-  ]
+  accessibilityChoices = accessibilityChoces;
 
   map: GoogleMap
   initMapLat: number;
@@ -55,7 +56,6 @@ export class CreateTrashComponent implements OnInit {
     private fileuploadService: FileuploadService,
     private formBuilder: FormBuilder,
     private readonly locationService: LocationService,
-    private http: HttpClient,
   ) {
   }
 

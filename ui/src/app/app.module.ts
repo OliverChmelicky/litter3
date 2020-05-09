@@ -31,6 +31,8 @@ import {MatButtonModule} from "@angular/material/button";
 import { NavListComponent } from './components/nav-list/nav-list.component';
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
+import { TrashDetailsComponent } from './components/trash-details/trash-details.component';
+import {MatMenuModule} from "@angular/material/menu";
 
 @NgModule({
   declarations: [
@@ -45,6 +47,7 @@ import {MatIconModule} from "@angular/material/icon";
     SocietyDetailsComponent,
     CreateTrashComponent,
     NavListComponent,
+    TrashDetailsComponent,
   ],
   imports: [
     BrowserModule,
@@ -69,6 +72,7 @@ import {MatIconModule} from "@angular/material/icon";
     MatButtonModule,
     MatListModule,
     MatIconModule,
+    MatMenuModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },

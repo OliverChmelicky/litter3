@@ -3,10 +3,7 @@
   <div class="report-items">
     <form [formGroup]="trashForm" (ngSubmit)="onSubmit()">
 
-      <input disabled="true" type="text" [value]="markerLat" formControlName="lat"><br>
-      <input disabled="true" type="text" [value]="markerLng" formControlName="lng">
-
-      <div>
+      <div class="border-merger form-item">
         <label>
           Size:
         </label>
@@ -21,30 +18,49 @@
         <p>{{printSize()}}</p>
       </div>
 
-      <div>
-        <mat-form-field>
-          <mat-label>Types of trash</mat-label>
-          <mat-select formControlName="trashTypes" multiple>
-            <mat-option *ngFor="let choice of trashTypesChoices" [value]="choice">{{choice}}</mat-option>
-          </mat-select>
-        </mat-form-field>
+      <label></label>
+      <div class="trash-types form-item">
+        <mat-checkbox formControlName="trashTypeHousehold">Household</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeAutomotive">Automotive</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeConstruction">Construction</mat-checkbox>
+        <mat-checkbox formControlName="trashTypePlastics">Plastics</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeElectronic">Electronic</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeGlass">Glass</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeMetal">Metal</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeDangerous">Dangerous</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeCarcass">Carcass</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeOrganic">Organic</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeOther">---other---</mat-checkbox>
       </div>
 
       <label>Description</label><br>
       <textarea placeholder="Write your description here"
-                class="description" type="text" formControlName="description"> </textarea><br>
+                class="description form-item" type="text" formControlName="description"> </textarea><br>
 
-      <mat-checkbox formControlName="anonymously">Report anonymously</mat-checkbox><br>
+      <div>
+        <mat-form-field>
+          <mat-label>Accessibility</mat-label>
+          <mat-select formControlName="accessibility form-item" multiple>
+            <mat-option *ngFor="let choice of accessibilityChoices" [value]="choice">{{choice}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
 
-      <button mat-stroked-button color="primary" type="submit">Submit</button>
+      <div class="finish-form">
+        <mat-checkbox formControlName="anonymously">Report anonymously</mat-checkbox>
+        <br>
+        <input type="file" (change)="onFileSelected($event)" multiple>
+        <button mat-stroked-button color="primary" type="submit">Submit</button>
+      </div>
 
     </form>
 
-    <input type="file" (change)="onFileSelected($event)" multiple>
 
   </div>
 
   <div class="report-items">
+<!--    <input disabled="true" type="text" [value]="markerLat" formControlName="lat"><br>-->
+<!--    <input disabled="true" type="text" [value]="markerLng" formControlName="lng">-->
     <agm-map
       [latitude]="initMapLat"
       [longitude]="initMapLng"

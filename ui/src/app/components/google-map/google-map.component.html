@@ -1,3 +1,13 @@
+
+<button class="marker-filter" mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu class="marker-menu" #menu="matMenu">
+  <mat-checkbox (change)="onNotCleanedOption($event)">Hide not cleaned</mat-checkbox>
+  <mat-checkbox (change)="onCleanedOption($event)">Hide Cleaned</mat-checkbox>
+</mat-menu>
+
+
 <div class="mymap">
   <agm-map
     [latitude]="location.lat"
@@ -7,18 +17,29 @@
     (mapDblClick)="addMarker($event.coords.lat, $event.coords.lng)"
     (boundsChange)="onBoundsChange()"
     (mapReady)="onMapReady($event)"
-    (mapRightClick)="hideMarkerWindows()"
+    (mapRightClick)="onRightClick()"
     disableDoubleClickZoom="true">
 
-    <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng"
+    <agm-marker *ngFor="let marker of filteredMarkers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng"
                 [markerDraggable]="marker.new"
+                [iconUrl]=""
                 (markerClick)="selectMarker(i, $event)"
                 (drag)="dragging(i, $event)">
       <agm-info-window [disableAutoPan]="true">
-        <button *ngIf="marker.new" (click)="createTrash(marker)">Report dump</button>
+        <div *ngIf="marker.new">
+          <button (click)="createTrash(marker)">Report dump</button>
+        </div>
+        <div *ngIf="!marker.new" class="show-trash-on-map">
+          <img src="{{marker.images[0]}}">
+          <div>
+            <p>Collections made: {{marker.numOfCollections}}</p>
+            <p>Cleaned: {{marker.cleaned ? "yes" : "no"}}</p>
+            <button (click)="navigateToTrash(marker.id)">Details</button>
+          </div>
+        </div>
       </agm-info-window>
-
     </agm-marker>
+
   </agm-map>
 
 </div>

@@ -1,24 +1,49 @@
 agm-map{
-  height: 300px;
-  width: 500px;
+  margin-left: 150px;
+  height: 500px;
+  width: 750px;
 }
 
 .report-container {
   display: flex;
-  flex-wrap: wrap;
+  margin-top: 12%;
 }
 
 .report-items {
   display: flex;
+  margin-left: 5%;
   justify-content: center;
   margin-bottom: 20px;
   /*align-items: baseline;*/
   /*align-content: flex-start;*/
 }
 
+.border-merger {
+  border: solid 1px #bfbfbf;
+  display: flex;
+  margin-right: 20px;
+}
+
+.form-item {
+  margin-bottom: 10px;
+}
+
+.finish-form {
+  margin-left: 170px;
+  margin-top: 100px;
+}
+
+.trash-types {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex-direction: column;
+  margin: 20px;
+}
+
 .slider-margin {
   margin: 8px;
-  width: 15%;
+  width: 20px;
 }
 
 .description{

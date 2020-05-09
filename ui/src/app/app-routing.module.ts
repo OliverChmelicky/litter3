@@ -7,11 +7,13 @@ import {SocietiesComponent} from "./components/societies/societies.component";
 import {SocietyDetailsComponent} from "./components/society-details/society-details.component";
 import {GoogleMapComponent} from "./components/google-map/google-map.component";
 import {CreateTrashComponent} from "./components/create-trash/create-trash.component";
+import {TrashDetailsComponent} from "./components/trash-details/trash-details.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'report', pathMatch: 'full'},
   { path: 'report', component: CreateTrashComponent},
   { path: 'report/:lat/:lng', component: CreateTrashComponent},
+  { path: 'trash/details/:id', component: TrashDetailsComponent},
   { path: 'map', component: GoogleMapComponent},
   { path: 'me', component: MyProfileComponent},
   { path: 'societies', component: SocietiesComponent},

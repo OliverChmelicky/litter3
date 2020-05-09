@@ -23,7 +23,7 @@ CREATE TYPE accessibility AS ENUM (
     );
 
 -- CREATE TYPE trashType AS ENUM (
---     'unknown',
+--     'other',
 --     'household',
 --     'automotive',
 --     'construction',
