@@ -28,20 +28,22 @@ func (u *User) BeforeInsert(ctx context.Context) (context.Context, error) {
 }
 
 type Society struct {
-	tableName struct{} `pg:"societies"json:"-"`
-	Id        string   `pg:",pk"`
-	Name      string
-	Avatar    string
-	Users     []User    `pg:"many2many:societies_members"`
-	CreatedAt time.Time `pg:"default:now()"`
+	tableName   struct{} `pg:"societies"json:"-"`
+	Id          string   `pg:",pk"`
+	Name        string
+	Avatar      string
+	Description string
+	Users       []User    `pg:"many2many:societies_members"`
+	CreatedAt   time.Time `pg:"default:now()"`
 }
 
 type SocietyAnswSimple struct {
-	Id        string
-	Name      string
-	Avatar    string
-	UsersNumb int
-	CreatedAt time.Time
+	Id          string
+	Name        string
+	Avatar      string
+	Description string
+	UsersNumb   int
+	CreatedAt   time.Time
 }
 
 type SocietyPagingAnsw struct {

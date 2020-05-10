@@ -9,6 +9,7 @@ func (s *userService) mapSocietyToSocietyAnswSimple(societies []models.Society) 
 			Id: society.Id,
 			Name: society.Name,
 			Avatar: society.Avatar,
+			Description: society.Description,
 			UsersNumb: len(society.Users),
 			CreatedAt: society.CreatedAt,
 		})

@@ -34,7 +34,7 @@
             <img class="image-row" src="{{element.Avatar ? element.Avatar : 'https://i.vimeocdn.com/portrait/912580_640x640'}}">
           </div>
           <div class="example-element-description">
-            {{element.description}}
+            <p>{{element.description}}</p>
             <span class="example-element-description-attribution"></span>
           </div>
         </div>
@@ -57,4 +57,4 @@
   </mat-paginator>
 </div>
 
-<button class="create-button">Create Society</button>
+<button mat-button (click)="openDialog()">Create society</button>
