@@ -109,9 +109,8 @@ func (s *userService) UpdateUser(c echo.Context) error {
 	if err := c.Bind(user); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
 	}
-	if user.Id != callerId {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateUser, fmt.Errorf("You cannot update someone else ")))
-	}
+
+	user.Id = callerId
 
 	user, err := s.UserAccess.UpdateUser(user)
 	if err != nil {

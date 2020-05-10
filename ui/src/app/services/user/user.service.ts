@@ -78,6 +78,14 @@ export class UserService {
     );
   }
 
+  updateUser(me: UserModel) {
+    const url = `${this.apiUrl}/${ApisModel.user}/update`;
+    return this.http.put<UserModel>(url, me).pipe(
+      catchError(err => UserService.handleError<UserModel>(err)
+      )
+    );
+  }
+
   requestFriend(email: string): Observable<FriendRequestModel> {
     const url = `${this.apiUrl}/${ApisModel.user}/friend/add/email`;
     const request = <EmailMessageModel>{

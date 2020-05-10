@@ -10,13 +10,13 @@ export const societiesColumnsDefinition: string[] = [
 ]
 
 export const requestsSendColumnsDefinition: string[] = [
-  'first-name',
-  'last-name',
+  'email',
   'button',
 ]
 
 export const requestsReceivedColumnsDefinition: string[] = [
   'first-name',
   'last-name',
-  'button',
+  'accept-button',
+  'deny-button',
 ]

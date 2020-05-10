@@ -66,9 +66,13 @@ func (s *UserAccess) GetUserByEmail(email string) (*models.User, error) {
 }
 
 func (s *UserAccess) UpdateUser(in *models.User) (*models.User, error) {
-	if _, err := s.GetUserById(in.Id); err != nil {
+	usr, err := s.GetUserById(in.Id)
+	if err != nil {
 		return &models.User{}, err
 	}
+	usr.FirstName = in.FirstName
+	usr.LastName = in.LastName
+	usr.Email = in.Email
 	return in, s.Db.Update(in)
 }
 

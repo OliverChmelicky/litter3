@@ -1,10 +1,17 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {UserModel, FriendRequestModel, FriendsModel} from "../../models/user.model";
 import {UserService} from "../../services/user/user.service";
 import {UserViewModel} from "./friendRequestView";
 import {friendsColumnsDefinition, requestsSendColumnsDefinition, societiesColumnsDefinition, requestsReceivedColumnsDefinition} from "./table-definitions";
-import {MemberModel, SocietyModel} from "../../models/society.model";
+import {SocietyModel} from "../../models/society.model";
 import {SocietyService} from "../../services/society/society.service";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+
+export interface DialogData {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 @Component({
   selector: 'app-my-profile',
@@ -16,7 +23,6 @@ export class MyProfileComponent implements OnInit {
   IsendFriendRequests: UserViewModel[] = [];
   IreceivedFriendRequests: UserViewModel[] = [];
   myFriendsIds: FriendsModel[] = [];
-  mySocietiesIds: MemberModel[] = []
   myFriendsView: UserViewModel[] = [];
   mySocietiesView: SocietyModel[];
   newFriendEmail: string;
@@ -29,6 +35,7 @@ export class MyProfileComponent implements OnInit {
   constructor(
     private userService: UserService,
     private societyService: SocietyService,
+    public editProfileDialog: MatDialog,
   ) {
   }
 
@@ -59,6 +66,28 @@ export class MyProfileComponent implements OnInit {
       error => console.log('Error GetMyFriends ', error)
     )
 
+  }
+
+  openDialog(): void {
+    const dialogRef = this.editProfileDialog.open(EditProfileComponent, {
+      width: '800px',
+      data: {
+        firstName: this.me.FirstName,
+        lastName: this.me.LastName,
+        email: this.me.Email
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result.email != this.me.Email || result.firstName != this.me.FirstName || result.lastName != this.me.LastName) {
+        this.me.Email = result.email
+        this.me.FirstName = result.firstName;
+        this.me.LastName = result.lastName;
+        this.userService.updateUser(this.me).subscribe(
+          usr => console.log(usr)
+        )
+      }
+    });
   }
 
   removeFriend(userId: string) {
@@ -127,7 +156,6 @@ export class MyProfileComponent implements OnInit {
     if (userIds.length !== 0) {
       this.userService.getUsersDetails(userIds).subscribe(
         users => {
-          console.log(users)
           this.pushUserToFriendRequests(requests, users)
         },
         err => console.log('Error fetching user details ', err)
@@ -152,20 +180,6 @@ export class MyProfileComponent implements OnInit {
     }
   }
 
-  // private fetchSocietyDetails(relationship: MemberModel[]) {
-  //   const societiesIds = relationship.map(rel => {
-  //       return rel.SocietyId;
-  //   });
-  //   if (societiesIds.length !== 0) {
-  //     this.societyService.getSocietiesByIds(societiesIds).subscribe(
-  //       societies => {
-  //         this.mySocietiesView = societies
-  //       },
-  //       err => console.log('Error fetching user details ', err)
-  //     );
-  //   }
-  // }
-
   private pushUserToMyFriends(users: UserModel[]) {
     this.myFriendsIds.map(friendship => {
       users.map(user => {
@@ -187,6 +201,9 @@ export class MyProfileComponent implements OnInit {
   }
 
   private pushUserToFriendRequests(requests: FriendRequestModel[],users: UserModel[]) {
+    this.IreceivedFriendRequests = []
+    this.IsendFriendRequests = []
+
     requests.map(request => {
       users.map(user => {
         if (request.User1Id == user.Id) {
@@ -218,7 +235,46 @@ export class MyProfileComponent implements OnInit {
 
   leaveSociety(socId: string) {
     this.societyService.leaveSociety(socId, this.me.Id).subscribe(
-      () => this.mySocietiesView.filter( soc => soc.Id !== socId)
+      () => {
+        let newSocieties = this.mySocietiesView;
+        this.mySocietiesView = [];
+        newSocieties.map( soc => {
+          if (soc.Id !== socId) {
+            this.mySocietiesView.push(soc)
+          }
+        })
+      }
     )
   }
+
+  //if will be needed somewhere else
+  // private fetchSocietyDetails(relationship: MemberModel[]) {
+  //   const societiesIds = relationship.map(rel => {
+  //       return rel.SocietyId;
+  //   });
+  //   if (societiesIds.length !== 0) {
+  //     this.societyService.getSocietiesByIds(societiesIds).subscribe(
+  //       societies => {
+  //         this.mySocietiesView = societies
+  //       },
+  //       err => console.log('Error fetching user details ', err)
+  //     );
+  //   }
+  // }
+}
+
+@Component({
+  selector: 'app-edit-profile',
+  templateUrl: './dialog/edit-profile.component.html',
+  //styleUrls: ['./dialog/edit-profile.component.css']
+})
+export class EditProfileComponent {
+
+  constructor( public dialogRef: MatDialogRef<EditProfileComponent>,
+               @Inject(MAT_DIALOG_DATA) public data: DialogData) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
 }

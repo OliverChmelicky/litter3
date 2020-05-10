@@ -66,7 +66,7 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(tokenMiddleware.CorsHeadder)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowMethods: []string{http.MethodOptions, http.MethodDelete},
+		AllowMethods: []string{http.MethodOptions, http.MethodDelete, http.MethodPut},
 	}))
 
 	userService := user.CreateService(db, firebaseAuth, fileuploadService)
@@ -74,7 +74,7 @@ func main() {
 	e.GET("/users/:id", userService.GetUser)
 	e.GET("/users/email/:email", userService.GetUserByEmail)
 	e.GET("/users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
-	e.PUT("/users/me", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
+	e.PUT("/users/update", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/details", userService.GetUsers)
 
 	e.GET("/users/societies", userService.GetMySocieties, tokenMiddleware.AuthorizeUser)

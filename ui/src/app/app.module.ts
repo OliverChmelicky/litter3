@@ -15,7 +15,7 @@ import {LoginComponent} from './components/login/login.component';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import { TopBarComponent } from './components/top-bar/top-bar.component';
 import { AppRoutingModule } from './app-routing.module';
-import { MyProfileComponent } from './components/my-profile/my-profile.component';
+import { MyProfileComponent, EditProfileComponent } from './components/my-profile/my-profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import {TokenHeadders} from "./interceptors/token-headders";
 import { SocietiesComponent } from './components/societies/societies.component';
@@ -33,6 +33,8 @@ import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
 import { TrashDetailsComponent } from './components/trash-details/trash-details.component';
 import {MatMenuModule} from "@angular/material/menu";
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatInputModule} from "@angular/material/input";
 
 @NgModule({
   declarations: [
@@ -48,6 +50,7 @@ import {MatMenuModule} from "@angular/material/menu";
     CreateTrashComponent,
     NavListComponent,
     TrashDetailsComponent,
+    EditProfileComponent,
   ],
   imports: [
     BrowserModule,
@@ -73,6 +76,8 @@ import {MatMenuModule} from "@angular/material/menu";
     MatListModule,
     MatIconModule,
     MatMenuModule,
+    MatDialogModule,
+    MatInputModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },

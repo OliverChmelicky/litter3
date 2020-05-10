@@ -65,7 +65,6 @@ export class SocietiesComponent implements OnInit {
             Number: this.actualPaging.From + i + 1
           }
         ))
-        console.log('Data source ',this.dataSource)
       })
     return event;
   }

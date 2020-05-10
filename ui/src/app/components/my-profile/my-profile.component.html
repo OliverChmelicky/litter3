@@ -1,3 +1,4 @@
+<script src="../edit-profile/edit-profile.component.ts"></script>
 <script src="table-definitions.ts"></script>
 <div class="user-container">
 
@@ -5,20 +6,22 @@
     <img src="{{me.Avatar ? me.Avatar : 'https://geode.science/wp-content/uploads/2018/11/profil-chercheur.png'}}">
   </div>
   <div class="user-item" *ngIf="me">
-    <form>
+
       <label>
         First name:
-        <input [(ngModel)]="me.FirstName">
+        <p>{{me.FirstName}}</p>
       </label>
       <label>
         Last name:
-        <input [(ngModel)]="me.LastName">
+        <p>{{me.LastName}}</p>
       </label>
       <label>
         Email:
-        <input [(ngModel)]="me.Email">
+        <p>{{me.Email}}</p>
       </label>
-    </form>
+
+    <button mat-raised-button (click)="openDialog()">Edit</button>
+
   </div>
 
   <div class="user-item">
@@ -76,22 +79,58 @@
     </table>
   </div>
 
+  <div class="user-item">
+    <h3>Received requests</h3>
+    <table mat-table [dataSource]="IreceivedFriendRequests" class="mat-elevation-z8">
+      <ng-container matColumnDef="first-name">
+        <th mat-header-cell *matHeaderCellDef>First name</th>
+        <td mat-cell *matCellDef="let element"> {{element.FirstName}} </td>
+      </ng-container>
 
-  <h3>Received requests</h3>
-  <li *ngFor="let request of IreceivedFriendRequests">
-    <p>{{request.Email}}</p>
-    <p>{{request.CreatedAt}}</p>
-    <button (click)="acceptFriendRequest(request.UserId)">Accept</button>
-    <button (click)="denyFriendRequest(request.UserId)">Deny</button>
-  </li>
+      <ng-container matColumnDef="last-name">
+        <th mat-header-cell *matHeaderCellDef>Last name</th>
+        <td mat-cell *matCellDef="let element"> {{element.LastName}} </td>
+      </ng-container>
 
-  <h3>Send requests</h3>
-  <li *ngFor="let request of IsendFriendRequests">
-    <p>{{request.Email}}</p>
-    <p>{{request.CreatedAt}}</p>
-    <button (click)="cancelFriendRequest(request.UserId)">Cancel</button>
-    <p>------------</p>
-  </li>
+      <ng-container matColumnDef="accept-button">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <button (click)="acceptFriendRequest(element.UserId)">Accept</button>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="deny-button">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <button (click)="denyFriendRequest(element.UserId)">Deny</button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="requestsReceivedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: requestsReceivedColumns;"></tr>
+    </table>
+  </div>
+
+  <div class="user-item">
+    <h3>Received requests</h3>
+    <table mat-table [dataSource]="IsendFriendRequests" class="mat-elevation-z8">
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let element"> {{element.Email}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="button">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <button (click)="acceptFriendRequest(element.UserId)">Cancel</button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="requestsSendColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: requestsSendColumns;"></tr>
+    </table>
+  </div>
+
 
 </div>
 
