@@ -8,6 +8,7 @@ import {SocietyService} from "../../services/society/society.service";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 
 export interface DialogData {
+  viewName?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -271,7 +272,9 @@ export class MyProfileComponent implements OnInit {
 export class EditProfileComponent {
 
   constructor( public dialogRef: MatDialogRef<EditProfileComponent>,
-               @Inject(MAT_DIALOG_DATA) public data: DialogData) {}
+               @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+    this.data.viewName = this.data.firstName + ' ' + this.data.lastName
+  }
 
   onNoClick(): void {
     this.dialogRef.close();

@@ -8,6 +8,7 @@ import {Router} from "@angular/router";
 import {TrashService} from "../../services/trash/trash.service";
 import { AgmMap } from '@agm/core';
 import {MatCheckboxChange} from "@angular/material/checkbox";
+import {mark} from "@angular/compiler-cli/src/ngtsc/perf/src/clock";
 
 export const czechPosition: MapLocationModel = {
   lat: 49.81500022397678,
@@ -32,13 +33,13 @@ export class GoogleMapComponent implements OnInit {
   filteredMarkers: MarkerModel[];
   selectedMarker: MarkerModel;
 
-  hideCleaned: boolean = true;
-  hideNotCleaned: boolean = true;
+  showCleaned: boolean = true;
+  showNotCleaned: boolean = true;
 
-  visibleTop: number;
-  visibleBottom: number;
-  visibleLeft: number;
-  visibleRight: number;
+  borderTop: number;
+  borderBottom: number;
+  borderLeft: number;
+  borderRight: number;
 
   constructor(
     private readonly locationService: LocationService,
@@ -73,6 +74,7 @@ export class GoogleMapComponent implements OnInit {
       lat: lat,
       lng: lng,
       new: true,
+      cleaned: false,
       id: '',
     };
     this.allMarkers.push(this.selectedMarker)
@@ -96,12 +98,28 @@ export class GoogleMapComponent implements OnInit {
   }
 
   onBoundsChange() {
-    const currentCenter = this.map.getCenter()
+    const p1 = this.map.getBounds().getNorthEast()
+    const p2 = this.map.getBounds().getSouthWest()
 
-    if (currentCenter.lng() > this.visibleRight || currentCenter.lng() < this.visibleLeft) {
+    const visibleTop = p1.lat()
+    const visibleRight = p1.lng()
+    const visibleBottom = p2.lat()
+    const visibleLeft = p2.lng()
+
+    // console.log(visibleTop)
+    // console.log(visibleBottom)
+    // console.log(visibleRight)
+    // console.log(visibleLeft)
+
+    // console.log('borders ', this.borderTop)
+    // console.log('borders ', this.borderBottom)
+    // console.log('borders right ', this.borderRight)
+    // console.log('borders left ', this.borderLeft)
+
+    if (visibleRight > this.borderRight || visibleLeft < this.borderLeft) {
       console.log('reached visible sides')
       this.loadNewMarkers()
-    } else if (currentCenter.lat() < this.visibleBottom || currentCenter.lat() > this.visibleTop) {
+    } else if (visibleBottom < this.borderBottom || visibleTop > this.borderTop) {
       console.log('reached visible tops and bottoms')
       this.loadNewMarkers()
     }
@@ -111,12 +129,6 @@ export class GoogleMapComponent implements OnInit {
   loadNewMarkers() {
     const p1 = this.map.getBounds().getNorthEast()
     const p2 = this.map.getBounds().getSouthWest()
-
-    this.visibleTop = p1.lat()
-    this.visibleRight = p1.lng()
-
-    this.visibleBottom = p2.lat()
-    this.visibleLeft = p2.lng()
 
     const R = 6371e3; // metres
     const fi1 = p1.lat() * Math.PI / 180; // φ, λ in radians
@@ -134,27 +146,55 @@ export class GoogleMapComponent implements OnInit {
     //get double range for markers
     this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), d * 2).subscribe(
       trash => {
-        this.allMarkers = [];
+        console.log(trash)
+        this.allMarkers = this.getOnlyNewMarkers();
         for (let i = 0; i < trash.length; i++) {
           this.allMarkers.push({
             lat: trash[i].Location[0],
             lng: trash[i].Location[1],
             new: false,
             id: trash[i].Id,
+            cleaned: trash[i].Cleaned,
             images: trash[i].Images ? trash[i].Images : [this.exampleBinUrl],
             numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
           })
+
+          this.applyMarkerFilters()
         }
 
-        let futureVisibleMarkers = this.allMarkers
+        const viewCenter = this.map.getCenter()
+        let r = 2 * Math.abs(p1.lat() - viewCenter.lat())
+        console.log('R: ', r)
 
-        if (this.hideNotCleaned) {
-          futureVisibleMarkers = this.filterNotCleaned(futureVisibleMarkers)
+        if (p1.lat() < 0) {
+          this.borderTop =  p1.lat() + r
+        } else if (p1.lat() >= 0) {
+          this.borderTop = p1.lat() + r
         }
-        if (this.hideCleaned) {
-          futureVisibleMarkers = this.filterCleaned(futureVisibleMarkers)
+        if (p1.lng() < 0) {
+          this.borderRight = p1.lng() + r
+        } else if (p1.lng() >= 0) {
+          this.borderRight = p1.lng() + r
         }
-        this.filteredMarkers = futureVisibleMarkers
+
+        if (p2.lat() < 0) {
+          this.borderBottom = p2.lat() - r
+        } else if (p2.lat() >= 0) {
+          this.borderBottom = p2.lat() - r
+        }
+        if (p2.lng() < 0) {
+          this.borderLeft = p2.lng() - r
+        } else if (p2.lng() >= 0) {
+          this.borderLeft = p2.lng() - r
+        }
+
+        console.log(viewCenter.lat())
+        console.log(viewCenter.lng())
+
+        console.log('borders ', this.borderTop)
+        console.log('borders ', this.borderBottom)
+        console.log('borders right ', this.borderRight)
+        console.log('borders left ', this.borderLeft)
 
       }
     )
@@ -169,35 +209,52 @@ export class GoogleMapComponent implements OnInit {
   }
 
   onCleanedOption(event: MatCheckboxChange) {
-    this.hideCleaned = event.checked;
-    this.processFilterChange()
+    this.showCleaned = event.checked;
+    this.applyMarkerFilters()
   }
 
   onNotCleanedOption(event: MatCheckboxChange) {
-    this.hideNotCleaned = event.checked;
-    this.processFilterChange()
+    this.showNotCleaned = event.checked;
+    this.applyMarkerFilters()
   }
 
-  processFilterChange() {
+  applyMarkerFilters() {
     let futureVisibleMarkers = this.allMarkers;
 
-    if (this.hideCleaned) {
-      this.filterCleaned(futureVisibleMarkers)
+    if (!this.showCleaned) {
+      futureVisibleMarkers = this.filterCleaned(futureVisibleMarkers)
     }
-    if (this.hideNotCleaned) {
-      this.filterNotCleaned(futureVisibleMarkers)
+    if (!this.showNotCleaned) {
+      futureVisibleMarkers = this.filterNotCleaned(futureVisibleMarkers)
     }
 
     this.filteredMarkers = futureVisibleMarkers
   }
 
 
+  //I want not cleaned
   filterCleaned(markers: MarkerModel[]): MarkerModel[]{
-    return markers.filter( marker => marker.cleaned === true )
+    return markers.filter( marker => {
+      if (marker.cleaned === false || marker.new === true) {
+       return marker
+      }
+    })
   }
 
+  //I want cleaned
   filterNotCleaned(markers: MarkerModel[]): MarkerModel[]{
-    return markers.filter( marker => marker.cleaned === false )
+    return markers.filter( marker => {
+      if (marker.cleaned === true || marker.new === true ) {
+        return marker
+      }
+    } )
   }
 
+  private getOnlyNewMarkers() {
+    return this.allMarkers.filter( marker => {
+      if (marker.new === true ) {
+        return marker
+      }
+    } )
+  }
 }

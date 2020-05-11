@@ -18,7 +18,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { MyProfileComponent, EditProfileComponent } from './components/my-profile/my-profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import {TokenHeadders} from "./interceptors/token-headders";
-import { SocietiesComponent } from './components/societies/societies.component';
+import { SocietiesComponent, CreateSocietyComponent } from './components/societies/societies.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatTableModule} from "@angular/material/table";
@@ -51,6 +51,7 @@ import {MatInputModule} from "@angular/material/input";
     NavListComponent,
     TrashDetailsComponent,
     EditProfileComponent,
+    CreateSocietyComponent,
   ],
   imports: [
     BrowserModule,

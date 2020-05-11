@@ -3,8 +3,8 @@
   <mat-icon>more_vert</mat-icon>
 </button>
 <mat-menu class="marker-menu" #menu="matMenu">
-  <mat-checkbox (change)="onNotCleanedOption($event)">Hide not cleaned</mat-checkbox>
-  <mat-checkbox (change)="onCleanedOption($event)">Hide Cleaned</mat-checkbox>
+  <mat-checkbox [(ngModel)] = "showNotCleaned" (change)="onNotCleanedOption($event)">Show not cleaned</mat-checkbox>
+  <mat-checkbox [(ngModel)] = "showCleaned" (change)="onCleanedOption($event)">Show Cleaned</mat-checkbox>
 </mat-menu>
 
 

@@ -67,6 +67,7 @@ create table societies
 (
     id         VARCHAR PRIMARY KEY,
     name       VARCHAR     NOT NULL,
+    description varchar,
     avatar     varchar,
     created_at timestamptz NOT NULL
 );

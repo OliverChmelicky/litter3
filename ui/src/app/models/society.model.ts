@@ -2,12 +2,12 @@ import {UserModel} from "./user.model";
 import {PagingModel} from "./shared.models";
 
 export interface SocietyModel {
-  Id: string;
+  Id?: string;
   Name: string;
-  Avatar: string;
+  Avatar?: string;
   Users?: UserModel[];
   Description?: string;
-  CreatedAt: Date;
+  CreatedAt?: Date;
 }
 
 export interface SocietyAnswSimpleModel {

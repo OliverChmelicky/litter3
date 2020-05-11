@@ -1,10 +1,16 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {SocietyService} from "../../services/society/society.service";
 import {PagingModel} from "../../models/shared.models";
 import {PageEvent} from '@angular/material/paginator';
 import {SocietiesTableElementModel} from "./societiesTable.model";
 import {animate, state, style, transition, trigger} from '@angular/animations';
 import {Router} from "@angular/router";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+
+export interface DialogData {
+  name: string;
+  description: string;
+}
 
 @Component({
   selector: 'app-societies',
@@ -28,6 +34,7 @@ export class SocietiesComponent implements OnInit {
   constructor(
     private societyService: SocietyService,
     private router: Router,
+    public createSocietyDialog: MatDialog,
   ) {
     this.dataSource = [];
     this.actualPaging = {
@@ -52,6 +59,28 @@ export class SocietiesComponent implements OnInit {
     })
   }
 
+  openDialog(): void {
+    const dialogRef = this.createSocietyDialog.open(CreateSocietyComponent, {
+      width: '800px',
+      data: {
+        name: '',
+        description: '',
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result)
+      if (result) {
+        if (result.name != '') {
+          this.societyService.createSociety({
+            Name: result.name,
+            Description: result.description,
+          }).subscribe()
+        }
+      }
+    });
+  }
+
   public fetchNewSocieties(event?: PageEvent) {
     this.actualPaging.From = event.pageIndex*event.pageSize
     this.actualPaging.To = (event.pageIndex*event.pageSize) + event.pageSize
@@ -65,6 +94,7 @@ export class SocietiesComponent implements OnInit {
             Number: this.actualPaging.From + i + 1
           }
         ))
+        console.log(resp.Societies)
       })
     return event;
   }
@@ -76,4 +106,22 @@ export class SocietiesComponent implements OnInit {
   createSociety() {
 
   }
+}
+
+
+  @Component({
+    selector: 'app-edit-profile',
+    templateUrl: './dialog/create-society.component.html',
+    //styleUrls: ['./dialog/edit-create-society.component.css]
+  })
+  export class CreateSocietyComponent {
+
+  constructor( public dialogRef: MatDialogRef<CreateSocietyComponent>,
+               @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
 }
