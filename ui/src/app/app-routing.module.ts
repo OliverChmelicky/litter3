@@ -8,12 +8,14 @@ import {SocietyDetailsComponent} from "./components/society-details/society-deta
 import {GoogleMapComponent} from "./components/google-map/google-map.component";
 import {CreateTrashComponent} from "./components/create-trash/create-trash.component";
 import {TrashDetailsComponent} from "./components/trash-details/trash-details.component";
+import {EditTrashComponent} from "./components/edit-trash/edit-trash.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'report', pathMatch: 'full'},
   { path: 'report', component: CreateTrashComponent},
   { path: 'report/:lat/:lng', component: CreateTrashComponent},
   { path: 'trash/details/:id', component: TrashDetailsComponent},
+  { path: 'trash/edit/:id', component: EditTrashComponent},
   { path: 'map', component: GoogleMapComponent},
   { path: 'me', component: MyProfileComponent},
   { path: 'societies', component: SocietiesComponent},

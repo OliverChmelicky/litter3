@@ -35,6 +35,7 @@ import { TrashDetailsComponent } from './components/trash-details/trash-details.
 import {MatMenuModule} from "@angular/material/menu";
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatInputModule} from "@angular/material/input";
+import { EditTrashComponent } from './components/edit-trash/edit-trash.component';
 
 @NgModule({
   declarations: [
@@ -52,6 +53,7 @@ import {MatInputModule} from "@angular/material/input";
     TrashDetailsComponent,
     EditProfileComponent,
     CreateSocietyComponent,
+    EditTrashComponent,
   ],
   imports: [
     BrowserModule,

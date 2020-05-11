@@ -60,4 +60,17 @@ export class TrashService {
     return of(result as T);
   };
 
+  updateTrash(trash: TrashModel) {
+    const url = `${this.apiUrl}/${ApisModel.trash}`;
+    return this.http.put<TrashModel>(url, trash).pipe(
+      catchError(err => TrashService.handleError<TrashModel>(err))
+    );
+  }
+
+  deleteTrash(trashId: string) {
+    const url = `${this.apiUrl}/${ApisModel.trash}/${trashId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => TrashService.handleError(err))
+    );
+  }
 }

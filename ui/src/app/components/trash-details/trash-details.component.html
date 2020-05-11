@@ -1,1 +1,70 @@
-<p>trash-details works!</p>
+<div class="upper-map">
+  <agm-map
+    [latitude]="trash.Location[0]"
+    [longitude]="trash.Location[1]"
+    [zoom]="8"
+    (mapReady)="onMapReady($event)"
+    disableDoubleClickZoom="true">
+
+    <agm-marker [latitude]="trash.Location[0]" [longitude]="trash.Location[0]">
+    </agm-marker>
+  </agm-map>
+</div>
+
+<div>
+  <button mat-button (click)="onEdit()">Edit</button>
+  <div>
+    <!--vypisovanie lokacie pod tym-->
+    <!--    <input disabled="true" type="text" [value]="markerLat" formControlName="lat"><br>-->
+    <!--    <input disabled="true" type="text" [value]="markerLng" formControlName="lng">-->
+  </div>
+</div>
+
+
+
+<div class="detail-container">
+
+  <div class="border-merger form-item">
+    <label>
+      Size:
+    </label>
+    <mat-slider
+      class="slider-margin"
+      [value]="trash.Size"
+      [max]="3"
+      [min]="0"
+      [step]="1"
+      (valueChange)="printSize($event)"
+    >
+    </mat-slider>
+    <p>{{sizeView}}</p>
+  </div>
+
+  <label></label>
+  <div class="trash-types form-item">
+    <mat-checkbox>Household</mat-checkbox>
+    <mat-checkbox>Automotive</mat-checkbox>
+    <mat-checkbox>Construction</mat-checkbox>
+    <mat-checkbox>Plastics</mat-checkbox>
+    <mat-checkbox>Electronic</mat-checkbox>
+    <mat-checkbox>Glass</mat-checkbox>
+    <mat-checkbox>Metal</mat-checkbox>
+    <mat-checkbox>Dangerous</mat-checkbox>
+    <mat-checkbox>Carcass</mat-checkbox>
+    <mat-checkbox>Organic</mat-checkbox>
+    <mat-checkbox>---other---</mat-checkbox>
+  </div>
+
+  <label>Description</label><br>
+  <textarea placeholder="Write your description here"
+            class="description form-item" type="text"> </textarea><br>
+
+  <div>
+    <mat-form-field>
+      <mat-label>Accessibility</mat-label>
+      <mat-select multiple>
+        <mat-option *ngFor="let choice of accessibilityChoices" [value]="choice">{{choice}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>

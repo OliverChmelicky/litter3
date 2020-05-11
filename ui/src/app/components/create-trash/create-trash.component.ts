@@ -9,7 +9,7 @@ import {TrashModel} from "../../models/trash.model";
 import {HttpClient} from "@angular/common/http";
 import {ApisModel} from "../../api/api-urls";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
-import {accessibilityChoces} from "./accessibilityChocies";
+import {accessibilityChoces} from "../../models/accessibilityChocies";
 
 @Component({
   selector: 'app-create-trash',
@@ -126,7 +126,6 @@ export class CreateTrashComponent implements OnInit {
     for (let i = 0; i < event.target.files.length; i++) {
       this.fd.append("files", event.target.files[i], event.target.files[i].name);
     }
-    console.log(this.fd.getAll('files').length)
   }
 
   printSize() {
@@ -145,19 +144,19 @@ export class CreateTrashComponent implements OnInit {
   }
 
   private printAccessibility() {
-    if (this.trashForm.value["size"] == 0) {
+    if (this.trashForm.value["accessibility"] == 0) {
       return 'unknown';
     }
-    if (this.trashForm.value["size"] == 1) {
+    if (this.trashForm.value["accessibility"] == 1) {
       return 'easy';
     }
-    if (this.trashForm.value["size"] == 2) {
+    if (this.trashForm.value["accessibility"] == 2) {
       return 'car';
     }
-    if (this.trashForm.value["size"] == 3) {
+    if (this.trashForm.value["accessibility"] == 3) {
       return 'cave';
     }
-    if (this.trashForm.value["size"] == 4) {
+    if (this.trashForm.value["accessibility"] == 4) {
       return 'underWater';
     }
   }
