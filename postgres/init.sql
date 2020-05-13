@@ -23,7 +23,6 @@ CREATE TYPE accessibility AS ENUM (
     );
 
 -- CREATE TYPE trashType AS ENUM (
---     'other',
 --     'household',
 --     'automotive',
 --     'construction',
@@ -35,6 +34,7 @@ CREATE TYPE accessibility AS ENUM (
 --     'dangerous',
 --     'carcass',
 --     'organic'
+--     'other',
 --     );
 
 CREATE TYPE membership AS ENUM (
@@ -221,20 +221,9 @@ INSERT INTO societies (id, name, avatar, created_at)
 VALUES ('3', 'Tetie', 'Aufschneider', '2003-2-3');
 INSERT INTO societies (id, name, avatar, created_at)
 VALUES ('4', 'Stvrte', 'Aufschneider', '2003-2-4');
-INSERT INTO societies (id, name, avatar, created_at)
-VALUES ('5', 'Piate', 'Aufschneider', '2003-2-5');
-INSERT INTO societies (id, name, avatar, created_at)
-VALUES ('6', 'Sieste', 'Aufschneider', '2003-2-6');
-INSERT INTO societies (id, name, avatar, created_at)
-VALUES ('7', 'Siedme', 'Aufschneider', '2003-2-7');
-INSERT INTO societies (id, name, avatar, created_at)
-VALUES ('8', 'Osme', 'Aufschneider', '2003-2-8');
-INSERT INTO societies (id, name, avatar, created_at)
-VALUES ('9', 'Deviate', 'Aufschneider', '2003-2-9');
-INSERT INTO societies (id, name, avatar, created_at)
-VALUES ('10', 'Desiate', 'Aufschneider', '2003-2-10');
-INSERT INTO societies (id, name, avatar, created_at)
-VALUES ('11', 'Jedenast', 'Aufschneider', '2003-2-11');
 
 insert into trash (id, cleaned, size, accessibility, trash_type, location, description, finder_id, created_at)
 values ('1', false, 'bag', 'easy', 0, ST_GeomFromText('POINT(-71.060316 48.432044)', 4326), '', null, '2003-2-11');
+
+insert into collections (id, trash_id, event_id, weight, cleaned_trash, created_at)
+values ('1','1', '', 655, false, '2005-2-11')

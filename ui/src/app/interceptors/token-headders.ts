@@ -16,8 +16,8 @@ export class TokenHeadders implements HttpInterceptor {
   constructor(public auth: AuthService) {}
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
-    const token = this.auth.getToken()
-    //console.log('Interceptor token je: ',token)
+    let token = this.auth.getToken()
+    token = 'Bearer ' + token
 
     if (token) {
       request = request.clone({

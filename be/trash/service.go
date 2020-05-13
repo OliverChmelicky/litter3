@@ -20,10 +20,28 @@ func CreateService(db *pg.DB) *trashService {
 }
 
 func (s *trashService) CreateTrash(c echo.Context) error {
-	trash := new(models.Trash)
-	if err := c.Bind(trash); err != nil {
+	creatorId, ok := c.Get("userId").(string)
+	if !ok {
+		creatorId = ""
+	}
+
+	trashRequest := new(models.CreateTrashRequest)
+	if err := c.Bind(trashRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
+
+	trash := new(models.Trash)
+	if !trashRequest.Anonymously {
+		trash.FinderId = creatorId
+	} else {
+		trash.FinderId = ""
+	}
+
+	trash.Location = trashRequest.Location
+	trash.Size = trashRequest.Size
+	trash.TrashType = trashRequest.TrashType
+	trash.Description = trashRequest.Description
+	trash.Accessibility = trashRequest.Accessibility
 
 	trash, err := s.TrashAccess.CreateTrash(trash)
 	if err != nil {

@@ -29,6 +29,7 @@ var (
 
 	ErrChangeMemberRights = "ERROR CHANGE MEMBER RIGHTS"
 	ErrGetSocietyMembers  = "ERROR GET SOCIETY MEMBERS"
+	ErrGetSocietyRequests = "ERROR GET SOCIETY REQUESTS"
 	ErrRemoveMember       = "ERROR REMOVE MEMBER"
 
 	ErrApplyForMembership             = "ERROR APPLY FOR MEMBERSHIP"

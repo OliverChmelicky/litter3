@@ -69,7 +69,7 @@ export class NavListComponent implements OnInit {
 
   ngOnInit() {
     this.isLoggedIn$ = this.authService.isLoggedIn;
-    this.authService.isLoggedIn.subscribe(isLogged => console.log(isLogged));
+    this.authService.isLoggedIn.subscribe();
   }
 
 

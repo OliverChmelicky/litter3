@@ -75,6 +75,16 @@ type Trash struct {
 	CreatedAt     time.Time `pg:"default:now()"`
 }
 
+type CreateTrashRequest struct {
+	Size          Size
+	Accessibility Accessibility
+	TrashType     TrashType
+	Location      Point `pg:"type:geometry"`
+	Description   string
+	Images        []TrashImage
+	Anonymously   bool
+}
+
 var _ pg.BeforeInsertHook = (*Trash)(nil)
 
 func (u *Trash) BeforeInsert(ctx context.Context) (context.Context, error) {
@@ -106,14 +116,14 @@ func (u *Collection) BeforeInsert(ctx context.Context) (context.Context, error) 
 
 type TrashImage struct {
 	tableName struct{} `pg:"trash_images"json:"-"`
-	TrashId   string `pg:",pk"`
-	Url       string `pg:",pk"`
+	TrashId   string   `pg:",pk"`
+	Url       string   `pg:",pk"`
 }
 
 type CollectionImage struct {
 	tableName    struct{} `pg:"collection_images"json:"-"`
-	CollectionId string `pg:",pk"`
-	Url          string `pg:",pk"`
+	CollectionId string   `pg:",pk"`
+	Url          string   `pg:",pk"`
 }
 
 type UserCollection struct {

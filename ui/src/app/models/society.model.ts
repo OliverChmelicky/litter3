@@ -24,7 +24,7 @@ export interface SocietyWithPagingAnsw {
   Paging: PagingModel;
 }
 
-export interface UserGroupRequestModel {
+export interface UserSocietyRequestModel {
   UserId: string;
   SocietyId: string;
 }

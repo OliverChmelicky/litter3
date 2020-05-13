@@ -1,3 +1,95 @@
-<p>{{society.Name}}</p>
+<link rel="stylesheet" href="society-details.component.css">
+<div class="society-container">
+
+  <div class="information-container">
+    <div *ngIf="isAdmin">
+      <button mat-button (click)="onEdit()" >Edit</button>
+    </div>
+    <img src="{{society.Avatar ? society.Avatar : 'img.png'}}">
+    <p>{{society.Name}}</p>
+    <p>{{society.Description}}</p>
+  </div>
+
+
+<!--  pravy stlpec-->
+  <div class="side-tables">
+    <div *ngIf="isAdmin">
+      <table mat-table [dataSource]="requesters" class="mat-elevation-z8">
+
+        <ng-container matColumnDef="first-name">
+          <th mat-header-cell *matHeaderCellDef> First name </th>
+          <td mat-cell *matCellDef="let element"> {{element.FirstName}} </td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="last-name">
+          <th mat-header-cell *matHeaderCellDef> Last name </th>
+          <td mat-cell *matCellDef="let element"> {{element.LastName}} </td>
+        </ng-container>
+
+        <!-- Weight Column -->
+        <ng-container matColumnDef="accept-button">
+          <th mat-header-cell *matHeaderCellDef> Accept </th>
+          <td mat-cell *matCellDef="let element"><button>Accept</button></td>
+        </ng-container>
+
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="deny-button">
+          <th mat-header-cell *matHeaderCellDef> Deny </th>
+          <td mat-cell *matCellDef="let element"> <button>Deny</button> </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="requestsReceivedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: requestsReceivedColumns;"></tr>
+      </table>
+    </div>
+
+    <div class="upcoming-events">
+
+    </div>
+
+    <div class="members">
+      <div>
+        <table mat-table [dataSource]="members" class="mat-elevation-z8">
+          <!-- Weight Column -->
+          <ng-container matColumnDef="image">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let element"><img src="{{element.Avatar ? element.Avatar : 'img.png'}}"></td>
+          </ng-container>
+
+          <ng-container matColumnDef="first-name">
+            <th mat-header-cell *matHeaderCellDef> First name </th>
+            <td mat-cell *matCellDef="let element"> {{element.FirstName}} </td>
+          </ng-container>
+
+          <!-- Name Column -->
+          <ng-container matColumnDef="last-name">
+            <th mat-header-cell *matHeaderCellDef> Last name </th>
+            <td mat-cell *matCellDef="let element"> {{element.LastName}} </td>
+          </ng-container>
+
+          <!-- Symbol Column -->
+          <ng-container matColumnDef="deny-button">
+            <th mat-header-cell *matHeaderCellDef> Deny </th>
+            <td mat-cell *matCellDef="let element"> <button>Deny</button> </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="membersColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: membersColumns;"></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<!--  dole v strede-->
+  <div class="past-events">
+
+  </div>
+
+</div>
+
+
+
+
 <p>Vylepsi</p>
 <!--<app-user-society-list></app-user-society-list> list users v society-->

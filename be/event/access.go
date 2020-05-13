@@ -370,7 +370,7 @@ func (s *eventAccess) GetSocietyEvents(societyId string) ([]models.Event, error)
 	}
 
 	var events []models.Event
-	err = s.db.Model(&events).Where("id IN (?)", pg.In(eventsArr)).Select()
+	err = s.db.Model(&events).Where("id IN (?)", eventsArr).Select()
 	if err != nil {
 		return nil, fmt.Errorf("Error get society events: %w ", err)
 	}

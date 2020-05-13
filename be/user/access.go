@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
 	"github.com/olo/litter3/models"
 )
 
@@ -248,25 +247,6 @@ func (s *UserAccess) GetUserSocieties(id string) ([]models.Society, error) {
 //
 //}
 
-//ci nemozem mat inu mensiu strukturu na to a nemat to v userovi pripadne by som to mohol pouzit pri get user
-func (s *UserAccess) GetSocietyAdminsAll(societyId string) ([]models.User, error) {
-	var admins []models.User
-	permission := models.Membership("admin")
-	err := s.Db.Model(&admins).Column("user.*").
-		Relation("Admins", func(q *orm.Query) (*orm.Query, error) {
-			return q.Where("permission = ? and society_id = ?", permission, societyId), nil
-		}).
-		Select()
-	if err != nil {
-		return nil, err
-	}
-	if len(admins) == 0 {
-		return nil, pg.ErrNoRows
-	}
-
-	return admins, nil
-}
-
 func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	members := new(models.Member)
 	var admins []string
@@ -279,6 +259,16 @@ func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	}
 
 	return admins, nil
+}
+
+func (s *UserAccess) GetSocietyMembers(societyId string) ([]models.Member, error) {
+	var members []models.Member
+	err := s.Db.Model(&members).Where("society_id = ? ", societyId).Select(&members)
+	if err != nil {
+		return nil, err
+	}
+
+	return members, nil
 }
 
 func (s *UserAccess) CountSocietyAdmins(in string) (int, error) {
@@ -298,6 +288,15 @@ func (s *UserAccess) UpdateSociety(in *models.Society) (*models.Society, error) 
 	}
 
 	return in, s.Db.Update(in)
+}
+
+func (s *UserAccess) GetSocietyRequests(societyId string) ([]models.Applicant, error) {
+	var requests []models.Applicant
+	if err := s.Db.Model(&requests).Where("society_id = ?", societyId).Select(); err != nil {
+		return []models.Applicant{}, fmt.Errorf("Error find society applicants: %w ", err)
+	}
+
+	return requests, nil
 }
 
 func (s *UserAccess) AcceptApplicant(userId, societyId string) (*models.Member, error) {

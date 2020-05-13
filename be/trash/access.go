@@ -21,8 +21,8 @@ func (s *TrashAccess) CreateTrash(in *models.Trash) (*models.Trash, error) {
 }
 
 func (s *TrashAccess) GetTrash(id string) (*models.Trash, error) {
-	trash := &models.Trash{Id: id}
-	err := s.Db.Model(trash).Column("trash.*").
+	trash := new(models.Trash)
+	err := s.Db.Model(trash).Where("id = ?", id).Column("trash.*").
 		Relation("Collections").
 		Relation("Images").
 		First()

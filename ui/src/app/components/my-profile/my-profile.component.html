@@ -1,5 +1,6 @@
 <script src="../edit-profile/edit-profile.component.ts"></script>
 <script src="table-definitions.ts"></script>
+
 <div class="user-container">
 
   <div class="user-item">
@@ -33,7 +34,7 @@
   </div>
 
 
-  <div class="user-item">
+  <div class="user-item my-friends-table">
     <h3>My friends</h3>
     <table mat-table [dataSource]="myFriendsView" class="mat-elevation-z8">
       <ng-container matColumnDef="first-name">
@@ -111,8 +112,8 @@
     </table>
   </div>
 
-  <div class="user-item">
-    <h3>Received requests</h3>
+  <div class="user-item received-requests-table">
+    <h3>Send requests</h3>
     <table mat-table [dataSource]="IsendFriendRequests" class="mat-elevation-z8">
       <ng-container matColumnDef="email">
         <th mat-header-cell *matHeaderCellDef>Email</th>
@@ -122,7 +123,7 @@
       <ng-container matColumnDef="button">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let element">
-          <button (click)="acceptFriendRequest(element.UserId)">Cancel</button>
+          <button (click)="cancelFriendRequest(element.UserId)">Cancel</button>
         </td>
       </ng-container>
 

@@ -30,7 +30,7 @@
         <mat-checkbox formControlName="trashTypeDangerous">Dangerous</mat-checkbox>
         <mat-checkbox formControlName="trashTypeCarcass">Carcass</mat-checkbox>
         <mat-checkbox formControlName="trashTypeOrganic">Organic</mat-checkbox>
-        <mat-checkbox formControlName="trashTypeOther">---other---</mat-checkbox>
+        <mat-checkbox formControlName="trashTypeOther">Other</mat-checkbox>
       </div>
 
       <label>Description</label><br>
@@ -40,8 +40,8 @@
       <div class="form-item">
         <mat-form-field>
           <mat-label>Accessibility</mat-label>
-          <mat-select formControlName="accessibility" multiple>
-            <mat-option *ngFor="let choice of accessibilityChoices" [value]="choice">{{choice}}</mat-option>
+          <mat-select formControlName="accessibility">
+            <mat-option *ngFor="let choice of accessibilityChoices" [value]="choice.key">{{choice.value}}</mat-option>
           </mat-select>
         </mat-form-field>
       </div>

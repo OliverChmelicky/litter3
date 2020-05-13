@@ -1,13 +1,17 @@
 import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {TrashService} from "../../services/trash/trash.service";
 import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MouseEvent} from '@agm/core';
 import {FormBuilder} from "@angular/forms";
 import {LocationService} from "../../services/location/location.service";
-import {TrashModel} from "../../models/trash.model";
-import {HttpClient} from "@angular/common/http";
-import {ApisModel} from "../../api/api-urls";
+import {
+  TrashModel,
+  TrashTypeAutomotive, TrashTypeCarcass,
+  TrashTypeConstruction, TrashTypeDangerous, TrashTypeElectronic, TrashTypeGlass,
+  TrashTypeHousehold, TrashTypeMetal, TrashTypeOrganic, TrashTypeOther,
+  TrashTypePlastics
+} from "../../models/trash.model";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
 import {accessibilityChoces} from "../../models/accessibilityChocies";
 
@@ -19,25 +23,25 @@ import {accessibilityChoces} from "../../models/accessibilityChocies";
 export class CreateTrashComponent implements OnInit {
   trash: TrashModel;
   trashForm = this.formBuilder.group({
-    lat: [''],
-    lng: [''],
-    size: [1],
+    lat: '',
+    lng: '',
+    size: 0,
 
-    trashTypeHousehold: [''],
-    trashTypeAutomotive: [''],
-    trashTypeConstruction: [''],
-    trashTypePlastics: [''],
-    trashTypeElectronic: [''],
-    trashTypeGlass: [''],
-    trashTypeMetal: [''],
-    trashTypeDangerous: [''],
-    trashTypeCarcass: [''],
-    trashTypeOrganic: [''],
-    trashTypeOther: [''],
+    trashTypeHousehold: false,
+    trashTypeAutomotive: false,
+    trashTypeConstruction: false,
+    trashTypePlastics: false,
+    trashTypeElectronic: false,
+    trashTypeGlass: false,
+    trashTypeMetal: false,
+    trashTypeDangerous: false,
+    trashTypeCarcass: false,
+    trashTypeOrganic: false,
+    trashTypeOther: false,
 
     accessibility: [''],
-    description: [''],
-    anonymously: [''],
+    description: '',
+    anonymously: false,
   });
 
   accessibilityChoices = accessibilityChoces;
@@ -52,6 +56,7 @@ export class CreateTrashComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private trashService: TrashService,
     private fileuploadService: FileuploadService,
     private formBuilder: FormBuilder,
@@ -98,12 +103,15 @@ export class CreateTrashComponent implements OnInit {
       Id: '',
       Cleaned: false,
       Size: this.printSize(),
-      Accessibility: this.printAccessibility(),
+      Accessibility: this.trashForm.value["accessibility"],
       TrashType: this.changeTrashTypeToInt(),
       Location: [this.markerLat, this.markerLng],
       Description: this.trashForm.value["description"],
       FinderId: '',
+      Anonymously: this.trashForm.value['anonymously'] !== '',
     }
+
+    console.log(this.trash)
 
     this.trashService.createTrash(this.trash).subscribe(
       trash => {
@@ -111,11 +119,10 @@ export class CreateTrashComponent implements OnInit {
           this.fileuploadService.uploadTrashImages(this.fd, trash.Id).subscribe(
             () => {
               this.fd.delete('files')
-              //this.trashForm.reset()
+              this.router.navigateByUrl('map')
             })
         } else {
-          console.log('Less then 0 pictures')
-          //this.trashForm.reset()
+          this.router.navigateByUrl('map')
         }
       })
   }
@@ -143,26 +150,22 @@ export class CreateTrashComponent implements OnInit {
     }
   }
 
-  private printAccessibility() {
-    if (this.trashForm.value["accessibility"] == 0) {
-      return 'unknown';
-    }
-    if (this.trashForm.value["accessibility"] == 1) {
-      return 'easy';
-    }
-    if (this.trashForm.value["accessibility"] == 2) {
-      return 'car';
-    }
-    if (this.trashForm.value["accessibility"] == 3) {
-      return 'cave';
-    }
-    if (this.trashForm.value["accessibility"] == 4) {
-      return 'underWater';
-    }
-  }
-
-  private changeTrashTypeToInt() {
-    return 0;
+  private changeTrashTypeToInt(): number {
+    return this.trashService.convertTrashTypeBoolsToNums(
+      {
+        TrashTypeHousehold: !!this.trashForm.value.trashTypeHousehold,
+        TrashTypeAutomotive: !!this.trashForm.value.trashTypeAutomotive,
+        TrashTypeConstruction: !!this.trashForm.value.trashTypeConstruction,
+        TrashTypePlastics: !!this.trashForm.value.trashTypePlastics,
+        TrashTypeElectronic: !!this.trashForm.value.trashTypeElectronic,
+        TrashTypeGlass: !!this.trashForm.value.trashTypeGlass,
+        TrashTypeMetal: !!this.trashForm.value.trashTypeMetal,
+        TrashTypeDangerous: !!this.trashForm.value.trashTypeDangerous,
+        TrashTypeCarcass: !!this.trashForm.value.trashTypeCarcass,
+        TrashTypeOrganic: !!this.trashForm.value.trashTypeOrganic,
+        TrashTypeOther: !!this.trashForm.value.trashTypeOther,
+      }
+    );
   }
 
 }

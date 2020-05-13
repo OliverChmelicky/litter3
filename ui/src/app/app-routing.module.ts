@@ -9,9 +9,10 @@ import {GoogleMapComponent} from "./components/google-map/google-map.component";
 import {CreateTrashComponent} from "./components/create-trash/create-trash.component";
 import {TrashDetailsComponent} from "./components/trash-details/trash-details.component";
 import {EditTrashComponent} from "./components/edit-trash/edit-trash.component";
+import {EditSocietyComponent} from "./components/edit-society/edit-society.component";
 
 const routes: Routes = [
-  { path: '', redirectTo:'report', pathMatch: 'full'},
+  { path: '', redirectTo:'map', pathMatch: 'full'},
   { path: 'report', component: CreateTrashComponent},
   { path: 'report/:lat/:lng', component: CreateTrashComponent},
   { path: 'trash/details/:id', component: TrashDetailsComponent},
@@ -19,10 +20,11 @@ const routes: Routes = [
   { path: 'map', component: GoogleMapComponent},
   { path: 'me', component: MyProfileComponent},
   { path: 'societies', component: SocietiesComponent},
-  //{ path: 'profile/tu-daj-user-id', component: UserDetailComponent },
   {path: 'societies/:societyId', component: SocietyDetailsComponent},
+  {path: 'societies/edit/:societyId', component: EditSocietyComponent},
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
+  //{ path: 'profile/:userId', component: UserDetailComponent },
 ];
 
 @NgModule({

@@ -121,8 +121,7 @@ export class MyProfileComponent implements OnInit {
         const index = this.IreceivedFriendRequests.findIndex(u => u.UserId === userId)
         this.myFriendsView.push(this.IreceivedFriendRequests[index])
         this.IreceivedFriendRequests.splice(index, 1)
-      },
-      error => console.log('An error AcceptFreindRequest ', error)
+      }
     )
   }
 
@@ -131,8 +130,7 @@ export class MyProfileComponent implements OnInit {
       () => {
         const index = this.IreceivedFriendRequests.findIndex(u => u.UserId === userId)
         this.IreceivedFriendRequests.splice(index, 1)
-      },
-      error => console.log('An error denyFreindRequest ', error)
+      }
     )
   }
 
@@ -141,8 +139,7 @@ export class MyProfileComponent implements OnInit {
       () => {
         const index = this.IsendFriendRequests.findIndex(u => u.UserId === userId)
         this.IsendFriendRequests.splice(index, 1)
-      },
-      error => console.log('An error denyFreindRequest ', error)
+      }
     )
   }
 

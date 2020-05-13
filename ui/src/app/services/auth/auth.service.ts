@@ -77,8 +77,8 @@ export class AuthService {
         localStorage.setItem('firebaseUser', JSON.stringify(res.user));
         this.userService.createUser({
           Id: '',
-          FirstName: 'Olo',//value.FirstName,
-          LastName: 'Chmelo',//value.LastName,
+          FirstName: '',
+          LastName: '',
           Email: value.email,
           Uid: firebaseUser.uid,
           Avatar: '',
@@ -116,10 +116,8 @@ export class AuthService {
     const isLogged = localStorage.getItem('firebaseUser')
     if (isLogged != null) {
       this.loggedIn.next(true)
-      this.router.navigate(['/me']);
     } else {
       this.loggedIn.next(false)
-      this.router.navigate(['/login']);
     }
     return this.loggedIn.asObservable();
   }

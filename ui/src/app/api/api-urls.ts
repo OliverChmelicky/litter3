@@ -3,6 +3,6 @@ export const ApisModel = {
   user: 'users',
   society: 'societies',
   trash: 'trash',
-  fileupload: 'fileupload'
-
+  fileupload: 'fileupload',
+  event: 'events',
 }

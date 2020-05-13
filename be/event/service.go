@@ -17,8 +17,10 @@ type EventService struct {
 	*trash.TrashAccess
 }
 
-func CreateService(db *pg.DB, userAccess *user.UserAccess, trashAccess *trash.TrashAccess) *EventService {
+func CreateService(db *pg.DB) *EventService {
 	access := &eventAccess{db: db}
+	userAccess := &user.UserAccess{Db: db}
+	trashAccess := &trash.TrashAccess{Db: db}
 	return &EventService{access, userAccess, trashAccess}
 }
 
@@ -206,19 +208,9 @@ func (s *EventService) DeleteEvent(c echo.Context) error {
 }
 
 func (s *EventService) GetSocietyEvents(c echo.Context) error {
-	request := new(models.EventPickerRequest)
-	eventId := c.QueryParam("event")
-	pickerId := c.QueryParam("picker")
-	asSociety, err := strconv.ParseBool(c.QueryParam("asSociety"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
-	}
+	societyId := c.QueryParam("societyId")
 
-	request.PickerId = pickerId
-	request.EventId = eventId
-	request.AsSociety = asSociety
-
-	events, err := s.eventAccess.GetSocietyEvents(request.PickerId)
+	events, err := s.eventAccess.GetSocietyEvents(societyId)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrGetSocietyEvent, err))
 	}

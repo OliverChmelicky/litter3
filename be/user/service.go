@@ -404,15 +404,25 @@ func (s *userService) GetMySocieties(c echo.Context) error {
 }
 
 func (s *userService) GetSocietyAdmins(c echo.Context) error {
-	//can call also unregistered user
 	societyId := c.Param("societyId")
 
-	memebers, err := s.UserAccess.GetSocietyAdminsAll(societyId)
+	admins, err := s.UserAccess.GetSocietyAdmins(societyId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetSocietyMembers, err))
 	}
 
-	return c.JSON(http.StatusOK, memebers)
+	return c.JSON(http.StatusOK, admins)
+}
+
+func (s *userService) GetSocietyMembers(c echo.Context) error {
+	societyId := c.Param("societyId")
+
+	admins, err := s.UserAccess.GetSocietyMembers(societyId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetSocietyMembers, err))
+	}
+
+	return c.JSON(http.StatusOK, admins)
 }
 
 func (s *userService) UpdateSociety(c echo.Context) error {
@@ -434,6 +444,17 @@ func (s *userService) UpdateSociety(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, society)
+}
+
+func (s *userService) GetSocietyRequests(c echo.Context) error {
+	societyId := c.Param("societyId")
+
+	requests, err := s.UserAccess.GetSocietyRequests(societyId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetSocietyRequests, err))
+	}
+
+	return c.JSON(http.StatusOK, requests)
 }
 
 func (s *userService) AcceptApplicant(c echo.Context) error {

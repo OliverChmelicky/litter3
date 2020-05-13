@@ -8,6 +8,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/olo/litter3/event"
 	"github.com/olo/litter3/fileupload"
 	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/olo/litter3/trash"
@@ -46,7 +47,7 @@ func main() {
 		log.Error("PostgreSQL is down")
 		return
 	}
-	db.AddQueryHook(middlewareService.DbMiddleware{})
+	//db.AddQueryHook(middlewareService.DbMiddleware{})
 
 	opt := option.WithCredentialsFile(viper.GetString("firebaseCredentials"))
 	firebaseAuth, err := getFirebaseAuth(opt)
@@ -62,8 +63,8 @@ func main() {
 		log.Fatal(err)
 	}
 	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	//e.Use(middleware.Logger())
+	//e.Use(middleware.Recover())
 	e.Use(tokenMiddleware.CorsHeadder)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowMethods: []string{http.MethodOptions, http.MethodDelete, http.MethodPut},
@@ -78,7 +79,7 @@ func main() {
 	e.GET("/users/details", userService.GetUsers)
 
 	e.GET("/users/societies", userService.GetMySocieties, tokenMiddleware.AuthorizeUser)
-	e.DELETE("/users/societies/:societyId/:removingId", userService.RemoveMember,tokenMiddleware.AuthorizeUser)
+	e.DELETE("/users/societies/:societyId/:removingId", userService.RemoveMember, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/users/friend/add/id", userService.ApplyForFriendshipById, tokenMiddleware.AuthorizeUser)
 	e.POST("/users/friend/add/email", userService.ApplyForFriendshipByEmail, tokenMiddleware.AuthorizeUser)
@@ -90,16 +91,23 @@ func main() {
 
 	e.POST("/societies/new", userService.CreateSociety, tokenMiddleware.AuthorizeUser)
 	e.GET("/societies/:id", userService.GetSociety)
-	e.GET("/societies", userService.GetSocietiesWithPaging)
 	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)
+	e.GET("/societies/admins/:societyId", userService.GetSocietyAdmins)
+	e.GET("/societies/members/:societyId", userService.GetSocietyMembers)
+	e.GET("/societies/requests/:societyId", userService.GetSocietyRequests)
 
 	e.POST("/membership", userService.ApplyForMembership, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/membership/:societyId", userService.RemoveApplicationForMembership, tokenMiddleware.AuthorizeUser)
 
+	eventService := event.CreateService(db)
+	e.GET("/events/societies/:societyId", eventService.GetSocietyEvents)
+
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)
 	e.GET("/trash/range", trashService.GetTrashInRange)
-	e.POST("/trash/new", trashService.CreateTrash)
+	e.POST("/trash/new", trashService.CreateTrash, tokenMiddleware.FillUserContext)
+	e.PUT("/trash/update", trashService.UpdateTrash, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/trash/delete/:trashId", trashService.DeleteTrash)
 	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
 
 	e.Logger.Fatal(e.Start(":8081"))

@@ -4,8 +4,14 @@ import {catchError, tap} from "rxjs/operators";
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {ApisModel} from "../../api/api-urls";
 import {UserModel} from "../../models/user.model";
-import {TrashModel} from "../../models/trash.model";
-import {MarkerModel} from "../../components/google-map/Marker.model";
+import {
+  CollectionModel,
+  TrashModel,
+  TrashTypeAutomotive,
+  TrashTypeBooleanValues, TrashTypeCarcass,
+  TrashTypeConstruction, TrashTypeDangerous, TrashTypeElectronic, TrashTypeGlass,
+  TrashTypeHousehold, TrashTypeMask, TrashTypeMetal, TrashTypeOrganic, TrashTypeOther, TrashTypePlastics
+} from "../../models/trash.model";
 
 @Injectable({
   providedIn: 'root'
@@ -61,16 +67,51 @@ export class TrashService {
   };
 
   updateTrash(trash: TrashModel) {
-    const url = `${this.apiUrl}/${ApisModel.trash}`;
+    const url = `${this.apiUrl}/${ApisModel.trash}/update`;
     return this.http.put<TrashModel>(url, trash).pipe(
       catchError(err => TrashService.handleError<TrashModel>(err))
     );
   }
 
   deleteTrash(trashId: string) {
-    const url = `${this.apiUrl}/${ApisModel.trash}/${trashId}`;
+    const url = `${this.apiUrl}/${ApisModel.trash}/delete/${trashId}`;
     return this.http.delete(url).pipe(
       catchError(err => TrashService.handleError(err))
     );
   }
+
+  convertTrashTypeNumToBools(TrashType: number): TrashTypeBooleanValues {
+    return  {
+        TrashTypeHousehold: (TrashType & TrashTypeHousehold) > 0,
+        TrashTypeAutomotive: (TrashType & TrashTypeAutomotive) > 0,
+        TrashTypeConstruction: (TrashType & TrashTypeConstruction) > 0,
+        TrashTypePlastics: (TrashType & TrashTypePlastics) > 0,
+        TrashTypeElectronic: (TrashType & TrashTypeElectronic) > 0,
+        TrashTypeGlass: (TrashType & TrashTypeGlass) > 0,
+        TrashTypeMetal: (TrashType & TrashTypeMetal) > 0,
+        TrashTypeDangerous: (TrashType & TrashTypeDangerous) > 0,
+        TrashTypeCarcass: (TrashType & TrashTypeCarcass) > 0,
+        TrashTypeOrganic: (TrashType & TrashTypeOrganic) > 0,
+        TrashTypeOther: (TrashType & TrashTypeOther) > 0,
+    }
+  }
+
+  convertTrashTypeBoolsToNums (TrashType: TrashTypeBooleanValues): number {
+    const TrashTypeHouseholdMasked     = TrashType.TrashTypeHousehold ? TrashTypeHousehold : 0
+    const TrashTypeAutomotiveMasked    = TrashType.TrashTypeAutomotive ? TrashTypeAutomotive : 0
+    const TrashTypeConstructionMasked  = TrashType.TrashTypeConstruction ? TrashTypeConstruction : 0
+    const TrashTypePlasticsMasked      = TrashType.TrashTypePlastics ? TrashTypePlastics : 0
+    const TrashTypeElectronicMasked    = TrashType.TrashTypeElectronic ? TrashTypeElectronic : 0
+    const TrashTypeGlassMasked         = TrashType.TrashTypeGlass ? TrashTypeGlass : 0
+    const TrashTypeMetalMasked         = TrashType.TrashTypeMetal ? TrashTypeMetal : 0
+    const TrashTypeDangerousMasked     = TrashType.TrashTypeDangerous ? TrashTypeDangerous : 0
+    const TrashTypeCarcassMasked       = TrashType.TrashTypeCarcass ? TrashTypeCarcass : 0
+    const TrashTypeOrganicMasked       = TrashType.TrashTypeOrganic ? TrashTypeOrganic : 0
+    const TrashTypeOtherMasked         = TrashType.TrashTypeOther ? TrashTypeOther : 0
+
+    return TrashTypeHouseholdMasked | TrashTypeAutomotiveMasked | TrashTypeConstructionMasked | TrashTypePlasticsMasked | TrashTypeElectronicMasked |
+            TrashTypeGlassMasked | TrashTypeMetalMasked | TrashTypeDangerousMasked | TrashTypeCarcassMasked | TrashTypeOrganicMasked | TrashTypeOtherMasked
+
+  }
+
 }

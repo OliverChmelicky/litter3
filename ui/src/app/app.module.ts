@@ -36,6 +36,7 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatInputModule} from "@angular/material/input";
 import { EditTrashComponent } from './components/edit-trash/edit-trash.component';
+import { EditSocietyComponent } from './components/edit-society/edit-society.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +55,7 @@ import { EditTrashComponent } from './components/edit-trash/edit-trash.component
     EditProfileComponent,
     CreateSocietyComponent,
     EditTrashComponent,
+    EditSocietyComponent,
   ],
   imports: [
     BrowserModule,

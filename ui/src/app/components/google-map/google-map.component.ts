@@ -1,14 +1,13 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {LocationService} from "../../services/location/location.service";
 import {MapLocationModel} from "../../models/GPSlocation.model";
-import {GoogleMap, LatLng, LatLngBounds, LatLngLiteral} from "@agm/core/services/google-maps-types";
+import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MarkerModel} from "src/app/components/google-map/Marker.model";
 import {MouseEvent} from '@agm/core';
 import {Router} from "@angular/router";
 import {TrashService} from "../../services/trash/trash.service";
 import { AgmMap } from '@agm/core';
 import {MatCheckboxChange} from "@angular/material/checkbox";
-import {mark} from "@angular/compiler-cli/src/ngtsc/perf/src/clock";
 
 export const czechPosition: MapLocationModel = {
   lat: 49.81500022397678,
@@ -24,7 +23,7 @@ export const czechPosition: MapLocationModel = {
 })
 export class GoogleMapComponent implements OnInit {
   @ViewChild('agmMap') agmMap: AgmMap;
-  exampleBinUrl: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fvisualpharm.com%2Ffree-icons%2Fblank%2Fblank%2520trash&psig=AOvVaw07-6SZ8RD7AhPn2ddRQm6W&ust=1589094336519000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCKjtme2bpukCFQAAAAAdAAAAABAF';
+  exampleBinUrl: 'https://www.google.com/url?https://i.vimeocdn.com/portrait/912580_640x640';
 
   location: MapLocationModel;
   defaultLocation = czechPosition;
@@ -52,7 +51,7 @@ export class GoogleMapComponent implements OnInit {
     this.location = this.defaultLocation;
     this.locationService.getPosition().then(data => {
       this.location = data;
-    }).catch(err => window.alert('Error getting location: ' + err));
+    }).catch(err => console.log('Error getting location: ' + err));
     this.allMarkers = [];
   }
 
@@ -77,7 +76,10 @@ export class GoogleMapComponent implements OnInit {
       cleaned: false,
       id: '',
     };
+    console.log(this.allMarkers.length)
     this.allMarkers.push(this.selectedMarker)
+    this.applyMarkerFilters()
+    console.log(this.allMarkers.length)
   }
 
   createTrash(marker: MarkerModel) {
@@ -85,8 +87,6 @@ export class GoogleMapComponent implements OnInit {
   }
 
   selectMarker(i: number, event) {
-    // console.log(event)
-    // console.log(event.infoWindow.close())
     this.selectedMarker = this.allMarkers[i]
   }
 
@@ -106,21 +106,9 @@ export class GoogleMapComponent implements OnInit {
     const visibleBottom = p2.lat()
     const visibleLeft = p2.lng()
 
-    // console.log(visibleTop)
-    // console.log(visibleBottom)
-    // console.log(visibleRight)
-    // console.log(visibleLeft)
-
-    // console.log('borders ', this.borderTop)
-    // console.log('borders ', this.borderBottom)
-    // console.log('borders right ', this.borderRight)
-    // console.log('borders left ', this.borderLeft)
-
     if (visibleRight > this.borderRight || visibleLeft < this.borderLeft) {
-      console.log('reached visible sides')
       this.loadNewMarkers()
     } else if (visibleBottom < this.borderBottom || visibleTop > this.borderTop) {
-      console.log('reached visible tops and bottoms')
       this.loadNewMarkers()
     }
 
@@ -188,14 +176,6 @@ export class GoogleMapComponent implements OnInit {
           this.borderLeft = p2.lng() - r
         }
 
-        console.log(viewCenter.lat())
-        console.log(viewCenter.lng())
-
-        console.log('borders ', this.borderTop)
-        console.log('borders ', this.borderBottom)
-        console.log('borders right ', this.borderRight)
-        console.log('borders left ', this.borderLeft)
-
       }
     )
   }
@@ -206,6 +186,8 @@ export class GoogleMapComponent implements OnInit {
 
   onRightClick() {
     //https://github.com/SebastianM/angular-google-maps/issues/797
+    // console.log(event)
+    // console.log(event.infoWindow.close())
   }
 
   onCleanedOption(event: MatCheckboxChange) {

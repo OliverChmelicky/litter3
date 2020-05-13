@@ -16,7 +16,8 @@ import {MemberModel, SocietyModel} from "../../models/society.model";
   providedIn: 'root'
 })
 export class UserService {
-  apiUrl: string
+  apiUrl: string;
+
 
   constructor(
     private readonly http: HttpClient,
@@ -51,6 +52,14 @@ export class UserService {
       catchError(err => UserService.handleError<UserModel>(err)
       )
     );
+  }
+
+  saveMyId() {
+
+  }
+
+  getMyId() {
+
   }
 
   getMyFriendRequests(): Observable<FriendRequestModel[]> {
