@@ -1,3 +1,4 @@
+<script src="../society-details/society-details.component.ts"></script>
 <div class="upper-map">
   <agm-map
     [latitude]="trash.Location[0]"
@@ -60,7 +61,7 @@
   </div>
 
 
-  <table *ngIf="!!trash.Collections.length > 0" mat-table [dataSource]="trash.Collections" class="mat-elevation-z8">
+  <table *ngIf="trash.Collections.length > 0" mat-table [dataSource]="trash.Collections" class="mat-elevation-z8">
 
     <ng-container matColumnDef="weight">
       <th mat-header-cell *matHeaderCellDef> Weight[kg] </th>

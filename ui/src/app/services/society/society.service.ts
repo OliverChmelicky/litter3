@@ -118,4 +118,25 @@ export class SocietyService {
       catchError(err => SocietyService.handleError<ApplicantModel[]>(err, []))
     );
   }
+
+  updateSociety(society: SocietyModel): Observable<SocietyModel> {
+    const url = `${this.apiUrl}/${ApisModel.society}/update`;
+    return this.http.put<SocietyModel>(url, society).pipe(
+      catchError(err => SocietyService.handleError<SocietyModel>(err))
+    );
+  }
+
+  changePermissions(changeMemberPermission: MemberModel[]) {
+      const url = `${this.apiUrl}/${ApisModel.society}/change-permission/`;
+      return this.http.put<SocietyModel>(url, changeMemberPermission).pipe(
+        catchError(err => SocietyService.handleError<SocietyModel>(err))
+      );
+  }
+
+  removeUser(userId, societyId: string) {
+    const url = `${this.apiUrl}/${ApisModel.society}/${societyId}/${userId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => SocietyService.handleError(err))
+    );
+  }
 }

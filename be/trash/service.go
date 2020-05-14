@@ -79,9 +79,6 @@ func (s *trashService) GetTrashInRange(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	fmt.Println("Radius v metroch")
-	fmt.Println(radius)
-
 	request.Location = models.Point{lat, lng}
 	request.Radius = radius
 

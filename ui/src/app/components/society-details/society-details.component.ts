@@ -16,6 +16,7 @@ import {
   participatedEventsColumnsDefinition,
   upcommingEventsColumnsDefinition
 } from "./table-definitions";
+import {ApisModel} from "../../api/api-urls";
 
 @Component({
   selector: 'app-society-details',
@@ -54,6 +55,9 @@ export class SocietyDetailsComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       this.societyService.getSociety(params.get('societyId')).subscribe(
         society => {
+          if (society.Avatar) {
+            society.Avatar = ApisModel.pictureBucketPrefix + society.Avatar
+          }
           this.society = society
           this.societyService.getSocietyAdmins(society.Id).subscribe(
             res => {
@@ -103,7 +107,7 @@ export class SocietyDetailsComponent implements OnInit {
   }
 
   onEdit() {
-    this.router.navigateByUrl('societies/edit' + this.society.Id)
+    this.router.navigateByUrl('societies/edit/' + this.society.Id)
   }
 
   private getRequesters(requests: ApplicantModel[]) {

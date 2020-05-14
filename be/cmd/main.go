@@ -47,7 +47,7 @@ func main() {
 		log.Error("PostgreSQL is down")
 		return
 	}
-	//db.AddQueryHook(middlewareService.DbMiddleware{})
+	db.AddQueryHook(middlewareService.DbMiddleware{})
 
 	opt := option.WithCredentialsFile(viper.GetString("firebaseCredentials"))
 	firebaseAuth, err := getFirebaseAuth(opt)
@@ -63,8 +63,8 @@ func main() {
 		log.Fatal(err)
 	}
 	// Middleware
-	//e.Use(middleware.Logger())
-	//e.Use(middleware.Recover())
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 	e.Use(tokenMiddleware.CorsHeadder)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowMethods: []string{http.MethodOptions, http.MethodDelete, http.MethodPut},
@@ -79,7 +79,7 @@ func main() {
 	e.GET("/users/details", userService.GetUsers)
 
 	e.GET("/users/societies", userService.GetMySocieties, tokenMiddleware.AuthorizeUser)
-	e.DELETE("/users/societies/:societyId/:removingId", userService.RemoveMember, tokenMiddleware.AuthorizeUser)
+
 
 	e.POST("/users/friend/add/id", userService.ApplyForFriendshipById, tokenMiddleware.AuthorizeUser)
 	e.POST("/users/friend/add/email", userService.ApplyForFriendshipByEmail, tokenMiddleware.AuthorizeUser)
@@ -90,11 +90,14 @@ func main() {
 	e.DELETE("/users/friend/deny/:notWanted", userService.RemoveApplicationForFriendship, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/societies/new", userService.CreateSociety, tokenMiddleware.AuthorizeUser)
+	e.GET("/societies", userService.GetSocietiesWithPaging)
 	e.GET("/societies/:id", userService.GetSociety)
 	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)
 	e.GET("/societies/admins/:societyId", userService.GetSocietyAdmins)
 	e.GET("/societies/members/:societyId", userService.GetSocietyMembers)
 	e.GET("/societies/requests/:societyId", userService.GetSocietyRequests)
+	e.PUT("/societies/change-permission", userService.ChangeMemberRights, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/societies/:societyId/:removingId", userService.RemoveMember, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/membership", userService.ApplyForMembership, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/membership/:societyId", userService.RemoveApplicationForMembership, tokenMiddleware.AuthorizeUser)
@@ -109,6 +112,7 @@ func main() {
 	e.PUT("/trash/update", trashService.UpdateTrash, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/trash/delete/:trashId", trashService.DeleteTrash)
 	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
+	e.POST("/fileupload/societies/:societyId", fileuploadService.UploadSocietyImage, tokenMiddleware.AuthorizeUser)
 
 	e.Logger.Fatal(e.Start(":8081"))
 }

@@ -5,4 +5,6 @@ export const ApisModel = {
   trash: 'trash',
   fileupload: 'fileupload',
   event: 'events',
+  collection: 'collections',
+  pictureBucketPrefix: 'https://storage.googleapis.com/litter3-olo-gcp.appspot.com/',
 }

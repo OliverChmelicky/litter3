@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/olo/litter3/models"
+	log "github.com/sirupsen/logrus"
 )
 
 type UserAccess struct {
@@ -326,28 +327,38 @@ func (s *UserAccess) AcceptApplicant(userId, societyId string) (*models.Member, 
 	return newMember, tx.Commit()
 }
 
-func (s *UserAccess) ChangeUserRights(request *models.Member) (*models.Member, error) {
-	tx, err := s.Db.Begin()
-	if err != nil {
-		return &models.Member{}, err
-	}
-	defer tx.Rollback()
+func (s *UserAccess) ChangeUserRights(requests []models.Member, societyId string) ([]models.Member, error) {
+	var members []models.Member
+	for _, request := range requests {
+		tx, err := s.Db.Begin()
+		if err != nil {
+			return []models.Member{}, err
+		}
+		defer tx.Rollback()
 
-	member := new(models.Member)
-	member.UserId = request.UserId
-	member.SocietyId = request.SocietyId
-	err = tx.Select(member)
-	if err != nil {
-		return &models.Member{}, err
+		member := new(models.Member)
+		member.UserId = request.UserId
+		member.SocietyId = societyId
+		err = tx.Select(member)
+		if err != nil {
+			return []models.Member{}, err
+		}
+
+		member.Permission = request.Permission
+		err = tx.Update(member)
+		if err != nil {
+			return []models.Member{}, err
+		}
+
+		members = append(members, *member)
+
+		err = tx.Commit()
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
-	member.Permission = request.Permission
-	err = tx.Update(member)
-	if err != nil {
-		return &models.Member{}, err
-	}
-
-	return member, tx.Commit()
+	return members, nil
 }
 
 func (s *UserAccess) RemoveMember(userId, societyId string) error {

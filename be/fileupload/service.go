@@ -48,7 +48,7 @@ func CreateService(db *pg.DB, opt option.ClientOption, bucketName string) *Fileu
 func (s *FileuploadService) UploadUserImages(c echo.Context) error {
 	userId := c.Param("userId")
 
-	objectName, err := s.Upload(c)
+	objectName, err := s.UploadImage(c)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
 	}
@@ -63,16 +63,24 @@ func (s *FileuploadService) UploadUserImages(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func (s *FileuploadService) UploadSocietyImages(c echo.Context) error {
-	userId := c.Param("societyId")
+func (s *FileuploadService) UploadSocietyImage(c echo.Context) error {
+	societyId := c.Param("societyId")
 
-	objectName, err := s.Upload(c)
+	objectName, err := s.UploadImage(c)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
 	}
 
-	user := new(models.Society)
-	_, err = s.db.Model(user).Set("avatar = ?", objectName).Where("id = ?", userId).Update()
+	society := new(models.Society)
+	_, err = s.db.Model(society).Where("id = ?", societyId).Update()
+	if society.Avatar != "" {
+		err = s.DeleteImage(society.Avatar)
+		if err != nil {
+			log.Errorf("Error delete image of society when uploading new: ", err)
+		}
+	}
+
+	_, err = s.db.Model(society).Set("avatar = ?", objectName).Where("id = ?", societyId).Update()
 	if err != nil {
 		_ = s.DeleteImage(objectName)
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))

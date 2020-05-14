@@ -10,7 +10,6 @@ import {catchError} from "rxjs/operators";
 import {Observable, of, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
 import {EmailMessageModel} from "../../models/shared.models";
-import {MemberModel, SocietyModel} from "../../models/society.model";
 
 @Injectable({
   providedIn: 'root'
@@ -52,14 +51,6 @@ export class UserService {
       catchError(err => UserService.handleError<UserModel>(err)
       )
     );
-  }
-
-  saveMyId() {
-
-  }
-
-  getMyId() {
-
   }
 
   getMyFriendRequests(): Observable<FriendRequestModel[]> {

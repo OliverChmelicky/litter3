@@ -23,3 +23,8 @@ export interface FriendRequestModel {
   User2Id:   string;
   CreatedAt: Date;
 }
+
+export interface UserInSocietyModel {
+  user: UserModel,
+  role: string,
+}

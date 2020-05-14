@@ -6,6 +6,7 @@ import {SocietiesTableElementModel} from "./societiesTable.model";
 import {animate, state, style, transition, trigger} from '@angular/animations';
 import {Router} from "@angular/router";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {ApisModel} from "../../api/api-urls";
 
 export interface DialogData {
   name: string;
@@ -50,12 +51,17 @@ export class SocietiesComponent implements OnInit {
       .subscribe(resp => {
       this.actualPaging = resp.Paging
         this.dataSource = [];
-        resp.Societies.map( (soc, i) => this.dataSource.push(
-          {
-            Society: soc,
-            Number: this.actualPaging.From + i + 1
+        resp.Societies.map( (soc, i) => {
+          if (soc.Avatar) {
+            soc.Avatar = ApisModel.pictureBucketPrefix + soc.Avatar
           }
-        ))
+          this.dataSource.push(
+            {
+              Society: soc,
+              Number: this.actualPaging.From + i + 1
+            }
+          )
+        })
     })
   }
 
@@ -88,12 +94,16 @@ export class SocietiesComponent implements OnInit {
       .subscribe(resp => {
         this.actualPaging = resp.Paging
         this.dataSource = [];
-        resp.Societies.map( (soc, i) => this.dataSource.push(
+        resp.Societies.map( (soc, i) => {
+          soc.Avatar = ApisModel.pictureBucketPrefix + soc.Avatar
+          console.log(soc.Avatar)
+          this.dataSource.push(
           {
             Society: soc,
             Number: this.actualPaging.From + i + 1
           }
-        ))
+        )
+        })
         console.log(resp.Societies)
       })
     return event;

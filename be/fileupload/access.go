@@ -1,6 +1,7 @@
 package fileupload
 
 import (
+	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
 	"github.com/labstack/echo"
@@ -12,7 +13,9 @@ import (
 	"time"
 )
 
-func (s *FileuploadService) Upload(c echo.Context) (string, error) {
+func (s *FileuploadService) UploadImage(c echo.Context) (string, error) {
+	ctx := context.Background()
+
 	file, err := c.FormFile("file")
 	if err != nil {
 		log.Error("FORM_FILE_ERROR", err)
@@ -29,7 +32,8 @@ func (s *FileuploadService) Upload(c echo.Context) (string, error) {
 	sufix := filepath.Ext(file.Filename)
 	objectName := uuid.NewV4().String() + sufix
 
-	w := s.bh.Object(objectName).NewWriter(context.Background())
+	obj := s.bh.Object(objectName)
+	w := obj.NewWriter(ctx)
 	w.ContentType = mime.TypeByExtension(sufix)
 	if _, err := io.Copy(w, src); err != nil {
 		return "", fmt.Errorf("Error saving image %w ", err)
@@ -37,6 +41,10 @@ func (s *FileuploadService) Upload(c echo.Context) (string, error) {
 	if err := w.Close(); err != nil {
 		_ = s.DeleteImage(objectName)
 		return "", fmt.Errorf("Error closing image %w ", err)
+	}
+
+	if err := obj.ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
+		return "", fmt.Errorf("Error updating image attributes %w ", err)
 	}
 
 	return objectName, err
@@ -61,7 +69,8 @@ func (s *FileuploadService) UploadImages(c echo.Context) ([]string,error) {
 		sufix := filepath.Ext(file.Filename)
 		objectName := uuid.NewV4().String() + sufix
 
-		w := s.bh.Object(objectName).NewWriter(context.Background())
+		obj := s.bh.Object(objectName)
+		w := obj.NewWriter(context.Background())
 		w.ContentType = mime.TypeByExtension(sufix)
 		if _, err := io.Copy(w, src); err != nil {
 			return []string{}, fmt.Errorf("Error saving image %w ", err)
@@ -69,6 +78,10 @@ func (s *FileuploadService) UploadImages(c echo.Context) ([]string,error) {
 		if err := w.Close(); err != nil {
 			_ = s.DeleteImage(objectName)
 			return []string{}, fmt.Errorf("Error closing image %w ", err)
+		}
+
+		if err := obj.ACL().Set(context.Background(), storage.AllUsers, storage.RoleReader); err != nil {
+			return []string{}, fmt.Errorf("Error updating image attributes %w ", err)
 		}
 
 		fileNames = append(fileNames, objectName)

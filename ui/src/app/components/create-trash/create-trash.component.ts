@@ -103,10 +103,10 @@ export class CreateTrashComponent implements OnInit {
       Id: '',
       Cleaned: false,
       Size: this.printSize(),
-      Accessibility: this.trashForm.value["accessibility"],
+      Accessibility: this.trashForm.value['accessibility'],
       TrashType: this.changeTrashTypeToInt(),
       Location: [this.markerLat, this.markerLng],
-      Description: this.trashForm.value["description"],
+      Description: this.trashForm.value['description'],
       FinderId: '',
       Anonymously: this.trashForm.value['anonymously'] !== '',
     }

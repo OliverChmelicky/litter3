@@ -514,13 +514,16 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 func (s *userService) ChangeMemberRights(c echo.Context) error {
 	id := c.Get("userId").(string)
 
-	request := new(models.Member)
-	err := c.Bind(request)
+	requests := []models.Member{}
+	err := c.Bind(&requests)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
+	if len(requests) < 0 {
+		return c.NoContent(http.StatusOK)
+	}
 
-	isAdmin, numOfAdmins, err := s.UserAccess.IsUserSocietyAdmin(id, request.SocietyId)
+	isAdmin, numOfAdmins, err := s.UserAccess.IsUserSocietyAdmin(id, requests[0].SocietyId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrChangeMemberRights, err))
 	}
@@ -528,16 +531,16 @@ func (s *userService) ChangeMemberRights(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrDismissApplicant, fmt.Errorf("You are not an admin ")))
 	}
 
-	if numOfAdmins == 1 && request.UserId == id && request.Permission == models.Membership("member") {
+	if numOfAdmins == 1 && requests[0].UserId == id && requests[0].Permission == models.Membership("member") {
 		return c.JSON(http.StatusConflict, custom_errors.WrapError(custom_errors.ErrChangeMemberRights, fmt.Errorf("You are the only one admin in group ")))
 	}
 
-	member, err := s.UserAccess.ChangeUserRights(request)
+	member, err := s.UserAccess.ChangeUserRights(requests, requests[0].SocietyId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrChangeMemberRights, err))
 	}
 
-	return c.JSON(http.StatusNotImplemented, member)
+	return c.JSON(http.StatusOK, member)
 }
 
 func (s *userService) RemoveMember(c echo.Context) error {

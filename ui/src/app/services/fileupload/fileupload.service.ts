@@ -42,8 +42,11 @@ export class FileuploadService {
     );
   }
 
-  uploadSocietyImage() {
-
+  uploadSocietyImage(fd: FormData, societyId: string): Observable<any> {
+    const url = `${ApisModel.apiUrl}/${ApisModel.fileupload}/${ApisModel.society}/${societyId}`;
+    return this.http.post(url, fd).pipe(
+      catchError(err => FileuploadService.handleError(err))
+    );
   }
 
   uploadTrashImages(fd: FormData, trashId: string): Observable<any> {
@@ -53,8 +56,11 @@ export class FileuploadService {
     );
   }
 
-  uploadCollectionImages() {
-
+  uploadCollectionImages(fd: FormData, collectionId: string): Observable<any> {
+    const url = `${ApisModel.apiUrl}/${ApisModel.fileupload}/${ApisModel.collection}/${collectionId}`;
+    return this.http.post(url, fd).pipe(
+      catchError(err => FileuploadService.handleError(err))
+    );
   }
 
   deleteUserImage() {

@@ -22,3 +22,32 @@ export const membersColumnsDefinition: string[] = [
   'first-name',
   'last-name',
 ]
+
+export const membersColumnsSocietyEditDefinition: string[] = [
+  'image',
+  'first-name',
+  'last-name',
+  'email',
+  'roles',
+  'deleteUser',
+]
+
+interface rolesInterface {
+  key:string,
+  value: string,
+}
+
+export const roles: rolesInterface[] = [
+  {
+    key:'admin',
+    value: 'Administrator',
+  },
+  {
+    key:'editor',
+    value: 'Editor',
+  },
+  {
+    key:'member',
+    value: 'Member',
+  },
+]
