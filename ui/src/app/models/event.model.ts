@@ -11,12 +11,17 @@ export interface ChangePermisssionRequest {
 }
 
 export interface EventModel {
-  Id: string,
+  Id?: string,
   Date: Date,
   Description: string,
-  Publc: boolean,
-  CreatedAt: Date,
+  CreatedAt?: Date,
   TrashIds?: string[],
   UsersIds?: string[],
   SocietiesIds?: string[],
+}
+
+export interface EventCreatorModel {
+  AsSociety: boolean,
+  Id: string,
+  VisibleName: string
 }

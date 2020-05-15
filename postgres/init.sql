@@ -22,23 +22,9 @@ CREATE TYPE accessibility AS ENUM (
     'underWater'
     );
 
--- CREATE TYPE trashType AS ENUM (
---     'household',
---     'automotive',
---     'construction',
---     'plastics',
---     'electronic',
---     'glass',
---     'metal',
---     'liquid',
---     'dangerous',
---     'carcass',
---     'organic'
---     'other',
---     );
-
 CREATE TYPE membership AS ENUM (
     'admin',
+    'editor',
     'member'
     );
 
@@ -99,12 +85,7 @@ create table events
 (
     id          VARCHAR PRIMARY KEY,
     date        timestamptz NOT NULL,
-    publc       boolean     NOT NULL,
     description varchar,
---     user_id    VARCHAR REFERENCES users (id),
---     society_id VARCHAR REFERENCES societies (id),
---     CONSTRAINT exclusive_creator CHECK ( (user_id is null and society_id is not null) or
---                                          (user_id is not null and society_id is null)),
     created_at  timestamptz NOT NULL
 );
 

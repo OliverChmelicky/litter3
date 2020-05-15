@@ -414,6 +414,17 @@ func (s *userService) GetSocietyAdmins(c echo.Context) error {
 	return c.JSON(http.StatusOK, admins)
 }
 
+func (s *userService) GetEditableSocieties(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	societies, err := s.UserAccess.GetEditableSocieties(userId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetEditableSocieties, err))
+	}
+
+	return c.JSON(http.StatusOK, societies)
+}
+
 func (s *userService) GetSocietyMembers(c echo.Context) error {
 	societyId := c.Param("societyId")
 

@@ -8,6 +8,7 @@ import {UserInSocietyModel, UserModel} from "../../models/user.model";
 import {FormBuilder} from "@angular/forms";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
 import {MatSelectChange} from "@angular/material/select";
+import {ApisModel} from "../../api/api-urls";
 
 @Component({
   selector: 'app-edit-society',
@@ -21,7 +22,11 @@ export class EditSocietyComponent implements OnInit {
   origMembers: UserInSocietyModel[];
 
   roles = roles;
-  society: SocietyModel;
+  society: SocietyModel = {
+    Name: 'dacp',
+    Description: 'ine',
+    Avatar: '98fbffb9-7cd5-4959-bd3e-2f04f8d6052e.png'
+  };
   fd: FormData = new FormData();
 
   adminsMembers: MemberModel[];
@@ -32,6 +37,8 @@ export class EditSocietyComponent implements OnInit {
     description: '',
     name: '',
   });
+  assignSociety: string = ApisModel.society;
+  assignUser: string = ApisModel.user;
 
 
   constructor(
@@ -43,12 +50,11 @@ export class EditSocietyComponent implements OnInit {
     private fileuploadService: FileuploadService,
   ) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.route.paramMap.subscribe(params => {
       this.societyService.getSociety(params.get('societyId')).subscribe(
         society => {
             this.society = society
-            console.log(society.Avatar)
           this.userService.getMe().subscribe(
             res => {
               this.me = res
@@ -100,13 +106,11 @@ export class EditSocietyComponent implements OnInit {
     if (event.value === this.origMembers[i].role) {
       const index = this.changeMemberPermission.findIndex(u => u.UserId === this.members[i].user.Id)
       this.changeMemberPermission.splice(index, 1)
-      console.log('reverted same')
     } else {
       const exists = this.changeMemberPermission.filter( mem => mem.UserId === this.members[i].user.Id)
       if (exists.length !== 0) {
         const index = this.changeMemberPermission.findIndex(u => u.UserId === this.members[i].user.Id)
         this.changeMemberPermission.splice(index, 1)
-        console.log('reverted ine')
       }
 
       this.changeMemberPermission.push({
@@ -115,7 +119,6 @@ export class EditSocietyComponent implements OnInit {
         Permission: event.value.toString(),
         CreatedAt: new Date(),  //server does not use this property
       })
-      console.log('zmena vykonana')
     }
   }
 
@@ -132,7 +135,6 @@ export class EditSocietyComponent implements OnInit {
     if (this.societyForm.value['description'] !== '' ) {
       this.society.Description = this.societyForm.value['description']
     }
-    console.log('idem volat society')
     this.societyService.updateSociety(this.society).subscribe()
     if (this.fd.getAll('file').length !== 0) {
       this.fileuploadService.uploadSocietyImage(this.fd, this.society.Id).subscribe(

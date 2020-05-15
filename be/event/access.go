@@ -26,7 +26,6 @@ func (s *eventAccess) CreateEvent(request *models.EventRequest) (*models.Event, 
 	defer tx.Rollback()
 
 	event := &models.Event{
-		Publc:       request.Publc,
 		Date:        request.Date,
 		Description: request.Description,
 	}

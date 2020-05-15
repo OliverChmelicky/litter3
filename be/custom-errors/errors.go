@@ -27,10 +27,11 @@ var (
 	ErrUpdateUser     = "ERR UPDATE USER"
 	ErrDeleteUser     = "ERROR DELETE USER"
 
-	ErrChangeMemberRights = "ERROR CHANGE MEMBER RIGHTS"
-	ErrGetSocietyMembers  = "ERROR GET SOCIETY MEMBERS"
-	ErrGetSocietyRequests = "ERROR GET SOCIETY REQUESTS"
-	ErrRemoveMember       = "ERROR REMOVE MEMBER"
+	ErrChangeMemberRights   = "ERROR CHANGE MEMBER RIGHTS"
+	ErrGetSocietyMembers    = "ERROR GET SOCIETY MEMBERS"
+	ErrGetEditableSocieties = "ERROR GET EDITABLE SOCIETIES"
+	ErrGetSocietyRequests   = "ERROR GET SOCIETY REQUESTS"
+	ErrRemoveMember         = "ERROR REMOVE MEMBER"
 
 	ErrApplyForMembership             = "ERROR APPLY FOR MEMBERSHIP"
 	ErrRemoveApplicationForMembership = "ERROR REMOVE APPLICATION FOR MEMBERSHIP"

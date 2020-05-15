@@ -5,13 +5,7 @@ import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MouseEvent} from '@agm/core';
 import {FormBuilder} from "@angular/forms";
 import {LocationService} from "../../services/location/location.service";
-import {
-  TrashModel,
-  TrashTypeAutomotive, TrashTypeCarcass,
-  TrashTypeConstruction, TrashTypeDangerous, TrashTypeElectronic, TrashTypeGlass,
-  TrashTypeHousehold, TrashTypeMetal, TrashTypeOrganic, TrashTypeOther,
-  TrashTypePlastics
-} from "../../models/trash.model";
+import {TrashModel,} from "../../models/trash.model";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
 import {accessibilityChoces} from "../../models/accessibilityChocies";
 

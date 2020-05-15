@@ -42,7 +42,7 @@ type Event struct {
 	Id           string   `pg:",pk"`
 	Date         time.Time
 	Description  string
-	Publc        bool      `pg:",use_zero"`
+	//Publc        bool      `pg:",use_zero"`
 	CreatedAt    time.Time `pg:"default:now()"`
 	TrashIds     []string  `pg:"-"`
 	UsersIds     []string  `pg:"-"`

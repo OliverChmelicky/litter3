@@ -26,6 +26,11 @@ export class NavListComponent implements OnInit {
       icon:'my_location',
     },
     {
+      name: 'Create event',
+      url: '/events/create',
+      icon:'account_circle',
+    },
+    {
       name: 'Me',
       url: '/me',
       icon:'account_circle',

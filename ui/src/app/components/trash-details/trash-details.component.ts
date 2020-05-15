@@ -57,4 +57,8 @@ export class TrashDetailsComponent implements OnInit {
   showCollectionDetails(Id: string) {
     this.router.navigateByUrl('collection/'+this.trash.Id)
   }
+
+  onCreateEvent() {
+    this.router.navigateByUrl('events/create')
+  }
 }

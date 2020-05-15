@@ -10,6 +10,7 @@ import {catchError} from "rxjs/operators";
 import {Observable, of, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
 import {EmailMessageModel} from "../../models/shared.models";
+import {SocietyModel} from "../../models/society.model";
 
 @Injectable({
   providedIn: 'root'
@@ -136,4 +137,11 @@ export class UserService {
     return of(result as T);
   };
 
+  getMyEditableSocieties(): Observable<SocietyModel[]> {
+    const url = `${this.apiUrl}/${ApisModel.user}/${ApisModel.society}/editable`;
+    return this.http.get<SocietyModel[]>(url).pipe(
+      catchError(err => UserService.handleError<SocietyModel[]>(err, [])
+      )
+    );
+  }
 }

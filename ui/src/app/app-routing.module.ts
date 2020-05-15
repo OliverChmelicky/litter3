@@ -10,6 +10,7 @@ import {CreateTrashComponent} from "./components/create-trash/create-trash.compo
 import {TrashDetailsComponent} from "./components/trash-details/trash-details.component";
 import {EditTrashComponent} from "./components/edit-trash/edit-trash.component";
 import {EditSocietyComponent} from "./components/edit-society/edit-society.component";
+import {CreateEventComponent} from "./components/create-event/create-event.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'map', pathMatch: 'full'},
@@ -22,6 +23,7 @@ const routes: Routes = [
   { path: 'societies', component: SocietiesComponent},
   {path: 'societies/:societyId', component: SocietyDetailsComponent},
   {path: 'societies/edit/:societyId', component: EditSocietyComponent},
+  {path: 'events/create', component: CreateEventComponent},
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
   //{ path: 'profile/:userId', component: UserDetailComponent },

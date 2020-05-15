@@ -79,6 +79,7 @@ func main() {
 	e.GET("/users/details", userService.GetUsers)
 
 	e.GET("/users/societies", userService.GetMySocieties, tokenMiddleware.AuthorizeUser)
+	e.GET("/users/societies/editable", userService.GetEditableSocieties, tokenMiddleware.AuthorizeUser)
 
 
 	e.POST("/users/friend/add/id", userService.ApplyForFriendshipById, tokenMiddleware.AuthorizeUser)
@@ -111,7 +112,10 @@ func main() {
 	e.POST("/trash/new", trashService.CreateTrash, tokenMiddleware.FillUserContext)
 	e.PUT("/trash/update", trashService.UpdateTrash, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/trash/delete/:trashId", trashService.DeleteTrash)
+
 	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
+
+	e.GET("/fileupload/societies/:image", fileuploadService.GetSocietyImage)
 	e.POST("/fileupload/societies/:societyId", fileuploadService.UploadSocietyImage, tokenMiddleware.AuthorizeUser)
 
 	e.Logger.Fatal(e.Start(":8081"))

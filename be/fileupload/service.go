@@ -4,13 +4,16 @@ import (
 	"cloud.google.com/go/storage"
 	"context"
 	firebase "firebase.google.com/go"
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
+	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type FileuploadService struct {
@@ -96,9 +99,9 @@ func (s *FileuploadService) UploadTrashImages(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
 	}
 
-	for _,objectName := range objectNames {
+	for _, objectName := range objectNames {
 		trashImage := new(models.TrashImage)
-		trashImage.TrashId =trashId
+		trashImage.TrashId = trashId
 		trashImage.Url = objectName
 		_, err = s.db.Model(trashImage).Insert(trashImage)
 		if err != nil {
@@ -109,6 +112,7 @@ func (s *FileuploadService) UploadTrashImages(c echo.Context) error {
 
 	return c.NoContent(http.StatusCreated)
 }
+
 //func (s *FileuploadService) UploadCollectionImages() error {
 //
 //}
@@ -117,9 +121,40 @@ func (s *FileuploadService) UploadTrashImages(c echo.Context) error {
 //
 //}
 //
-//func (s *FileuploadService) GetSocietyImage() error {
-//
-//}
+func (s *FileuploadService) GetSocietyImage(c echo.Context) error {
+	imageName := c.Param("image")
+
+	oh := s.bh.Object(imageName)
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+
+	attr, err := oh.Attrs(ctx)
+	if err != nil {
+		log.Error("ATTR_OBJECT_ERROR", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	rc, err := oh.NewReader(ctx)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	defer rc.Close()
+
+	data, err := ioutil.ReadAll(rc)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	fmt.Println("dlzka dat je:")
+	fmt.Println(len(data))
+
+	return c.Blob(http.StatusOK, attr.ContentType, data)
+}
+
+
+
 //func (s *FileuploadService) GetTrashImages() error {
 //
 //}

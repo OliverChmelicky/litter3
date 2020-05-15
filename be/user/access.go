@@ -262,6 +262,33 @@ func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	return admins, nil
 }
 
+func (s *UserAccess) GetEditableSocieties(userId string) ([]models.Society, error) {
+	var memberships []models.Member
+	err := s.Db.Model(&memberships).Where("(permission = 'admin' or permission = 'editor') and user_id = ? ", userId).Select()
+	if err != nil {
+		log.Error(err)
+		return []models.Society{}, err
+	}
+
+	fmt.Println("Som vo vsetkych")
+	fmt.Println(memberships)
+
+	var societiesIds []string
+	for _,m := range memberships {
+		societiesIds = append(societiesIds, m.SocietyId)
+	}
+
+	var societies []models.Society
+	err = s.Db.Model(&societies).Where("id IN (?)", pg.In(societiesIds)).Select()
+	if err != nil {
+		return []models.Society{}, err
+	}
+
+	fmt.Println(societies)
+
+	return societies, nil
+}
+
 func (s *UserAccess) GetSocietyMembers(societyId string) ([]models.Member, error) {
 	var members []models.Member
 	err := s.Db.Model(&members).Where("society_id = ? ", societyId).Select(&members)

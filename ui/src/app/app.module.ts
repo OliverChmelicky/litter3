@@ -39,6 +39,9 @@ import { EditTrashComponent } from './components/edit-trash/edit-trash.component
 import { EditSocietyComponent } from './components/edit-society/edit-society.component';
 import { LazyLoadImgComponent } from './components/lazy-load-img/lazy-load-img.component';
 import {LazyLoadImageModule} from "ng-lazyload-image";
+import { CreateEventComponent } from './components/create-event/create-event.component';
+import {MatDatepickerModule} from "@angular/material/datepicker";
+import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
 
 @NgModule({
   declarations: [
@@ -59,6 +62,7 @@ import {LazyLoadImageModule} from "ng-lazyload-image";
     EditTrashComponent,
     EditSocietyComponent,
     LazyLoadImgComponent,
+    CreateEventComponent,
   ],
   imports: [
     BrowserModule,
@@ -87,9 +91,13 @@ import {LazyLoadImageModule} from "ng-lazyload-image";
     MatDialogModule,
     MatInputModule,
     LazyLoadImageModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },
+    MatDatepickerModule,
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' } //for datepicker
   ],
   bootstrap: [AppComponent]
 })
