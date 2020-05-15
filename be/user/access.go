@@ -283,8 +283,8 @@ func (s *UserAccess) CountSocietyAdmins(in string) (int, error) {
 }
 
 func (s *UserAccess) UpdateSociety(in *models.Society) (*models.Society, error) {
-	society := &models.Society{Id: in.Id}
-	if err := s.Db.Model(society).Select(); err != nil {
+	society := new(models.Society)
+	if err := s.Db.Model(society).Where("id = ?", in.Id).Select(); err != nil {
 		return &models.Society{}, fmt.Errorf("Error find society: %w ", err)
 	}
 

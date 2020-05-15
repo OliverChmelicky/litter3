@@ -48,6 +48,7 @@ export class EditSocietyComponent implements OnInit {
       this.societyService.getSociety(params.get('societyId')).subscribe(
         society => {
             this.society = society
+            console.log(society.Avatar)
           this.userService.getMe().subscribe(
             res => {
               this.me = res

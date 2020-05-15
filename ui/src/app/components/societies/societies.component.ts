@@ -28,7 +28,7 @@ export interface DialogData {
 export class SocietiesComponent implements OnInit {
   actualPaging: PagingModel;
   pageEvent: PageEvent;
-  displayedColumns: string[] = ['position', 'name', 'members', 'createdAt', 'showMore'];
+  displayedColumns: string[] = ['position', 'avatar','name', 'members', 'createdAt', 'showMore'];
   dataSource: SocietiesTableElementModel[];
   expandedElement: SocietiesTableElementModel | null;
 
@@ -52,9 +52,6 @@ export class SocietiesComponent implements OnInit {
       this.actualPaging = resp.Paging
         this.dataSource = [];
         resp.Societies.map( (soc, i) => {
-          if (soc.Avatar) {
-            soc.Avatar = ApisModel.pictureBucketPrefix + soc.Avatar
-          }
           this.dataSource.push(
             {
               Society: soc,
