@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "litter3-olo-gcp": {
+      "hosting": {
+        "ui": [
+          "litter3-olo-gcp"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "litter3-olo-gcp"
+  }
+}

@@ -1,7 +1,7 @@
 <div>
 
   <div>
-    <img src="{{society.Avatar}}">
+    <app-image [image]="society.Avatar"></app-image>
     <input type="file" (change)="onFileSelected($event)">
   </div>
 
@@ -28,7 +28,7 @@
 
         <ng-container matColumnDef="image">
           <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let element"><img src="{{element.user.Avatar ? element.Avatar : 'img.png'}}"></td>
+          <td mat-cell *matCellDef="let element"><app-image [image]="element.user.Avatar"></app-image></td>
         </ng-container>
 
         <ng-container matColumnDef="first-name">

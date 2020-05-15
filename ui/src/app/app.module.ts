@@ -37,6 +37,8 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {MatInputModule} from "@angular/material/input";
 import { EditTrashComponent } from './components/edit-trash/edit-trash.component';
 import { EditSocietyComponent } from './components/edit-society/edit-society.component';
+import { LazyLoadImgComponent } from './components/lazy-load-img/lazy-load-img.component';
+import {LazyLoadImageModule} from "ng-lazyload-image";
 
 @NgModule({
   declarations: [
@@ -56,6 +58,7 @@ import { EditSocietyComponent } from './components/edit-society/edit-society.com
     CreateSocietyComponent,
     EditTrashComponent,
     EditSocietyComponent,
+    LazyLoadImgComponent,
   ],
   imports: [
     BrowserModule,
@@ -83,6 +86,7 @@ import { EditSocietyComponent } from './components/edit-society/edit-society.com
     MatMenuModule,
     MatDialogModule,
     MatInputModule,
+    LazyLoadImageModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },

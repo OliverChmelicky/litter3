@@ -54,7 +54,7 @@
           <!-- Weight Column -->
           <ng-container matColumnDef="image">
             <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let element"><img src="{{element.Avatar ? element.Avatar : 'img.png'}}"></td>
+            <td mat-cell *matCellDef="let element"><app-image [image]="element.Avatar"></app-image></td>
           </ng-container>
 
           <ng-container matColumnDef="first-name">
