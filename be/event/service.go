@@ -34,11 +34,11 @@ func (s *EventService) CreateEvent(c echo.Context) error {
 	}
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.SocietyId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateEvent, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	}
@@ -72,11 +72,11 @@ func (s *EventService) AttendEvent(c echo.Context) error {
 	}
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.PickerId)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrAttendEvent, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	} else {
@@ -106,11 +106,11 @@ func (s *EventService) CannotAttendEvent(c echo.Context) error {
 	request.AsSociety = asSociety
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.PickerId)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCannotAttendEvent, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	} else {
@@ -135,11 +135,11 @@ func (s *EventService) UpdateEvent(c echo.Context) error {
 	}
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.SocietyId)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	}
@@ -163,11 +163,11 @@ func (s *EventService) EditEventRights(c echo.Context) error {
 	}
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.SocietyId)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrEditEventRights, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	}
@@ -190,11 +190,11 @@ func (s *EventService) DeleteEvent(c echo.Context) error {
 	}
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.PickerId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.PickerId)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrDeleteEvent, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	}
@@ -239,11 +239,11 @@ func (s *EventService) CreateCollectionsOrganized(c echo.Context) error {
 	}
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.OrganizerId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.OrganizerId)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	} else {
@@ -268,11 +268,11 @@ func (s *EventService) UpdateCollectionOrganized(c echo.Context) error {
 	}
 
 	if request.AsSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.OrganizerId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.OrganizerId)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	} else {
@@ -287,7 +287,7 @@ func (s *EventService) UpdateCollectionOrganized(c echo.Context) error {
 	return c.JSON(http.StatusCreated, collections)
 }
 
-func (s *EventService) Deleteollection(c echo.Context) error {
+func (s *EventService) DeleteCollection(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
 	eventId := c.QueryParam("event")
@@ -299,11 +299,11 @@ func (s *EventService) Deleteollection(c echo.Context) error {
 	}
 
 	if asSociety {
-		isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, pickerId)
+		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, pickerId)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCannotAttendEvent, err))
 		}
-		if !isAdmin {
+		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
 		}
 	} else {

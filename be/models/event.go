@@ -14,7 +14,6 @@ type EventRequest struct {
 	AsSociety   bool
 	Description string
 	Date        time.Time
-	Publc       bool
 	Trash       []string
 }
 
@@ -38,10 +37,10 @@ type EventPermissionRequest struct {
 }
 
 type Event struct {
-	tableName    struct{} `pg:"events"json:"-"`
-	Id           string   `pg:",pk"`
-	Date         time.Time
-	Description  string
+	tableName   struct{} `pg:"events"json:"-"`
+	Id          string   `pg:",pk"`
+	Date        time.Time
+	Description string
 	//Publc        bool      `pg:",use_zero"`
 	CreatedAt    time.Time `pg:"default:now()"`
 	TrashIds     []string  `pg:"-"`

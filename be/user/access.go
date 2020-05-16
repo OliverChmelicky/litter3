@@ -262,6 +262,20 @@ func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	return admins, nil
 }
 
+func (s *UserAccess) GetSocietyEditors(societyId string) ([]string, error) {
+	members := new(models.Member)
+	var admins []string
+	err := s.Db.Model(members).Column("user_id").Where("(permission = 'admin' or permission = 'editor') and society_id = ? ", societyId).Select(&admins)
+	if err != nil {
+		return nil, err
+	}
+	if len(admins) == 0 {
+		return nil, pg.ErrNoRows
+	}
+
+	return admins, nil
+}
+
 func (s *UserAccess) GetEditableSocieties(userId string) ([]models.Society, error) {
 	var memberships []models.Member
 	err := s.Db.Model(&memberships).Where("(permission = 'admin' or permission = 'editor') and user_id = ? ", userId).Select()
@@ -270,11 +284,8 @@ func (s *UserAccess) GetEditableSocieties(userId string) ([]models.Society, erro
 		return []models.Society{}, err
 	}
 
-	fmt.Println("Som vo vsetkych")
-	fmt.Println(memberships)
-
 	var societiesIds []string
-	for _,m := range memberships {
+	for _, m := range memberships {
 		societiesIds = append(societiesIds, m.SocietyId)
 	}
 
@@ -283,8 +294,6 @@ func (s *UserAccess) GetEditableSocieties(userId string) ([]models.Society, erro
 	if err != nil {
 		return []models.Society{}, err
 	}
-
-	fmt.Println(societies)
 
 	return societies, nil
 }
@@ -562,4 +571,21 @@ func (s *UserAccess) IsUserSocietyAdmin(userId, societyId string) (bool, int, er
 		}
 	}
 	return false, len(admins), nil
+}
+
+func (s *UserAccess) HasUserSocietyEditorRights(userId string, societyId string) (bool, int, error) {
+	editors, err := s.GetSocietyEditors(societyId) //admins + edotors
+	if err != nil {
+		return false, 0, err
+	}
+	if len(editors) == 0 {
+		return false, 0, pg.ErrNoRows
+	}
+
+	for _, adminId := range editors {
+		if adminId == userId {
+			return true, len(editors), nil
+		}
+	}
+	return false, len(editors), nil
 }

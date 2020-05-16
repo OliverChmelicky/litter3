@@ -25,3 +25,13 @@ export interface EventCreatorModel {
   Id: string,
   VisibleName: string
 }
+
+export interface EventRequest {
+  Id?:          string
+  UserId?:      string
+  SocietyId?:   string
+  AsSociety?:   boolean
+  Description?: string
+  Date?:        Date
+  Trash?:       string[]
+}

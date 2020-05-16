@@ -419,7 +419,7 @@ func (s *userService) GetEditableSocieties(c echo.Context) error {
 
 	societies, err := s.UserAccess.GetEditableSocieties(userId)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetEditableSocieties, err))
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetEditableSocieties, err))
 	}
 
 	return c.JSON(http.StatusOK, societies)

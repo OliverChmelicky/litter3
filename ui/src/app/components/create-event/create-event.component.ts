@@ -16,7 +16,7 @@ import {SocietyService} from "../../services/society/society.service";
 export class CreateEventComponent implements OnInit {
   me: UserModel;
   availableCreators: EventCreatorModel[] = [];
-  selectedCreator: number;
+  selectedCreator: number = 0;
   newEvent: EventModel = {
     Date: new Date(),
     Description: '',
@@ -50,6 +50,7 @@ export class CreateEventComponent implements OnInit {
                 AsSociety: true
               }))
             }
+            console.log(this.availableCreators)
           }
         )
       }
@@ -60,7 +61,18 @@ export class CreateEventComponent implements OnInit {
   onSubmit() {
     this.newEvent.Date = this.date.value
     this.newEvent.Description = this.description
-    console.log(this.newEvent)
+    const request = {
+      UserId: this.me.Id,
+      SocietyId: this.availableCreators[this.selectedCreator].Id,
+      AsSociety: this.availableCreators[this.selectedCreator].AsSociety,
+      Description: this.description,
+      Date: this.date.value,
+      Trash: [],
+    }
+    console.log('new event je')
+    console.log(request)
   }
+
+
 
 }

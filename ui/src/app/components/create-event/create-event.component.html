@@ -13,6 +13,14 @@
     <label>
       <textarea [(ngModel)]="description"></textarea>
     </label>
+    <div>
+      <mat-form-field>
+        <mat-label>Creator</mat-label>
+        <mat-select [(value)]="selectedCreator">
+          <mat-option *ngFor="let choice of availableCreators;let i = index" [value]="i">{{availableCreators[i].VisibleName}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
   </div>
 
   <button mat-button (click)="onSubmit()" > Create </button>

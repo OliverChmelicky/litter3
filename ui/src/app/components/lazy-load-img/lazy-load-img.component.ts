@@ -7,13 +7,11 @@ import {AuthService} from "../../services/auth/auth.service";
   selector: 'app-image',
   template: `
     <img #element [defaultImage]="defaultImage" [lazyLoad]="image">
-    <img #test src="">
   `,
   styleUrls: ['./lazy-load-img.component.css']
 })
 export class LazyLoadImgComponent implements OnInit {
   @ViewChild('element', {static: false}) el: HTMLImageElement;
-  @ViewChild('test', {static: false}) test: HTMLImageElement;
 
   url: string;
 
@@ -45,16 +43,14 @@ export class LazyLoadImgComponent implements OnInit {
     }
 
     if (this.el) {
-      console.log('idem poslat na URL: ', this.url)
       const imageBlob = await this.loadImage({
         element: this.el,
         imagePath: this.url
       })
 
-      console.log('pred volanim: ', imageBlob)
+      console.log('blob je: ', imageBlob)
       this.el.src = imageBlob
-      this.test.src = imageBlob;
-      //this.setLoadedImage({element: this.el, imagePath: imageBlob})
+      this.setLoadedImage({element: this.el, imagePath: imageBlob})
     }
   }
 
@@ -68,8 +64,9 @@ export class LazyLoadImgComponent implements OnInit {
   }
 
   setLoadedImage({element, imagePath, useSrcset}: SetLoadedImageProps) {
+    console.log(this.el.currentSrc)
     this.el.src = imagePath
-    element.attributes['src'] = imagePath
+    console.log(this.el.currentSrc)
   }
 
 }
