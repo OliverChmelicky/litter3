@@ -7,4 +7,5 @@ export const ApisModel = {
   event: 'events',
   collection: 'collections',
   pictureBucketPrefix: 'https://storage.googleapis.com/litter3-olo-gcp.appspot.com/',
+  exampleBinUrl: '',
 }

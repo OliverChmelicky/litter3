@@ -62,9 +62,7 @@ export class GoogleMapComponent implements OnInit {
   async onMapReady(map: GoogleMap) {
     this.map = map;
     //In an issue it was written that this helps but don`t
-    // await this.sleep(2000)
-    // await setTimeout(()=>{ this.agmMap.triggerResize(); },500)
-    // await this.sleep(2000)
+    await setTimeout(()=>{ this.agmMap.triggerResize(); },1000)
     this.loadNewMarkers()
   }
 
@@ -115,6 +113,8 @@ export class GoogleMapComponent implements OnInit {
   }
 
   loadNewMarkers() {
+    console.log('co to vola')
+
     const p1 = this.map.getBounds().getNorthEast()
     const p2 = this.map.getBounds().getSouthWest()
 
@@ -134,7 +134,7 @@ export class GoogleMapComponent implements OnInit {
     //get double range for markers
     this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), d * 2).subscribe(
       trash => {
-        console.log(trash)
+        console.log('Mam novy trash',trash)
         this.allMarkers = this.getOnlyNewMarkers();
         for (let i = 0; i < trash.length; i++) {
           this.allMarkers.push({

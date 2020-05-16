@@ -290,7 +290,7 @@ func (s *UserAccess) GetEditableSocieties(userId string) ([]models.Society, erro
 	}
 
 	var societies []models.Society
-	err = s.Db.Model(&societies).Where("id IN (?)", pg.In(societiesIds)).Select()
+	err = s.Db.Model(&societies).Where("id IN (?)", societiesIds).Select()
 	if err != nil {
 		return []models.Society{}, err
 	}
