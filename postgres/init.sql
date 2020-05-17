@@ -99,7 +99,7 @@ create table collections
 (
     id            VARCHAR PRIMARY KEY,
     trash_id      VARCHAR REFERENCES trash (id) on delete cascade,
-    event_id      VARCHAR REFERENCES events (id) on delete cascade,
+    event_id      VARCHAR REFERENCES events (id) on delete cascade, --maybe trigger that it has at least one user-collection or not null event_id. Can have both
     weight        real,
     cleaned_trash boolean     NOT NULL,
     created_at    timestamptz NOT NULL,

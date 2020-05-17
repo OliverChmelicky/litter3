@@ -38,7 +38,7 @@ func (s *UserSuite) SetupSuite() {
 		log.Error("PostgresSQL is down")
 	}
 
-	s.service = CreateService(db, nil)
+	s.service = CreateService(db, nil, nil)
 	s.db = db
 
 	s.e = echo.New()
@@ -61,7 +61,7 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		{
 			heinrich:  &models.User{Id: "1", FirstName: "Heinrich", LastName: "Herrer", Uid: "7", Email: "Heinrich@Herrer.tibet", CreatedAt: time.Now()},
 			peterAsks: &models.User{FirstName: "Novy", LastName: "Member", Uid: "5", Email: "Ja@Peter.cz"},
-			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrApplyForFriendship},
+			err:       &custom_errors.ErrorModel{ErrorType: custom_errors.ErrConflict},
 		},
 	}
 
@@ -92,7 +92,7 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		c := s.e.NewContext(req, rec)
 		c.Set("userId", candidate.peterAsks.Id)
 
-		s.NoError(s.service.ApplyForFriendship(c))
+		s.NoError(s.service.ApplyForFriendshipById(c))
 
 		resp := &models.FriendRequest{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
@@ -113,7 +113,7 @@ func (s *UserSuite) Test_ApplyForFriendship_RemoveRequest_AllByUser() {
 		c = s.e.NewContext(req, rec)
 		c.Set("userId", candidate.peterAsks.Id)
 
-		s.NoError(s.service.ApplyForFriendship(c))
+		s.NoError(s.service.ApplyForFriendshipById(c))
 
 		respErr := &custom_errors.ErrorModel{}
 		err = json.Unmarshal(rec.Body.Bytes(), respErr)
@@ -189,7 +189,7 @@ func (s *UserSuite) Test_RequestFriendshipExistingFriendship() {
 		c := s.e.NewContext(req, rec)
 		c.Set("userId", candidate.peterAsks.Id)
 
-		s.Nil(s.service.ApplyForFriendship(c))
+		s.Nil(s.service.ApplyForFriendshipById(c))
 
 		resp := &custom_errors.ErrorModel{}
 		err = json.Unmarshal(rec.Body.Bytes(), resp)
@@ -224,7 +224,7 @@ func (s *UserSuite) Test_AddFriend() {
 		_, err = s.service.UserAccess.AddFriendshipRequest(candidates[i].request)
 		s.Nil(err)
 		//fir filling final answer
-		candidates[i].response = &models.Friends{User1Id: candidates[i].heinrich.Id, User2Id: candidates[i].peterAsks.Id}
+		candidates[i].response = &models.Friends{User1Id: candidates[i].peterAsks.Id, User2Id: candidates[i].heinrich.Id}
 	}
 
 	for _, candidate := range candidates {
@@ -238,6 +238,9 @@ func (s *UserSuite) Test_AddFriend() {
 		c := s.e.NewContext(req, rec)
 
 		c.Set("userId", candidate.heinrich.Id)
+
+		c.SetParamNames("wantedUser")
+		c.SetParamValues(candidate.peterAsks.Id)
 
 		s.Nil(s.service.AcceptFriendship(c))
 
@@ -281,7 +284,7 @@ func (s *UserSuite) Test_RemoveFriend() {
 		rec := httptest.NewRecorder()
 		c := s.e.NewContext(req, rec)
 
-		c.SetParamNames("unfriendId")
+		c.SetParamNames("notWanted")
 		c.SetParamValues(candidate.heinrich.Id)
 		c.Set("userId", candidate.peterAsks.Id)
 
@@ -292,6 +295,102 @@ func (s *UserSuite) Test_RemoveFriend() {
 		err = s.db.Model(rq).Where("user1_id = ? and user2_id = ?", candidate.friendship.User1Id, candidate.friendship.User2Id).Select()
 		s.EqualValues(pg.ErrNoRows, err)
 	}
+}
+
+func (s *SocietySuite) Test_DeleteUser() {
+	candidates := []struct {
+		admin                                     *models.User
+		society                                   *models.Society
+		memberAndEventAttendantAndFriendRequester *models.User
+		applicantAndEventAttendantAndFriend       *models.User
+		event                                     *models.Event
+		trash                                     *models.Trash //check trash-event
+		collection                                *models.Collection
+	}{
+		{
+			admin:   &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "3", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			society: &models.Society{Name: "Dake meno"},
+			memberAndEventAttendantAndFriendRequester: &models.User{FirstName: "Hello", LastName: "Friend", Uid: "8", Email: "Ja@Janovutbr.com"},
+			applicantAndEventAttendantAndFriend:       &models.User{FirstName: "Hello", LastName: "Fero", Uid: "9", Email: "Ja@Maria.cz"},
+			event:                                     &models.Event{Id: "123", Date: time.Now(), CreatedAt: time.Now()},
+			trash:                                     &models.Trash{Id: "321", CreatedAt: time.Now(), Location: models.Point{0, 0}},
+			collection:                                &models.Collection{Id: "111", CreatedAt: time.Now(), TrashId: "321", EventId: "123", Weight: 32},
+		},
+	}
+
+	//create user, his society add member and applicant
+	//create friend and friend requester
+	//create trash, event, add two attendants there + society is admin
+	//create collection with eventId and create trash-event relation
+	for i, _ := range candidates {
+		var err error
+		//first part
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		s.Nil(err)
+		candidates[i].memberAndEventAttendantAndFriendRequester, err = s.service.UserAccess.CreateUser(candidates[i].memberAndEventAttendantAndFriendRequester)
+		s.Nil(err)
+		candidates[i].applicantAndEventAttendantAndFriend, err = s.service.UserAccess.CreateUser(candidates[i].applicantAndEventAttendantAndFriend)
+		s.Nil(err)
+
+		application := &models.Applicant{UserId: candidates[i].memberAndEventAttendantAndFriendRequester.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.UserAccess.AddApplicant(application)
+		s.Nil(err)
+		_, err = s.service.UserAccess.AcceptApplicant(application.UserId, application.SocietyId)
+		s.Nil(err)
+
+		_ = &models.Applicant{UserId: candidates[i].applicantAndEventAttendantAndFriend.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.UserAccess.AddApplicant(application)
+		s.Nil(err)
+
+		//second part
+		err = s.db.Insert(&models.Friends{User1Id: candidates[i].admin.Id, User2Id: candidates[i].memberAndEventAttendantAndFriendRequester.Id})
+		s.Nil(err)
+		err = s.db.Insert(&models.FriendRequest{User1Id: candidates[i].admin.Id, User2Id: candidates[i].applicantAndEventAttendantAndFriend.Id})
+		s.Nil(err)
+
+		//third part
+		err = s.db.Insert(candidates[i].trash)
+		s.Nil(err)
+		err = s.db.Insert(candidates[i].event)
+		s.Nil(err)
+		err = s.db.Insert(&models.EventUser{UserId: candidates[i].applicantAndEventAttendantAndFriend.Id, EventId: candidates[i].event.Id, Permission: "viewer"})
+		s.Nil(err)
+		err = s.db.Insert(&models.EventUser{UserId: candidates[i].memberAndEventAttendantAndFriendRequester.Id, EventId: candidates[i].event.Id, Permission: "viewer"})
+		s.Nil(err)
+		err = s.db.Insert(&models.EventSociety{SocietyId: candidates[i].society.Id, EventId: candidates[i].event.Id, Permission: "creator"})
+		s.Nil(err)
+
+		//fourth part
+		candidates[i].collection.EventId = candidates[i].event.Id
+		candidates[i].collection.TrashId = candidates[i].trash.Id
+
+		err = s.db.Insert(candidates[i].collection)
+		s.Nil(err)
+		err = s.db.Insert(&models.EventTrash{TrashId: candidates[i].trash.Id, EventId: candidates[i].event.Id})
+		s.Nil(err)
+	}
+
+	//for _, candidate := range candidates {
+	//	req := httptest.NewRequest(echo.POST, "/societies/"+candidate.society.Id, nil)
+	//
+	//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	//	rec := httptest.NewRecorder()
+	//	c := s.e.NewContext(req, rec)
+	//
+	//	c.SetParamNames("societyId")
+	//	c.SetParamValues(candidate.society.Id)
+	//
+	//	s.NoError(s.service.GetSocietyAdmins(c))
+	//
+	//	resp := []models.User{}
+	//	err := json.Unmarshal(rec.Body.Bytes(), &resp)
+	//	s.Nil(err)
+	//
+	//	candidates[i].relation.CreatedAt = resp[0].CreatedAt
+	//	s.EqualValues(candidates[i].relation, resp[0])
+	//}
 }
 
 func (s *UserSuite) TearDownSuite() {

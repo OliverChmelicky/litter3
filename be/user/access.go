@@ -515,13 +515,11 @@ func (s *UserAccess) AddFriendshipRequest(request *models.FriendRequest) (*model
 
 func (s *UserAccess) RemoveApplicationForFriendship(request *models.FriendRequest) error {
 	application := new(models.FriendRequest)
-	res, err := s.Db.Model(application).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", request.User1Id, request.User2Id, request.User2Id, request.User1Id).Delete()
+	_, err := s.Db.Model(application).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", request.User1Id, request.User2Id, request.User2Id, request.User1Id).Delete()
 	if err != nil {
 		return err
 	}
-	if res.RowsAffected() == 0 {
-		return errors.New("REMOVE APPLICATION FOR FRIENDSHIP: NO ROWS WERE AFFECTED")
-	}
+
 	return err
 }
 
@@ -534,7 +532,7 @@ func (s *UserAccess) ConfirmFriendship(requesterId, acceptorId string) (*models.
 	}
 	defer tx.Rollback()
 
-	res, err := tx.Model(request).Where("user1_id = ? and user2_id = ?", requesterId, acceptorId).Delete()
+	res, err := tx.Model(request).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", requesterId, acceptorId, acceptorId, requesterId).Delete()
 	if err != nil {
 		return &models.Friends{}, fmt.Errorf("Error deleting Friendship request %w", err)
 	}
@@ -557,6 +555,8 @@ func (s *UserAccess) RemoveFriend(friendship *models.Friends) error {
 		return err
 	}
 	if res.RowsAffected() == 0 {
+		fmt.Println("Why no rows were affected")
+		fmt.Println(friendship)
 		return errors.New("REMOVE FRIEND: NO ROWS WERE AFFECTED")
 	}
 	return err

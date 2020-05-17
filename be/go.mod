@@ -17,7 +17,7 @@ require (
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
-	github.com/spf13/viper v1.6.3 // indirect
+	github.com/spf13/viper v1.6.3
 	github.com/stretchr/testify v1.5.1
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.11 // indirect

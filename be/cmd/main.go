@@ -47,7 +47,6 @@ func main() {
 		log.Error("PostgreSQL is down")
 		return
 	}
-	db.AddQueryHook(middlewareService.DbMiddleware{})
 
 	opt := option.WithCredentialsFile(viper.GetString("firebaseCredentials"))
 	firebaseAuth, err := getFirebaseAuth(opt)
@@ -80,7 +79,6 @@ func main() {
 
 	e.GET("/users/societies", userService.GetMySocieties, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/societies/editable", userService.GetEditableSocieties, tokenMiddleware.AuthorizeUser)
-
 
 	e.POST("/users/friend/add/id", userService.ApplyForFriendshipById, tokenMiddleware.AuthorizeUser)
 	e.POST("/users/friend/add/email", userService.ApplyForFriendshipByEmail, tokenMiddleware.AuthorizeUser)

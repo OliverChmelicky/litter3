@@ -38,7 +38,7 @@ func (s *SocietySuite) SetupSuite() {
 		log.Error("PostgresSQL is down")
 	}
 
-	s.service = CreateService(db, nil)
+	s.service = CreateService(db, nil, nil)
 	s.db = db
 
 	s.e = echo.New()
@@ -364,7 +364,7 @@ func (s *SocietySuite) Test_ChangeRights() {
 		society       *models.Society
 		friend        *models.User
 		oldMembership *models.Member
-		newMembership *models.Member
+		newMembership []models.Member
 		err           string
 	}{
 		{
@@ -372,14 +372,14 @@ func (s *SocietySuite) Test_ChangeRights() {
 			society:       &models.Society{Name: "Dake meno"},
 			friend:        &models.User{FirstName: "Novy", LastName: "Member", Uid: "3", Email: "Peter@me.cz"},
 			oldMembership: &models.Member{Permission: models.Membership("member")},
-			newMembership: &models.Member{Permission: models.Membership("admin")},
+			newMembership: []models.Member{{Permission: models.Membership("admin")}},
 		},
 		{
 			admin:         &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "7", Email: "Ja@Janovutbr.cz", CreatedAt: time.Now()},
 			society:       &models.Society{Name: "Dake meno"},
 			friend:        &models.User{FirstName: "Novy", LastName: "Member", Uid: "1", Email: "me@me.cz"},
 			oldMembership: &models.Member{Permission: models.Membership("admin")},
-			newMembership: &models.Member{Permission: models.Membership("member")},
+			newMembership: []models.Member{{Permission: models.Membership("member")}},
 		},
 	}
 
@@ -403,8 +403,8 @@ func (s *SocietySuite) Test_ChangeRights() {
 			s.Nil(err)
 		}
 
-		candidates[i].newMembership.UserId = candidates[i].friend.Id
-		candidates[i].newMembership.SocietyId = candidates[i].society.Id
+		candidates[i].newMembership[0].UserId = candidates[i].friend.Id
+		candidates[i].newMembership[0].SocietyId = candidates[i].society.Id
 	}
 
 	for _, candidate := range candidates {
@@ -420,11 +420,11 @@ func (s *SocietySuite) Test_ChangeRights() {
 
 		s.NoError(s.service.ChangeMemberRights(c))
 
-		resp := &models.Member{}
-		err = json.Unmarshal(rec.Body.Bytes(), resp)
+		var resp []models.Member
+		err = json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
 
-		candidate.newMembership.CreatedAt = resp.CreatedAt
+		candidate.newMembership[0].CreatedAt = resp[0].CreatedAt
 		s.EqualValues(candidate.newMembership, resp)
 	}
 }
@@ -515,21 +515,105 @@ func (s *SocietySuite) Test_GetSocietyAdmins() {
 
 		s.NoError(s.service.GetSocietyAdmins(c))
 
-		resp := []models.User{}
+		var resp []string
 		err := json.Unmarshal(rec.Body.Bytes(), &resp)
 		s.Nil(err)
 
-		candidates[i].relation.CreatedAt = resp[0].Admins[0].CreatedAt
-		s.EqualValues(candidates[i].relation, resp[0].Admins[0])
+		s.EqualValues(candidates[i].relation.UserId, resp[0])
 	}
 }
 
-//remove admin by another admin
-//remove member by admin
-//test remove sam seba(som admin) a som posledny admin v society
+//TODO remove admin by another admin
+//TODO remove member by admin
 
-//test delete society //delete user
-//ale delete society mozem spravit dvomi sposobmi, odide posledny admin, alebo to admin zrusi priamo
+func (s *SocietySuite) Test_DeleteSociety() {
+	candidates := []struct {
+		admin                      *models.User
+		society                    *models.Society
+		memberAndEventAttendant    *models.User
+		applicantAndEventAttendant *models.User
+		event                      *models.Event
+		trash                      *models.Trash //check trash-event
+		collection                 *models.Collection
+	}{
+		{
+			admin:                      &models.User{Id: "1", FirstName: "Jano", LastName: "Motyka", Uid: "3", Email: "Ja@kamo.com", CreatedAt: time.Now()},
+			society:                    &models.Society{Name: "Dake meno"},
+			memberAndEventAttendant:    &models.User{FirstName: "Hello", LastName: "Friend", Uid: "8", Email: "Ja@Janovutbr.com"},
+			applicantAndEventAttendant: &models.User{FirstName: "Hello", LastName: "Fero", Uid: "9", Email: "Ja@Maria.cz"},
+			event:                      &models.Event{Id: "123", Date: time.Now(), CreatedAt: time.Now()},
+			trash:                      &models.Trash{Id: "321", CreatedAt: time.Now(), Location: models.Point{0, 0}},
+			collection:                 &models.Collection{Id: "111", CreatedAt: time.Now(), TrashId: "321", EventId: "123", Weight: 32},
+		},
+	}
+
+	//create user, his society add member and applicant
+	//create trash, event, add two attendants there + society is admin
+	//create collection with eventId and create trash-event relation
+	for i, _ := range candidates {
+		var err error
+		//first part
+		candidates[i].admin, err = s.service.UserAccess.CreateUser(candidates[i].admin)
+		s.Nil(err)
+		candidates[i].society, err = s.service.UserAccess.CreateSocietyWithAdmin(candidates[i].society, candidates[i].admin.Id)
+		s.Nil(err)
+		candidates[i].memberAndEventAttendant, err = s.service.UserAccess.CreateUser(candidates[i].memberAndEventAttendant)
+		s.Nil(err)
+		candidates[i].applicantAndEventAttendant, err = s.service.UserAccess.CreateUser(candidates[i].applicantAndEventAttendant)
+		s.Nil(err)
+
+		application := &models.Applicant{UserId: candidates[i].memberAndEventAttendant.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.UserAccess.AddApplicant(application)
+		s.Nil(err)
+		_, err = s.service.UserAccess.AcceptApplicant(application.UserId, application.SocietyId)
+		s.Nil(err)
+
+		_ = &models.Applicant{UserId: candidates[i].applicantAndEventAttendant.Id, SocietyId: candidates[i].society.Id}
+		_, err = s.service.UserAccess.AddApplicant(application)
+		s.Nil(err)
+
+		//second part
+		err = s.db.Insert(candidates[i].trash)
+		s.Nil(err)
+		err = s.db.Insert(candidates[i].event)
+		s.Nil(err)
+		err = s.db.Insert(&models.EventUser{UserId: candidates[i].applicantAndEventAttendant.Id, EventId: candidates[i].event.Id, Permission: "viewer"})
+		s.Nil(err)
+		err = s.db.Insert(&models.EventUser{UserId: candidates[i].memberAndEventAttendant.Id, EventId: candidates[i].event.Id, Permission: "viewer"})
+		s.Nil(err)
+		err = s.db.Insert(&models.EventSociety{SocietyId: candidates[i].society.Id, EventId: candidates[i].event.Id, Permission: "creator"})
+		s.Nil(err)
+
+		//third part
+		candidates[i].collection.EventId = candidates[i].event.Id
+		candidates[i].collection.TrashId = candidates[i].trash.Id
+
+		err = s.db.Insert(candidates[i].collection)
+		s.Nil(err)
+		err = s.db.Insert(&models.EventTrash{TrashId: candidates[i].trash.Id, EventId: candidates[i].event.Id})
+		s.Nil(err)
+	}
+
+	//for _, candidate := range candidates {
+	//	req := httptest.NewRequest(echo.POST, "/societies/"+candidate.society.Id, nil)
+	//
+	//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	//	rec := httptest.NewRecorder()
+	//	c := s.e.NewContext(req, rec)
+	//
+	//	c.SetParamNames("societyId")
+	//	c.SetParamValues(candidate.society.Id)
+	//
+	//	s.NoError(s.service.GetSocietyAdmins(c))
+	//
+	//	resp := []models.User{}
+	//	err := json.Unmarshal(rec.Body.Bytes(), &resp)
+	//	s.Nil(err)
+	//
+	//	candidates[i].relation.CreatedAt = resp[0].CreatedAt
+	//	s.EqualValues(candidates[i].relation, resp[0])
+	//}
+}
 
 func (s *SocietySuite) TearDownSuite() {
 	s.db.Close()

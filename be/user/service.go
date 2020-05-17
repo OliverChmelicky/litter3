@@ -291,7 +291,6 @@ func (s *userService) AcceptFriendship(c echo.Context) error {
 	acceptorId := c.Get("userId").(string)
 
 	requesterId := c.Param("wantedUser")
-	fmt.Println(requesterId)
 
 	friendship := &models.Friends{User1Id: requesterId, User2Id: acceptorId}
 	areFriends, err := s.UserAccess.AreFriends(friendship)
