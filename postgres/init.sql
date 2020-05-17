@@ -22,17 +22,23 @@ CREATE TYPE accessibility AS ENUM (
     'underWater'
     );
 
+CREATE TYPE size AS ENUM (
+    'unknown',
+    'bag',
+    'wheelbarrow',
+    'car'
+    );
+
 CREATE TYPE membership AS ENUM (
     'admin',
     'editor',
     'member'
     );
 
-CREATE TYPE size AS ENUM (
-    'unknown',
-    'bag',
-    'wheelbarrow',
-    'car'
+CREATE TYPE eventRights AS ENUM (
+    'creator',
+    'editor',
+    'viewer'
     );
 
 
@@ -75,7 +81,7 @@ create table trash_comments
 (
     id         varchar PRIMARY KEY,
     trash_id   VARCHAR REFERENCES trash (id) on delete cascade,
-    user_id    VARCHAR REFERENCES users (id) on delete cascade,
+    user_id    VARCHAR REFERENCES users (id) on delete set null,
     message    varchar     not null,
     created_at timestamptz NOT NULL,
     updated_at timestamptz NOT NULL
@@ -103,7 +109,7 @@ create table collections
 
 create table societies_members
 (
-    "user_id"  VARCHAR REFERENCES users (id),
+    "user_id"  VARCHAR REFERENCES users (id) on delete cascade ,
     society_id VARCHAR REFERENCES societies (id) on delete cascade,
     permission membership  not null,
     created_at timestamptz NOT NULL,
@@ -120,17 +126,10 @@ create table societies_applicants
 
 create table users_collections
 (
-    "user_id"     VARCHAR REFERENCES users (id) on delete cascade,
+    "user_id"     VARCHAR REFERENCES users (id),  -- could be trigger that if he is the last then delete the whole collection
     collection_id VARCHAR REFERENCES collections (id) on delete cascade,
     PRIMARY KEY ("user_id", collection_id)
 );
-
-
-CREATE TYPE eventRights AS ENUM (
-    'creator',
-    'editor',
-    'viewer'
-    );
 
 create table events_societies
 (
@@ -154,7 +153,6 @@ create table events_trash
     event_id VARCHAR REFERENCES events (id) on delete cascade,
     PRIMARY KEY (trash_id, event_id)
 );
-
 
 create table friends
 (

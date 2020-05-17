@@ -114,21 +114,18 @@ func (s *UserAccess) DeleteUser(userId string) error {
 	for _, member := range members {
 		societies = append(societies, member.SocietyId)
 	}
-	err = s.DeleteSocieties(societies)
+	err = s.DeleteSocieties(societies, tx)
 	if err != nil {
 		return err
 	}
 
 	var eventOrganizers []models.EventUser
-	_, err = tx.Model(&eventOrganizers).Where("user_id = ? and permission = ?", userId, "creator").Delete()
+	_, err = tx.Model(&eventOrganizers).Where("user_id = ?", userId).Delete() //TODO trigger to delete event if user is organizer
 	if err != nil {
 		return err
 	}
 
-	_, err = s.Db.Model(&eventOrganizers).Where("id = ?", userId).Delete()
-	if err != nil {
-		return err
-	}
+	//TODO trigger to delete user collections and collection itslf if user is alone in that collection
 
 	return tx.Commit()
 }
@@ -418,27 +415,37 @@ func (s *UserAccess) IsMember(userId, societyId string) (bool, error) {
 
 func (s *UserAccess) DeleteSociety(id string) error {
 	socEvent := new(models.EventSociety)
-	_, err := s.Db.Model(&socEvent).Where("society_id = ? and permission = ?", id, "creator").Delete()
+
+	tx, err := s.Db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Model(socEvent).Where("society_id = ?", id).Delete() //TODO handle by trigger the deletion of events which society organized
 	if err != nil {
 		return err
 	}
 
-	_, err = s.Db.Model(&socEvent).Where("id = ?", id).Delete()
+	society := new(models.Society)
+	_, err = tx.Model(society).Where("id = ?", id).Delete()
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return tx.Commit()
 }
 
-func (s *UserAccess) DeleteSocieties(ids []string) error {
+func (s *UserAccess) DeleteSocieties(ids []string, tx *pg.Tx) error {
 	socEvent := new(models.EventSociety)
-	_, err := s.Db.Model(&socEvent).Where("society_id IN (?) and permission = ?", ids, "creator").Delete()
+
+	_, err := s.Db.Model(socEvent).Where("society_id IN (?)", ids).Delete()
 	if err != nil {
 		return err
 	}
 
-	_, err = s.Db.Model(&socEvent).Where("id IN (?)", ids).Delete()
+	var societies []models.Society
+	_, err = s.Db.Model(&societies).Where("id IN (?)", ids).Delete()
 	if err != nil {
 		return err
 	}

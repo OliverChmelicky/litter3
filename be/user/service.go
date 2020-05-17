@@ -153,13 +153,19 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrRemoveApplicationForMembership, err))
 	}
 
-	return c.String(http.StatusOK, "")
+	return c.NoContent(http.StatusOK)
 }
 
-//func (s *userService) DeleteUser(c echo.Context) error {
-//	//TODO check ci neorganizuje event a potom vymaz event
-//	//TODO check ci nie je jediny admin skupiny a potom vymaz
-//}
+func (s *userService) DeleteUser(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	err := s.UserAccess.DeleteUser(userId)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteUser, err))
+	}
+
+	return c.NoContent(http.StatusOK)
+}
 
 //
 //
@@ -318,21 +324,11 @@ func (s *userService) RemoveFriend(c echo.Context) error {
 	return c.String(http.StatusOK, "")
 }
 
-func (s *userService) DeleteUser(c echo.Context) error {
-	userId := c.Get("userId").(string)
-
-	err := s.UserAccess.DeleteUser(userId)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteUser, err))
-	}
-
-	return nil
-}
-
 //
 //
 //
 //	SOCIETY PART
+//
 //
 //
 
