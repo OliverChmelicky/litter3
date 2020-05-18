@@ -42,6 +42,8 @@ import {LazyLoadImageModule} from "ng-lazyload-image";
 import { CreateEventComponent } from './components/create-event/create-event.component';
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
+import { EventDetailsComponent } from './components/event-details/event-details.component';
+import { EventsComponent } from './components/events/events.component';
 
 @NgModule({
   declarations: [
@@ -63,6 +65,8 @@ import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
     EditSocietyComponent,
     LazyLoadImgComponent,
     CreateEventComponent,
+    EventDetailsComponent,
+    EventsComponent,
   ],
   imports: [
     BrowserModule,

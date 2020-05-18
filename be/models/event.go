@@ -36,16 +36,24 @@ type EventPermissionRequest struct {
 	SocietyId        string
 }
 
-type Event struct {
+type CreateEvent struct {
 	tableName   struct{} `pg:"events"json:"-"`
 	Id          string   `pg:",pk"`
 	Date        time.Time
 	Description string
-	//Publc        bool      `pg:",use_zero"`
+	CreatedAt   time.Time `pg:"default:now()"`
+	TrashIds    []string  `pg:"-"`
+}
+
+type Event struct {
+	tableName    struct{} `pg:"events"json:"-"`
+	Id           string   `pg:",pk"`
+	Date         time.Time
+	Description  string
 	CreatedAt    time.Time `pg:"default:now()"`
-	TrashIds     []string  `pg:"-"`
-	UsersIds     []string  `pg:"-"`
-	SocietiesIds []string  `pg:"-"`
+	Trash        []*Trash  `pg:"many2many:events_trash"`
+	UsersIds     []*EventUser
+	SocietiesIds []*EventSociety
 }
 
 var _ pg.BeforeInsertHook = (*Event)(nil)
@@ -80,4 +88,9 @@ type EventTrash struct {
 	tableName struct{} `pg:"events_trash"json:"-"`
 	EventId   string   `pg:",pk"`
 	TrashId   string   `pg:",pk"`
+}
+
+type EventPagingAnsw struct {
+	Events []Event
+	Paging Paging
 }

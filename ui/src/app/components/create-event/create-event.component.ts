@@ -1,7 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormControl} from "@angular/forms";
 import {EventService} from "../../services/event/event.service";
-import {EventCreatorModel, EventModel} from "../../models/event.model";
+import {EventModel, EventPickerModel} from "../../models/event.model";
 import {UserModel} from "../../models/user.model";
 import {UserService} from "../../services/user/user.service";
 import {LocationService} from "../../services/location/location.service";
@@ -36,7 +36,7 @@ export class CreateEventComponent implements OnInit {
   initMapLat: number;
   initMapLng: number;
   me: UserModel;
-  availableCreators: EventCreatorModel[] = [];
+  availableCreators: EventPickerModel[] = [];
   selectedCreator: number = 0;
   newEvent: EventModel = {
     Date: new Date(),

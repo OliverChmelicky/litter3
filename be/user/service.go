@@ -593,11 +593,11 @@ func (s *userService) RemoveMember(c echo.Context) error {
 
 func (s *userService) DeleteSociety(c echo.Context) error {
 	userId := c.Get("userId").(string)
-	societyId := c.Param("id")
+	societyId := c.Param("societyId")
 
 	admin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, societyId)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUnauthorized, err))
+		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrUnauthorized, err))
 	}
 
 	if !admin {

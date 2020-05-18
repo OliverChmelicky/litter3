@@ -594,25 +594,22 @@ func (s *SocietySuite) Test_DeleteSociety() {
 		s.Nil(err)
 	}
 
-	//for _, candidate := range candidates {
-	//	req := httptest.NewRequest(echo.POST, "/societies/"+candidate.society.Id, nil)
-	//
-	//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	//	rec := httptest.NewRecorder()
-	//	c := s.e.NewContext(req, rec)
-	//
-	//	c.SetParamNames("societyId")
-	//	c.SetParamValues(candidate.society.Id)
-	//
-	//	s.NoError(s.service.GetSocietyAdmins(c))
-	//
-	//	resp := []models.User{}
-	//	err := json.Unmarshal(rec.Body.Bytes(), &resp)
-	//	s.Nil(err)
-	//
-	//	candidates[i].relation.CreatedAt = resp[0].CreatedAt
-	//	s.EqualValues(candidates[i].relation, resp[0])
-	//}
+	for _, candidate := range candidates {
+		req := httptest.NewRequest(echo.DELETE, "/societies/"+candidate.society.Id, nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.SetParamNames("societyId")
+		c.SetParamValues(candidate.society.Id)
+
+		c.Set("userId", candidate.admin.Id)
+
+		s.NoError(s.service.DeleteSociety(c))
+
+		s.EqualValues(200, rec.Code)
+	}
 }
 
 func (s *SocietySuite) TearDownSuite() {

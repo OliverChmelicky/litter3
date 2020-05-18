@@ -1,0 +1,72 @@
+<div>
+
+  <div *ngIf="isLoggedIn">
+    <div *ngIf="editableSocietiesIds.length>0">
+      <mat-form-field>
+        <mat-label>Decision as</mat-label>
+        <mat-select (selectionChange)="desideAsChange()" [(value)]="selectedCreator">
+          <mat-option *ngFor="let choice of availableDecisionsAs;let i = index" [value]="i">{{availableDecisionsAs[i].VisibleName}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div *ngIf="!statusAttend && !isAdmin">
+      <button mat-button (click)="onAttend()" > Attend </button>
+    </div>
+
+    <div *ngIf="statusAttend && !isAdmin">
+      <button mat-button (click)="onNotAttend()" > Cannot attend </button>
+    </div>
+
+    <div *ngIf="isAdmin">
+      <button mat-button (click)="onEdit()" > EDIT </button>
+    </div>
+  </div>
+
+
+  <div>
+    <label>Date:</label>
+    <p>{{event.Date}}</p>
+  </div>
+
+  <div>
+    <label>Description:</label>
+    <textarea [value]="event.Description">
+    </textarea>
+  </div>
+
+  <div>
+    <agm-map>
+
+    </agm-map>
+  </div>
+
+  <div *ngIf="isAdmin">
+    <button mat-button (click)="onCreateCollections()" > Create collection </button>
+  </div>
+
+  <div>
+    <div>
+      <table mat-table [dataSource]="attendants" class="mat-elevation-z8">
+        <ng-container matColumnDef="image">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element"> <app-image [image]="element.avatar"></app-image> </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef> Email/Name</th>
+          <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef> Role</th>
+          <td mat-cell *matCellDef="let element"> {{element.role}} </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: tableColumns;"></tr>
+      </table>
+    </div>
+  </div>
+
+</div>

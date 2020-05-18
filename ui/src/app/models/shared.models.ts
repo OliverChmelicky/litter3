@@ -25,3 +25,9 @@ export interface MapLoadAnswer {
   BorderLeft: number;
   BorderRight: number;
 }
+
+export interface AttendantsModel {
+  name: string
+  avatar: string
+  role: string
+}

@@ -1,6 +1,7 @@
 package event
 
 import (
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
@@ -60,6 +61,34 @@ func (s *EventService) GetEvent(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, event)
+}
+
+func (s *EventService) GetEventsWithPaging(c echo.Context) error {
+	//can call also unregistered user
+	f := c.QueryParam("from")
+	t := c.QueryParam("to")
+
+	from, err := strconv.Atoi(f)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+	to, err := strconv.Atoi(t)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+	if to-from < 0 {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, fmt.Errorf("To is smaller than from")))
+	}
+
+	events, allSocieties, err := s.eventAccess.GetEventsWithPaging(from, to)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetSociety, err))
+	}
+
+	return c.JSON(http.StatusOK, models.EventPagingAnsw{
+		Events: events,
+		Paging: models.Paging{From: from, To: to, TotalCount: allSocieties},
+	})
 }
 
 func (s *EventService) AttendEvent(c echo.Context) error {

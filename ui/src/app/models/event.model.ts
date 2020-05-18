@@ -1,3 +1,6 @@
+import {TrashModel} from "./trash.model";
+import {PagingModel} from "./shared.models";
+
 export const permissionEventCreator = 'creator'
 export const permissionEventEditor = 'editor'
 export const permissionEventViewer = 'viewer'
@@ -10,20 +13,38 @@ export interface ChangePermisssionRequest {
   SocietyId: string,
 }
 
+export interface EventUserModel {
+  UserId: string,
+  EventId: string,
+  Permission:string,
+}
+
+export interface EventSocietyModel {
+  SocietyId: string,
+  EventId: string,
+  Permission:string,
+}
+
 export interface EventModel {
   Id?: string,
   Date: Date,
   Description: string,
   CreatedAt?: Date,
-  TrashIds?: string[],
-  UsersIds?: string[],
-  SocietiesIds?: string[],
+  Trash?: TrashModel,
+  UsersIds?: EventUserModel[],
+  SocietiesIds?: EventSocietyModel[],
 }
 
-export interface EventCreatorModel {
+export interface EventPickerModel {
   AsSociety: boolean,
   Id: string,
   VisibleName: string
+}
+
+export interface AttendanceRequestModel {
+  PickerId: string,
+  EventId: string
+  AsSociety: boolean,
 }
 
 export interface EventRequest {
@@ -34,4 +55,9 @@ export interface EventRequest {
   Description?: string
   Date?:        Date
   Trash?:       string[]
+}
+
+export interface EventWithPagingAnsw {
+  Events: EventModel[];
+  Paging: PagingModel;
 }

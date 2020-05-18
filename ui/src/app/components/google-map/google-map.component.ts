@@ -113,8 +113,6 @@ export class GoogleMapComponent implements OnInit {
   }
 
   loadNewMarkers() {
-    console.log('co to vola')
-
     const p1 = this.map.getBounds().getNorthEast()
     const p2 = this.map.getBounds().getSouthWest()
 
@@ -134,7 +132,6 @@ export class GoogleMapComponent implements OnInit {
     //get double range for markers
     this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), d * 2).subscribe(
       trash => {
-        console.log('Mam novy trash',trash)
         this.allMarkers = this.getOnlyNewMarkers();
         for (let i = 0; i < trash.length; i++) {
           this.allMarkers.push({
@@ -152,7 +149,6 @@ export class GoogleMapComponent implements OnInit {
 
         const viewCenter = this.map.getCenter()
         let r = 2 * Math.abs(p1.lat() - viewCenter.lat())
-        console.log('R: ', r)
 
         if (p1.lat() < 0) {
           this.borderTop =  p1.lat() + r

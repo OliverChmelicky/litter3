@@ -12,27 +12,32 @@ export class NavListComponent implements OnInit {
   loggedInItems: NavigationItemModel[] = [
     {
       name: 'Report dump',
-      url: '/report',
+      url: 'report',
       icon:'delete',
     },
     {
       name: 'Societies',
-      url: '/societies',
+      url: 'societies',
       icon:'delete',
     },
     {
       name: 'Map',
-      url: '/map',
+      url: 'map',
       icon:'my_location',
     },
     {
       name: 'Create event',
-      url: '/events/create',
+      url: 'events/create',
+      icon:'account_circle',
+    },
+    {
+      name: 'Show events',
+      url: 'events',
       icon:'account_circle',
     },
     {
       name: 'Me',
-      url: '/me',
+      url: 'me',
       icon:'account_circle',
     },
   ];
@@ -40,27 +45,32 @@ export class NavListComponent implements OnInit {
   everyoneItems: NavigationItemModel[] = [
     {
       name: 'Report dump',
-      url: '/report',
+      url: 'report',
       icon:'delete',
     },
     {
       name: 'Societies',
-      url: '/societies',
+      url: 'societies',
       icon:'delete',
     },
     {
       name: 'Map',
-      url: '/map',
+      url: 'map',
       icon:'my_location',
     },
     {
+      name: 'Show events',
+      url: 'events',
+      icon:'account_circle',
+    },
+    {
       name: 'Register',
-      url: '/register',
+      url: 'register',
       icon:'account_circle',
     },
     {
       name: 'Login',
-      url: '/login',
+      url: 'login',
       icon:'account_circle',
     },
   ]

@@ -46,8 +46,8 @@ CREATE TYPE eventRights AS ENUM (
 create table users
 (
     id         VARCHAR PRIMARY KEY,
-    first_name VARCHAR     NOT NULL,
-    last_name  VARCHAR     NOT NULL,
+    first_name VARCHAR,
+    last_name  VARCHAR,
     email      VARCHAR     NOT NULL unique,
     uid        VARCHAR     NOT NULL unique,
     avatar     varchar,
@@ -83,8 +83,7 @@ create table trash_comments
     trash_id   VARCHAR REFERENCES trash (id) on delete cascade,
     user_id    VARCHAR REFERENCES users (id) on delete set null,
     message    varchar     not null,
-    created_at timestamptz NOT NULL,
-    updated_at timestamptz NOT NULL
+    created_at timestamptz NOT NULL
 );
 
 create table events
@@ -133,7 +132,7 @@ create table users_collections
 
 create table events_societies
 (
-    society_id VARCHAR REFERENCES societies (id), --cannot on delete cascade because it can be an organizer --> trigger or in app solution
+    society_id VARCHAR REFERENCES societies (id) on delete cascade , ----> trigger on delete society
     event_id   VARCHAR REFERENCES events (id) on delete cascade,
     permission eventRights not null,
     PRIMARY KEY (society_id, event_id)
@@ -141,7 +140,7 @@ create table events_societies
 
 create table events_users
 (
-    user_id    VARCHAR REFERENCES users (id), --cannot on delete cascade because he can be an organizer --> trigger or in app solution
+    user_id    VARCHAR REFERENCES users (id) on delete cascade , ----> trigger on delete user
     event_id   VARCHAR REFERENCES events (id) on delete cascade,
     permission eventRights not null,
     PRIMARY KEY ("user_id", event_id)
@@ -185,6 +184,74 @@ create table collection_images
     PRIMARY KEY (collection_id, url)
 );
 
+CREATE OR REPLACE FUNCTION del_societies_events()
+    RETURNS trigger AS
+    $$
+    DECLARE
+        org_events  TEXT[];
+    BEGIN
+        IF EXISTS (SELECT FROM events_societies WHERE (society_id = OLD.id and permission = 'creator')) THEN
+            org_events = Array(SELECT event_id FROM events_societies WHERE society_id = OLD.id);
+
+            RAISE NOTICE 'Calling cs_create_job(%)', org_events;
+
+            delete from events where id = ANY(org_events);
+        END IF;
+        return OLD;
+    END;
+    $$
+    LANGUAGE plpgsql;
+
+CREATE TRIGGER del_soc_trigger
+    BEFORE DELETE ON societies
+    FOR EACH ROW
+    EXECUTE PROCEDURE del_societies_events();
+
+--
+--
+
+CREATE OR REPLACE FUNCTION del_user_events()
+    RETURNS trigger AS
+$$
+DECLARE
+    org_events  TEXT[];
+BEGIN
+    IF EXISTS (SELECT FROM events_users WHERE (user_id = OLD.id and permission = 'creator')) THEN
+        org_events = Array(SELECT event_id FROM events_users WHERE user_id = OLD.id);
+        delete from events where id = ANY(org_events);
+    END IF;
+    return OLD;
+END;
+$$
+    LANGUAGE plpgsql;
+
+CREATE TRIGGER del_user_trigger
+    BEFORE DELETE ON users
+    FOR EACH ROW
+EXECUTE PROCEDURE del_user_events();
+
+--
+--
+
+CREATE OR REPLACE FUNCTION del_collection_after_last_user()
+    RETURNS trigger AS
+$$
+BEGIN
+    IF EXISTS (SELECT FROM users_collections WHERE (collection_id = OLD.collection_id)) THEN
+        DELETE FROM collections where id = old.collection_id AND event_id IS NULL;
+    END IF;
+    return OLD;
+END;
+$$
+    LANGUAGE plpgsql;
+
+CREATE TRIGGER del_colection_trigger
+    AFTER DELETE ON users_collections
+    FOR EACH ROW
+EXECUTE PROCEDURE del_collection_after_last_user();
+
+
+
 INSERT INTO users (id, first_name, last_name, email, uid, created_at)
 VALUES ('ad10c133-f18f-417d-be04-795e290683c1', 'Heinrich', 'Herrer', 'a@a.cz', 'vBP3XYCYQPZGMYAJVeVgd9pttkr2', '2003-2-1');
 
@@ -201,8 +268,8 @@ VALUES ('3', 'Tetie', 'Aufschneider', '2003-2-3');
 INSERT INTO societies (id, name, avatar, created_at)
 VALUES ('4', 'Stvrte', 'Aufschneider', '2003-2-4');
 
-insert into trash (id, cleaned, size, accessibility, trash_type, location, description, finder_id, created_at)
-values ('1', false, 'bag', 'easy', 0, ST_GeomFromText('POINT(-71.060316 48.432044)', 4326), '', null, '2003-2-11');
-
-insert into collections (id, trash_id, event_id, weight, cleaned_trash, created_at)
-values ('1','1', '', 655, false, '2005-2-11')
+-- insert into trash (id, cleaned, size, accessibility, trash_type, location, description, finder_id, created_at)
+-- values ('1', false, 'bag', 'easy', 0, ST_GeomFromText('POINT(-71.060316 48.432044)', 4326), '', null, '2003-2-11');
+--
+-- insert into collections (id, trash_id, event_id, weight, cleaned_trash, created_at)
+-- values ('1','1', '', 655, false, '2005-2-11')
