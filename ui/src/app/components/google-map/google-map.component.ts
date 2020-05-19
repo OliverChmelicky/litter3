@@ -1,12 +1,12 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {LocationService} from "../../services/location/location.service";
 import {MapLocationModel} from "../../models/GPSlocation.model";
-import {GoogleMap} from "@agm/core/services/google-maps-types";
+import {GoogleMap, LatLng} from "@agm/core/services/google-maps-types";
 import {MarkerModel} from "src/app/components/google-map/Marker.model";
 import {MouseEvent} from '@agm/core';
 import {Router} from "@angular/router";
 import {TrashService} from "../../services/trash/trash.service";
-import { AgmMap } from '@agm/core';
+import {AgmMap} from '@agm/core';
 import {MatCheckboxChange} from "@angular/material/checkbox";
 
 export const czechPosition: MapLocationModel = {
@@ -40,6 +40,8 @@ export class GoogleMapComponent implements OnInit {
   borderLeft: number;
   borderRight: number;
 
+  initioalDistance = 3000000
+
   constructor(
     private readonly locationService: LocationService,
     private trashService: TrashService,
@@ -48,10 +50,11 @@ export class GoogleMapComponent implements OnInit {
   }
 
   ngOnInit() {
+    //https://github.com/SebastianM/angular-google-maps/issues/1238 => grey map
     this.location = this.defaultLocation;
     this.locationService.getPosition().then(data => {
       this.location = data;
-    }).catch(err => console.log('Error getting location: ' + err));
+    }).catch(() => {});
     this.allMarkers = [];
   }
 
@@ -62,8 +65,33 @@ export class GoogleMapComponent implements OnInit {
   async onMapReady(map: GoogleMap) {
     this.map = map;
     //In an issue it was written that this helps but don`t
-    await setTimeout(()=>{ this.agmMap.triggerResize(); },1000)
-    this.loadNewMarkers()
+    await setTimeout(() => {
+      this.agmMap.triggerResize();
+    }, 1000)
+    let c = this.map.getCenter()
+    this.borderTop = c.lat() + 3.4
+    this.borderBottom = c.lat() - 3.4
+
+    this.borderRight = c.lng() + 8.82
+    this.borderLeft = c.lng() - 8.82
+
+    this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initioalDistance).subscribe(
+      trash => {
+        this.allMarkers = this.getOnlyNewMarkers();
+        for (let i = 0; i < trash.length; i++) {
+          this.allMarkers.push({
+            lat: trash[i].Location[0],
+            lng: trash[i].Location[1],
+            new: false,
+            id: trash[i].Id,
+            cleaned: trash[i].Cleaned,
+            images: trash[i].Images ? trash[i].Images : [this.exampleBinUrl],
+            numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
+          })
+
+          this.applyMarkerFilters()
+        }
+      })
   }
 
   addMarker(lat: number, lng: number) {
@@ -74,10 +102,8 @@ export class GoogleMapComponent implements OnInit {
       cleaned: false,
       id: '',
     };
-    console.log(this.allMarkers.length)
     this.allMarkers.push(this.selectedMarker)
     this.applyMarkerFilters()
-    console.log(this.allMarkers.length)
   }
 
   createTrash(marker: MarkerModel) {
@@ -128,6 +154,7 @@ export class GoogleMapComponent implements OnInit {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     const d = R * c; // in metres
+    console.log(d * 2)
 
     //get double range for markers
     this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), d * 2).subscribe(
@@ -151,7 +178,7 @@ export class GoogleMapComponent implements OnInit {
         let r = 2 * Math.abs(p1.lat() - viewCenter.lat())
 
         if (p1.lat() < 0) {
-          this.borderTop =  p1.lat() + r
+          this.borderTop = p1.lat() + r
         } else if (p1.lat() >= 0) {
           this.borderTop = p1.lat() + r
         }
@@ -211,28 +238,28 @@ export class GoogleMapComponent implements OnInit {
 
 
   //I want not cleaned
-  filterCleaned(markers: MarkerModel[]): MarkerModel[]{
-    return markers.filter( marker => {
+  filterCleaned(markers: MarkerModel[]): MarkerModel[] {
+    return markers.filter(marker => {
       if (marker.cleaned === false || marker.new === true) {
-       return marker
+        return marker
       }
     })
   }
 
   //I want cleaned
-  filterNotCleaned(markers: MarkerModel[]): MarkerModel[]{
-    return markers.filter( marker => {
-      if (marker.cleaned === true || marker.new === true ) {
+  filterNotCleaned(markers: MarkerModel[]): MarkerModel[] {
+    return markers.filter(marker => {
+      if (marker.cleaned === true || marker.new === true) {
         return marker
       }
-    } )
+    })
   }
 
   private getOnlyNewMarkers() {
-    return this.allMarkers.filter( marker => {
-      if (marker.new === true ) {
+    return this.allMarkers.filter(marker => {
+      if (marker.new === true) {
         return marker
       }
-    } )
+    })
   }
 }
