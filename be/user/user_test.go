@@ -6,6 +6,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
+	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
@@ -340,14 +341,14 @@ func (s *SocietySuite) Test_DeleteUser() {
 		_, err = s.service.UserAccess.AcceptApplicant(application.UserId, application.SocietyId)
 		s.Nil(err)
 
-		_ = &models.Applicant{UserId: candidates[i].applicantAndEventAttendantAndFriend.Id, SocietyId: candidates[i].society.Id}
+		application = &models.Applicant{UserId: candidates[i].applicantAndEventAttendantAndFriend.Id, SocietyId: candidates[i].society.Id}
 		_, err = s.service.UserAccess.AddApplicant(application)
 		s.Nil(err)
 
 		//second part
-		err = s.db.Insert(&models.Friends{User1Id: candidates[i].admin.Id, User2Id: candidates[i].memberAndEventAttendantAndFriendRequester.Id})
+		err = s.db.Insert(&models.Friends{User1Id: candidates[i].admin.Id, User2Id: candidates[i].applicantAndEventAttendantAndFriend.Id})
 		s.Nil(err)
-		err = s.db.Insert(&models.FriendRequest{User1Id: candidates[i].admin.Id, User2Id: candidates[i].applicantAndEventAttendantAndFriend.Id})
+		err = s.db.Insert(&models.FriendRequest{User1Id: candidates[i].admin.Id, User2Id: candidates[i].memberAndEventAttendantAndFriendRequester.Id})
 		s.Nil(err)
 
 		//third part
@@ -372,25 +373,89 @@ func (s *SocietySuite) Test_DeleteUser() {
 		s.Nil(err)
 	}
 
-	//for _, candidate := range candidates {
-	//	req := httptest.NewRequest(echo.POST, "/societies/"+candidate.society.Id, nil)
-	//
-	//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	//	rec := httptest.NewRecorder()
-	//	c := s.e.NewContext(req, rec)
-	//
-	//	c.SetParamNames("societyId")
-	//	c.SetParamValues(candidate.society.Id)
-	//
-	//	s.NoError(s.service.GetSocietyAdmins(c))
-	//
-	//	resp := []models.User{}
-	//	err := json.Unmarshal(rec.Body.Bytes(), &resp)
-	//	s.Nil(err)
-	//
-	//	candidates[i].relation.CreatedAt = resp[0].CreatedAt
-	//	s.EqualValues(candidates[i].relation, resp[0])
-	//}
+	for _, candidate := range candidates {
+		//check user, his society add member and applicant
+		err := s.db.Model(&models.User{}).Where("id = ?", candidate.admin.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.Society{}).Where("id = ?", candidate.society.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.Applicant{}).Where("user_id = ?", candidate.applicantAndEventAttendantAndFriend.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.Member{}).Where("user_id = ?", candidate.memberAndEventAttendantAndFriendRequester.Id).Select()
+		s.Nil(err)
+
+		//check friend and friend requester
+		err = s.db.Model(&models.Friends{}).Where("user1_id = ? or user2_id = ?", candidate.applicantAndEventAttendantAndFriend.Id, candidate.applicantAndEventAttendantAndFriend.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.FriendRequest{}).Where("user1_id = ? or user2_id = ?", candidate.memberAndEventAttendantAndFriendRequester.Id, candidate.memberAndEventAttendantAndFriendRequester.Id).Select()
+		s.Nil(err)
+
+		//create trash, event, add two attendants there + society is admin
+		err = s.db.Model(&models.Trash{}).Where("id = ?", candidate.trash.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.Event{}).Where("id = ?", candidate.event.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.applicantAndEventAttendantAndFriend.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.memberAndEventAttendantAndFriendRequester.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.EventSociety{}).Where("society_id = ?", candidate.society.Id).Select()
+		s.Nil(err)
+
+		//check collection with eventId and create trash-event relation
+		err = s.db.Model(&models.Collection{}).Where("id = ?", candidate.collection.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.EventTrash{}).Where("trash_id = ?", candidate.trash.Id).Select()
+		s.Nil(err)
+
+		req := httptest.NewRequest(echo.POST, "/users/"+candidate.admin.Id, nil)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := s.e.NewContext(req, rec)
+
+		c.Set("userId", candidate.admin.Id)
+
+		s.NoError(s.service.DeleteUser(c))
+		s.Nil(err)
+
+		s.db.AddQueryHook(middlewareService.DbMiddleware{})
+		s.EqualValues(200, rec.Code)
+
+		//check user, his society add member and applicant
+		err = s.db.Model(&models.User{}).Where("id = ?", candidate.admin.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.Society{}).Where("id = ?", candidate.society.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.Applicant{}).Where("user_id = ?", candidate.applicantAndEventAttendantAndFriend.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.Member{}).Where("user_id = ?", candidate.memberAndEventAttendantAndFriendRequester.Id).Select()
+		s.NotNil(err)
+
+		//check friend and friend requester
+		err = s.db.Model(&models.Friends{}).Where("user1_id = ? or user2_id = ?", candidate.applicantAndEventAttendantAndFriend.Id, candidate.applicantAndEventAttendantAndFriend.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.FriendRequest{}).Where("user1_id = ? or user2_id = ?", candidate.memberAndEventAttendantAndFriendRequester.Id, candidate.memberAndEventAttendantAndFriendRequester.Id).Select()
+		s.NotNil(err)
+
+		//create trash, event, add two attendants there + society is admin
+		err = s.db.Model(&models.Trash{}).Where("id = ?", candidate.trash.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.Event{}).Where("id = ?", candidate.event.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.applicantAndEventAttendantAndFriend.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.memberAndEventAttendantAndFriendRequester.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.EventSociety{}).Where("society_id = ?", candidate.society.Id).Select()
+		s.NotNil(err)
+
+		//check collection with eventId and create trash-event relation
+		err = s.db.Model(&models.Collection{}).Where("id = ?", candidate.collection.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.EventTrash{}).Where("trash_id = ?", candidate.trash.Id).Select()
+		s.NotNil(err)
+	}
 }
 
 func (s *UserSuite) TearDownSuite() {

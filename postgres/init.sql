@@ -132,7 +132,7 @@ create table users_collections
 
 create table events_societies
 (
-    society_id VARCHAR REFERENCES societies (id) on delete cascade , ----> trigger on delete society
+    society_id VARCHAR REFERENCES societies (id) on delete cascade , ----> trigger on delete society if society is organizer
     event_id   VARCHAR REFERENCES events (id) on delete cascade,
     permission eventRights not null,
     PRIMARY KEY (society_id, event_id)
@@ -140,7 +140,7 @@ create table events_societies
 
 create table events_users
 (
-    user_id    VARCHAR REFERENCES users (id) on delete cascade , ----> trigger on delete user
+    user_id    VARCHAR REFERENCES users (id) on delete cascade , ----> trigger on delete user if user is organizer
     event_id   VARCHAR REFERENCES events (id) on delete cascade,
     permission eventRights not null,
     PRIMARY KEY ("user_id", event_id)
@@ -191,10 +191,7 @@ CREATE OR REPLACE FUNCTION del_societies_events()
         org_events  TEXT[];
     BEGIN
         IF EXISTS (SELECT FROM events_societies WHERE (society_id = OLD.id and permission = 'creator')) THEN
-            org_events = Array(SELECT event_id FROM events_societies WHERE society_id = OLD.id);
-
-            RAISE NOTICE 'Calling cs_create_job(%)', org_events;
-
+            org_events = Array(SELECT event_id FROM events_societies WHERE society_id = OLD.id and permission = 'creator');
             delete from events where id = ANY(org_events);
         END IF;
         return OLD;
@@ -217,7 +214,7 @@ DECLARE
     org_events  TEXT[];
 BEGIN
     IF EXISTS (SELECT FROM events_users WHERE (user_id = OLD.id and permission = 'creator')) THEN
-        org_events = Array(SELECT event_id FROM events_users WHERE user_id = OLD.id);
+        org_events = Array(SELECT event_id FROM events_users WHERE user_id = OLD.id and permission = 'creator');
         delete from events where id = ANY(org_events);
     END IF;
     return OLD;
@@ -233,22 +230,23 @@ EXECUTE PROCEDURE del_user_events();
 --
 --
 
-CREATE OR REPLACE FUNCTION del_collection_after_last_user()
-    RETURNS trigger AS
-$$
-BEGIN
-    IF EXISTS (SELECT FROM users_collections WHERE (collection_id = OLD.collection_id)) THEN
-        DELETE FROM collections where id = old.collection_id AND event_id IS NULL;
-    END IF;
-    return OLD;
-END;
-$$
-    LANGUAGE plpgsql;
-
-CREATE TRIGGER del_colection_trigger
-    AFTER DELETE ON users_collections
-    FOR EACH ROW
-EXECUTE PROCEDURE del_collection_after_last_user();
+-- TODO test
+-- CREATE OR REPLACE FUNCTION del_collection_after_last_user()
+--     RETURNS trigger AS
+-- $$
+-- BEGIN
+--     IF EXISTS (SELECT FROM users_collections WHERE (collection_id = OLD.collection_id)) THEN
+--         DELETE FROM collections where id = old.collection_id AND event_id IS NULL;
+--     END IF;
+--     return OLD;
+-- END;
+-- $$
+--     LANGUAGE plpgsql;
+--
+-- CREATE TRIGGER del_colection_trigger
+--     AFTER DELETE ON users_collections
+--     FOR EACH ROW
+-- EXECUTE PROCEDURE del_collection_after_last_user();
 
 
 

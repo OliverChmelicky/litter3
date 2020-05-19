@@ -568,7 +568,7 @@ func (s *SocietySuite) Test_DeleteSociety() {
 		_, err = s.service.UserAccess.AcceptApplicant(application.UserId, application.SocietyId)
 		s.Nil(err)
 
-		_ = &models.Applicant{UserId: candidates[i].applicantAndEventAttendant.Id, SocietyId: candidates[i].society.Id}
+		application = &models.Applicant{UserId: candidates[i].applicantAndEventAttendant.Id, SocietyId: candidates[i].society.Id}
 		_, err = s.service.UserAccess.AddApplicant(application)
 		s.Nil(err)
 
@@ -594,7 +594,33 @@ func (s *SocietySuite) Test_DeleteSociety() {
 		s.Nil(err)
 	}
 
+	//create user, his society add member and applicant
+	//create trash, event, add two attendants there + society is admin
+	//create collection with eventId and create trash-event relation
 	for _, candidate := range candidates {
+		err := s.db.Model(&models.Society{}).Where("id = ?", candidate.society.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.Applicant{}).Where("user_id = ?", candidate.applicantAndEventAttendant.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.Member{}).Where("user_id = ?", candidate.memberAndEventAttendant.Id).Select()
+		s.Nil(err)
+
+		err = s.db.Model(&models.Trash{}).Where("id = ?", candidate.trash.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.Event{}).Where("id = ?", candidate.event.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.memberAndEventAttendant.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.applicantAndEventAttendant.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.EventSociety{}).Where("society_id = ?", candidate.society.Id).Select()
+		s.Nil(err)
+
+		err = s.db.Model(&models.Collection{}).Where("id = ?", candidate.collection.Id).Select()
+		s.Nil(err)
+		err = s.db.Model(&models.EventTrash{}).Where("trash_id = ?", candidate.trash.Id).Select()
+		s.Nil(err)
+
 		req := httptest.NewRequest(echo.DELETE, "/societies/"+candidate.society.Id, nil)
 
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -609,6 +635,30 @@ func (s *SocietySuite) Test_DeleteSociety() {
 		s.NoError(s.service.DeleteSociety(c))
 
 		s.EqualValues(200, rec.Code)
+
+		err = s.db.Model(&models.Society{}).Where("id = ?", candidate.society.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.Applicant{}).Where("user_id = ?", candidate.applicantAndEventAttendant.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.Member{}).Where("user_id = ?", candidate.memberAndEventAttendant).Select()
+		s.NotNil(err)
+
+		err = s.db.Model(&models.Trash{}).Where("id = ?", candidate.trash.Id).Select()
+		s.Nil(err)
+		fmt.Println("event je: ", candidate.event)
+		err = s.db.Model(&models.Event{}).Where("id = ?", candidate.event.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.memberAndEventAttendant.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.applicantAndEventAttendant.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.EventSociety{}).Where("society_id = ?", candidate.society.Id).Select()
+		s.NotNil(err)
+
+		err = s.db.Model(&models.Collection{}).Where("id = ?", candidate.collection.Id).Select()
+		s.NotNil(err)
+		err = s.db.Model(&models.EventTrash{}).Where("trash_id = ?", candidate.trash.Id).Select()
+		s.NotNil(err)
 	}
 }
 
