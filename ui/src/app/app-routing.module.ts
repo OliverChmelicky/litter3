@@ -27,7 +27,7 @@ const routes: Routes = [
   {path: 'societies/edit/:societyId', component: EditSocietyComponent},
   {path: 'events', component: EventsComponent},
   {path: 'events/create', component: CreateEventComponent},
-  {path: 'events/details/:id', component: EventDetailsComponent},
+  {path: 'events/details/:eventId', component: EventDetailsComponent},
   //{path: 'event/edit/:id', component}
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },

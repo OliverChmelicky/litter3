@@ -6,12 +6,12 @@
 
       <ng-container matColumnDef="date">
         <th mat-header-cell *matHeaderCellDef>Date</th>
-        <td mat-cell *matCellDef="let element"> {{element.Date}} </td>
+        <td mat-cell *matCellDef="let element"> {{element.Date | date: 'dd/MM/yyyy HH:mm'}} </td>
       </ng-container>
 
       <ng-container matColumnDef="num-of-attendants">
         <th mat-header-cell *matHeaderCellDef>Attendants</th>
-        <td mat-cell *matCellDef="let element"> {{element.UsersIds.length + element.SocietiesIds.length}} </td>
+        <td mat-cell *matCellDef="let element"> {{element.NumOfAttendants}} </td>
       </ng-container>
 
       <ng-container matColumnDef="remove">

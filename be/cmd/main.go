@@ -102,10 +102,11 @@ func main() {
 	e.DELETE("/membership/:societyId", userService.RemoveApplicationForMembership, tokenMiddleware.AuthorizeUser)
 
 	eventService := event.CreateService(db)
+	e.POST("/events", eventService.CreateEvent, tokenMiddleware.AuthorizeUser)
 	e.GET("/events", eventService.GetEventsWithPaging)
 	e.GET("/events/societies/:societyId", eventService.GetSocietyEvents)
 	e.GET("/events/:eventId", eventService.GetEvent)
-	e.POST("/events/attend", eventService.AttendEvent)
+	e.POST("/events/attend", eventService.AttendEvent, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/events/not-attend", eventService.CannotAttendEvent)
 
 	trashService := trash.CreateService(db)

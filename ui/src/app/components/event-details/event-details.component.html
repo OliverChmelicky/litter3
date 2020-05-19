@@ -1,10 +1,13 @@
 <div>
 
+  <h1>EVENT DETAILS</h1>
+
   <div *ngIf="isLoggedIn">
-    <div *ngIf="editableSocietiesIds.length>0">
+    <p>is logged in</p>
+    <div *ngIf="editableSocietiesIds.length">
       <mat-form-field>
         <mat-label>Decision as</mat-label>
-        <mat-select (selectionChange)="desideAsChange()" [(value)]="selectedCreator">
+        <mat-select (selectionChange)="onDesideAsChange()" [(value)]="selectedCreator">
           <mat-option *ngFor="let choice of availableDecisionsAs;let i = index" [value]="i">{{availableDecisionsAs[i].VisibleName}}</mat-option>
         </mat-select>
       </mat-form-field>
@@ -26,7 +29,7 @@
 
   <div>
     <label>Date:</label>
-    <p>{{event.Date}}</p>
+    <p>{{event.Date | date: 'dd/MM/yyyy HH:mm'}}</p>
   </div>
 
   <div>
@@ -53,7 +56,7 @@
           <td mat-cell *matCellDef="let element"> <app-image [image]="element.avatar"></app-image> </td>
         </ng-container>
 
-        <ng-container matColumnDef="email">
+        <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef> Email/Name</th>
           <td mat-cell *matCellDef="let element"> {{element.name}} </td>
         </ng-container>

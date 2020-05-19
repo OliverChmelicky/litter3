@@ -3,7 +3,13 @@ import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import {ApisModel} from "../../api/api-urls";
 import {Observable, of, throwError} from "rxjs";
 import {catchError} from "rxjs/operators";
-import {AttendanceRequestModel, EventModel, EventPickerModel, EventWithPagingAnsw} from "../../models/event.model";
+import {
+  AttendanceRequestModel,
+  EventModel,
+  EventPickerModel,
+  EventRequestModel,
+  EventWithPagingAnsw
+} from "../../models/event.model";
 import {SocietyWithPagingAnsw} from "../../models/society.model";
 import {PagingModel} from "../../models/shared.models";
 
@@ -82,6 +88,13 @@ export class EventService {
     const url = `${this.apiUrl}/${ApisModel.event}/not-attend?event=${eventId}&picker=${eventPickerModel.Id}&asSociety=${eventPickerModel.AsSociety}`;
     return this.http.delete<AttendanceRequestModel>(url).pipe(
       catchError(err => EventService.handleError<AttendanceRequestModel>(err))
+    );
+  }
+
+  createEvent(request: EventRequestModel) {
+    const url = `${this.apiUrl}/${ApisModel.event}`;
+    return this.http.post<EventRequestModel>(url, request).pipe(
+      catchError(err => EventService.handleError<EventRequestModel>(err))
     );
   }
 }

@@ -266,8 +266,8 @@ VALUES ('3', 'Tetie', 'Aufschneider', '2003-2-3');
 INSERT INTO societies (id, name, avatar, created_at)
 VALUES ('4', 'Stvrte', 'Aufschneider', '2003-2-4');
 
--- insert into trash (id, cleaned, size, accessibility, trash_type, location, description, finder_id, created_at)
--- values ('1', false, 'bag', 'easy', 0, ST_GeomFromText('POINT(-71.060316 48.432044)', 4326), '', null, '2003-2-11');
+insert into trash (id, cleaned, size, accessibility, trash_type, location, description, finder_id, created_at)
+values ('1', false, 'bag', 'easy', 0, ST_GeomFromText('POINT(48 19)', 4326), '', null, '2003-2-11');
 --
--- insert into collections (id, trash_id, event_id, weight, cleaned_trash, created_at)
--- values ('1','1', '', 655, false, '2005-2-11')
+insert into collections (id, trash_id, event_id, weight, cleaned_trash, created_at)
+values ('1','1', '', 655, false, '2005-2-11')

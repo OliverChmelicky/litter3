@@ -1,9 +1,9 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {PagingModel} from "../../models/shared.models";
 import {PageEvent} from '@angular/material/paginator';
 import {Router} from "@angular/router";
 import {EventService} from "../../services/event/event.service";
-import {EventModel} from "../../models/event.model";
+import {EventModel, ListEventsModel} from "../../models/event.model";
 
 @Component({
   selector: 'app-events',
@@ -14,7 +14,7 @@ export class EventsComponent implements OnInit {
   actualPaging: PagingModel;
   pageEvent: PageEvent;
   displayedColumns: string[] = ['date', 'num-of-attendants','remove'];
-  dataSource: EventModel[];
+  dataSource: ListEventsModel[];
 
   constructor(
     private eventService: EventService,
@@ -33,7 +33,7 @@ export class EventsComponent implements OnInit {
     this.eventService.getEvents(this.actualPaging)
       .subscribe(resp => {
         this.actualPaging = resp.Paging
-        this.dataSource = resp.Events;
+        this.dataSource = this.mapResponsToDataSource(resp.Events);
       })
   }
 
@@ -43,7 +43,7 @@ export class EventsComponent implements OnInit {
     this.eventService.getEvents(this.actualPaging)
       .subscribe(resp => {
         this.actualPaging = resp.Paging
-        this.dataSource = resp.Events;
+        this.dataSource = this.mapResponsToDataSource(resp.Events);
       })
     return event;
   }
@@ -54,6 +54,34 @@ export class EventsComponent implements OnInit {
 
   onCreateEvent() {
     this.router.navigateByUrl('events/create')
+  }
+
+  private mapResponsToDataSource(events: EventModel[]): ListEventsModel[] {
+    return events.map(e => {
+      let attNum = 0
+      if (e.SocietiesIds) {
+        attNum = e.SocietiesIds.length
+      }
+      if (e.UsersIds) {
+        attNum = attNum + e.UsersIds.length
+      }
+      return {
+        Id: e.Id,
+        Date: e.Date,
+        NumOfAttendants: attNum,
+      }
+    })
+  }
+
+  private convertToLocalTime(events: EventModel[]): EventModel[] {
+     return events.map( e => {
+      let dateStr = e.Date.toString()
+       console.log('new date: ', e.Date.toString())
+      dateStr += ' UTC'
+       console.log('old date: ', dateStr)
+      e.Date = new Date(dateStr)
+      return e
+    })
   }
 }
 

@@ -35,6 +35,22 @@ export interface EventModel {
   SocietiesIds?: EventSocietyModel[],
 }
 
+export interface ListEventsModel {
+  Id: string,
+  Date: Date,
+  NumOfAttendants: number,
+}
+
+export interface EventRequestModel {
+  Id?: string,
+  UserId: string,
+  SocietyId: string,
+  AsSociety: boolean,
+  Description: string,
+  Date: Date,
+  Trash?: string[],
+}
+
 export interface EventPickerModel {
   AsSociety: boolean,
   Id: string,

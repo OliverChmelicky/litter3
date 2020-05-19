@@ -45,6 +45,14 @@ type CreateEvent struct {
 	TrashIds    []string  `pg:"-"`
 }
 
+var _ pg.BeforeInsertHook = (*CreateEvent)(nil)
+
+func (u *CreateEvent) BeforeInsert(ctx context.Context) (context.Context, error) {
+	u.Id = uuid.NewV4().String()
+	u.CreatedAt = time.Now()
+	return ctx, nil
+}
+
 type Event struct {
 	tableName    struct{} `pg:"events"json:"-"`
 	Id           string   `pg:",pk"`
@@ -54,14 +62,6 @@ type Event struct {
 	Trash        []*Trash  `pg:"many2many:events_trash"`
 	UsersIds     []*EventUser
 	SocietiesIds []*EventSociety
-}
-
-var _ pg.BeforeInsertHook = (*Event)(nil)
-
-func (u *Event) BeforeInsert(ctx context.Context) (context.Context, error) {
-	u.Id = uuid.NewV4().String()
-	u.CreatedAt = time.Now()
-	return ctx, nil
 }
 
 type EventPermission string

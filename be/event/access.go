@@ -188,17 +188,6 @@ func (s *eventAccess) UpdateEvent(request *models.EventRequest, userId string) (
 		return &models.CreateEvent{}, fmt.Errorf("Error assigning trash: %w ", err)
 	}
 
-	var users []models.EventUser
-	err = s.db.Model(&users).Where("event_id = ?", event.Id).Select(&users)
-	if err != nil {
-		return &models.CreateEvent{}, err
-	}
-	var societies []models.EventSociety
-	err = s.db.Model(&societies).Where("event_id = ?", event.Id).Select(&societies)
-	if err != nil {
-		return &models.CreateEvent{}, err
-	}
-
 	return event, tx.Commit()
 }
 
@@ -582,10 +571,13 @@ func (s *eventAccess) GetEventsWithPaging(from int, to int) ([]models.Event, int
 	for _, event := range events {
 		ids = append(ids, event.Id)
 	}
-	err = s.db.Model(&events).Where("id IN (?)", ids).Column("event.*").
-		Relation("Trash").Relation("SocietiesIds").Relation("UsersIds").First()
-	if err != nil {
-		return []models.Event{}, 0, err
+
+	for i, event := range events {
+		wholeEvent, err := s.GetEvent(event.Id)
+		if err != nil {
+			return []models.Event{}, 0, fmt.Errorf("Error filling event details: %w ", err)
+		}
+		events[i] = *wholeEvent
 	}
 
 	return events[from:to], len(events), nil

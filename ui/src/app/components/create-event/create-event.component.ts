@@ -1,7 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormControl} from "@angular/forms";
 import {EventService} from "../../services/event/event.service";
-import {EventModel, EventPickerModel} from "../../models/event.model";
+import {EventModel, EventPickerModel, EventRequest, EventRequestModel} from "../../models/event.model";
 import {UserModel} from "../../models/user.model";
 import {UserService} from "../../services/user/user.service";
 import {LocationService} from "../../services/location/location.service";
@@ -52,6 +52,7 @@ export class CreateEventComponent implements OnInit {
     private locationService: LocationService,
     private trashService: TrashService,
     private route: ActivatedRoute,
+    private router: Router,
   ) {
   }
 
@@ -85,6 +86,7 @@ export class CreateEventComponent implements OnInit {
         })
         this.userService.getMyEditableSocieties().subscribe(
           editable => {
+            console.log('Mozem editovat: ', editable)
             if (editable) {
               editable.map(soc => this.availableCreators.push({
                 VisibleName: soc.Name,
@@ -109,16 +111,21 @@ export class CreateEventComponent implements OnInit {
   onSubmit() {
     this.newEvent.Date = this.date.value
     this.newEvent.Description = this.description
-    const request = {
+    const trashIds = this.selectedTrash.map(t => t.id)
+    const request: EventRequestModel = {
       UserId: this.me.Id,
       SocietyId: this.availableCreators[this.selectedCreator].Id,
       AsSociety: this.availableCreators[this.selectedCreator].AsSociety,
       Description: this.description,
       Date: this.date.value,
-      Trash: [],
+      Trash: trashIds,
     }
-    console.log('new event je')
-    console.log(request)
+    this.eventService.createEvent(request).subscribe(
+      e => {
+        console.log('New event: ',e)
+        this.router.navigateByUrl('events')
+      }
+    )
   }
 
   onBoundsChange() {
