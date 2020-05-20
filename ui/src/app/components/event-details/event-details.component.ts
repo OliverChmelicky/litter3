@@ -214,6 +214,7 @@ export class EventDetailsComponent implements OnInit {
   }
 
   onEdit() {
+    this.eventService.setEventEditor(this.availableDecisionsAs[this.selectedCreator])
     this.router.navigate(['event/details', this.event.Id])
   }
 

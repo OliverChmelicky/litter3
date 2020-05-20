@@ -18,11 +18,20 @@ import {PagingModel} from "../../models/shared.models";
 })
 export class EventService {
   apiUrl: string;
+  eventEditor: EventPickerModel;
 
   constructor(
     private http: HttpClient,
   ) {
     this.apiUrl = ApisModel.apiUrl
+  }
+
+  setEventEditor(e: EventPickerModel) {
+    this.eventEditor = e;
+  }
+
+  getEventEditor(): EventPickerModel {
+    return this.eventEditor
   }
 
   getSocietyEvents(societyId: string): Observable<EventModel[]> {

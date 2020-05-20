@@ -104,15 +104,19 @@ export class EditSocietyComponent implements OnInit {
 
   memberPermissionChange(event: MatSelectChange, i: number) {
     if (event.value === this.origMembers[i].role) {
+      //back to the same permission
       const index = this.changeMemberPermission.findIndex(u => u.UserId === this.members[i].user.Id)
       this.changeMemberPermission.splice(index, 1)
     } else {
+      //find old permission
       const exists = this.changeMemberPermission.filter( mem => mem.UserId === this.members[i].user.Id)
       if (exists.length !== 0) {
+        //remove
         const index = this.changeMemberPermission.findIndex(u => u.UserId === this.members[i].user.Id)
         this.changeMemberPermission.splice(index, 1)
       }
 
+      //add new
       this.changeMemberPermission.push({
         UserId: this.members[i].user.Id,
         SocietyId: this.society.Id,

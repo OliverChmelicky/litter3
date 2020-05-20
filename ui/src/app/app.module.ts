@@ -46,6 +46,12 @@ import { EventDetailsComponent } from './components/event-details/event-details.
 import { EventsComponent } from './components/events/events.component';
 import { EditEventComponent } from './components/edit-event/edit-event.component';
 import { CreateCollectionComponent } from './components/create-collection/create-collection.component';
+import {
+  NgxMatDatetimePickerModule,
+  NgxMatNativeDateModule,
+  NgxMatTimepickerModule
+} from '@angular-material-components/datetime-picker';
+
 
 @NgModule({
   declarations: [
@@ -101,11 +107,13 @@ import { CreateCollectionComponent } from './components/create-collection/create
     LazyLoadImageModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    NgxMatTimepickerModule,
+    NgxMatDatetimePickerModule,
+    NgxMatNativeDateModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },
-    MatDatepickerModule,
-    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, //for datepicker
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, //for material datepicker
   ],
   bootstrap: [AppComponent]
 })

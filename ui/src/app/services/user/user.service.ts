@@ -11,6 +11,7 @@ import {Observable, of, throwError} from "rxjs";
 import {ApisModel} from "../../api/api-urls";
 import {EmailMessageModel} from "../../models/shared.models";
 import {SocietyModel} from "../../models/society.model";
+import {EventPickerModel} from "../../models/event.model";
 
 @Injectable({
   providedIn: 'root'
