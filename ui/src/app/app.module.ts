@@ -44,6 +44,8 @@ import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
 import { EventDetailsComponent } from './components/event-details/event-details.component';
 import { EventsComponent } from './components/events/events.component';
+import { EditEventComponent } from './components/edit-event/edit-event.component';
+import { CreateCollectionComponent } from './components/create-collection/create-collection.component';
 
 @NgModule({
   declarations: [
@@ -67,6 +69,8 @@ import { EventsComponent } from './components/events/events.component';
     CreateEventComponent,
     EventDetailsComponent,
     EventsComponent,
+    EditEventComponent,
+    CreateCollectionComponent,
   ],
   imports: [
     BrowserModule,
@@ -101,7 +105,7 @@ import { EventsComponent } from './components/events/events.component';
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },
     MatDatepickerModule,
-    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' } //for datepicker
+    { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, //for datepicker
   ],
   bootstrap: [AppComponent]
 })

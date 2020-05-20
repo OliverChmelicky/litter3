@@ -13,6 +13,7 @@ import {EditSocietyComponent} from "./components/edit-society/edit-society.compo
 import {CreateEventComponent} from "./components/create-event/create-event.component";
 import {EventDetailsComponent} from "./components/event-details/event-details.component";
 import {EventsComponent} from "./components/events/events.component";
+import {EditEventComponent} from "./components/edit-event/edit-event.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'map', pathMatch: 'full'},
@@ -28,7 +29,7 @@ const routes: Routes = [
   {path: 'events', component: EventsComponent},
   {path: 'events/create', component: CreateEventComponent},
   {path: 'events/details/:eventId', component: EventDetailsComponent},
-  //{path: 'event/edit/:id', component}
+  {path: 'events/edit/:eventId', component: EditEventComponent},
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
   //{ path: 'profile/:userId', component: UserDetailComponent },
