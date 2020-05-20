@@ -77,16 +77,13 @@ func (s *userService) GetUserByEmail(c echo.Context) error {
 }
 
 func (s *userService) GetUsers(c echo.Context) error {
-	idsString := c.QueryParam("Ids")
+	idsString := c.QueryParam("ids")
 	ids := strings.Split(idsString, ",")
-	fmt.Println(ids)
 
 	users, err := s.UserAccess.GetUsersByIds(ids)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUsers, err))
 	}
-
-	fmt.Println(users)
 
 	return c.JSON(http.StatusOK, users)
 }

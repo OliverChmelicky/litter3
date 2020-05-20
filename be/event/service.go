@@ -60,6 +60,9 @@ func (s *EventService) GetEvent(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetEvent, err))
 	}
 
+	fmt.Println("Vraciam Event: ", event)
+	fmt.Println("A ma trash: ", event.Trash)
+
 	return c.JSON(http.StatusOK, event)
 }
 
@@ -213,10 +216,15 @@ func (s *EventService) DeleteEvent(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
 	request := new(models.EventPickerRequest)
-	err := c.Bind(request)
+	eventId := c.QueryParam("event")
+	pickerId := c.QueryParam("picker")
+	asSociety, err := strconv.ParseBool(c.QueryParam("asSociety"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
+	request.EventId = eventId
+	request.PickerId = pickerId
+	request.AsSociety = asSociety
 
 	if request.AsSociety {
 		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.PickerId)

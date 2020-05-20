@@ -46,6 +46,14 @@ export class TrashService {
     );
   }
 
+  getTrashByIds(trashIds: string[]): Observable<TrashModel[]> {
+    const idsQueryParam = trashIds.join();
+    const url = `${this.apiUrl}/${ApisModel.trash}?ids=${idsQueryParam}`;
+    return this.http.get<TrashModel[]>(url).pipe(
+      catchError(err => TrashService.handleError<TrashModel[]>(err,[]))
+    );
+  }
+
 
   private static handleError<T>(error: HttpErrorResponse, result?: T) {
     if (error.error instanceof ErrorEvent) {

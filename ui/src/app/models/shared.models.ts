@@ -27,6 +27,7 @@ export interface MapLoadAnswer {
 }
 
 export interface AttendantsModel {
+  id?: string;
   name: string
   avatar: string
   role: string

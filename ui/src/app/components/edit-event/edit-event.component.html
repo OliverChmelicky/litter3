@@ -1,40 +1,111 @@
 <div class="component-container">
 
+  <div>
+    <button mat-button (click)="onDeleteEvent()">Delete</button>
+  </div>
+
   <div class="component-item">
-    <mat-form-field>
-      <input matInput [ngxMatDatetimePicker]="picker" placeholder="Choose a date" [formControl]="date">
-      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-      <ngx-mat-datetime-picker #picker [showSpinners]="true" [stepHour]="1" [stepMinute]="1" [stepSecond]="1">
-      </ngx-mat-datetime-picker>
-    </mat-form-field>
+    <!--    <mat-form-field>-->
+    <!--      <input matInput [ngxMatDatetimePicker]="picker" placeholder="Choose a date" [formControl]="date">-->
+    <!--      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>-->
+    <!--      <ngx-mat-datetime-picker #picker [showSpinners]="true" [stepHour]="1" [stepMinute]="1" [stepSecond]="1">-->
+    <!--      </ngx-mat-datetime-picker>-->
+    <!--    </mat-form-field>-->
 
-    <label>
-      <textarea [(ngModel)]="description"></textarea>
-    </label>
+    <!--    <label>-->
+    <!--      <textarea [(ngModel)]="description"></textarea>-->
+    <!--    </label>-->
+  </div>
+
+  <div class="mymap component-item">
+    <agm-map #agmMap
+             [latitude]="initMapLat"
+             [longitude]="initMapLng"
+             [zoom]="5"
+             (mapReady)="onMapReady($event)"
+             disableDoubleClickZoom="true">
+
+      <agm-marker *ngFor="let marker of allMarkers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
+        <agm-info-window [disableAutoPan]="true">
+          <div class="show-trash-on-map">
+            <img src="{{marker.images[0]}}">
+            <div>
+              <p>Collections made: {{marker.numOfCollections}}</p>
+              <button (click)="addToList(marker)">Add</button>
+              <button (click)="navigateToTrash(marker.id)">Trash details</button>
+            </div>
+          </div>
+        </agm-info-window>
+      </agm-marker>
+    </agm-map>
+  </div>
+
+  <div class="trashList component-item">
+    <table mat-table [dataSource]="selectedMarkers" class="mat-elevation-z8">
+
+      <ng-container matColumnDef="image">
+        <th mat-header-cell *matHeaderCellDef></th>
+<!--       TODO Hod spravny image-->
+        <td mat-cell *matCellDef="let element"> <app-image [image]="element.images[0]" [service]="'trash'"></app-image> </td> da
+      </ng-container>
+
+      <ng-container matColumnDef="number-of-collections">
+        <th mat-header-cell *matHeaderCellDef> Number of collections</th>
+        <td mat-cell *matCellDef="let element"> {{element.numOfCollections}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="remove">
+        <th mat-header-cell *matHeaderCellDef> Remove</th>
+        <td mat-cell *matCellDef="let element">
+          <button (click)="removeFromList(element.id)">Remove</button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="trashListTableColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: trashListTableColumns;"></tr>
+    </table>
+
+  </div>
 
 
-    <div class="members">
+  <div class="component-item attendants">
 
-      <table mat-table [dataSource]="members" class="mat-elevation-z8">
+    <table mat-table [dataSource]="attendants" class="mat-elevation-z8">
 
+      <ng-container matColumnDef="image">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <app-image [image]="element.avatar" [service]="'users'"></app-image>
+        </td>
+      </ng-container>
 
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> Name/email</th>
+        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+      </ng-container>
 
-        <ng-container matColumnDef="roles">
-          <th mat-header-cell *matHeaderCellDef> Roles </th>
-          <td mat-cell *matCellDef="let element;let i = index">
-            <mat-form-field>
-              <mat-select (selectionChange)="memberPermissionChange($event, i)" [(value)]="element.role" style="min-width: 200px;" placeholder="">
-                <mat-option *ngFor="let role of roles" [value]="role.key">{{role.value}}</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </td>
-        </ng-container>
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef> Email</th>
+        <td mat-cell *matCellDef="let element"> {{element.role}} </td>
+      </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: tableColumns;"></tr>
-      </table>
+      <ng-container matColumnDef="new-role">
+        <th mat-header-cell *matHeaderCellDef> Roles</th>
+        <td mat-cell *matCellDef="let element;let i = index">
+          <mat-form-field>
+            <mat-select (selectionChange)="memberPermissionChange($event, i)" [(value)]="element.role"
+                        style="min-width: 200px;" placeholder="">
+              <mat-option *ngFor="let role of roles" [value]="role.key">{{role.value}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </ng-container>
 
-      <button mat-raised-button (click)="onAttendantsPermissionAcceptChanges()" color="primary">Change rights</button>
-    </div>
+      <tr mat-header-row *matHeaderRowDef="editAttendantsTableColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: editAttendantsTableColumns;"></tr>
+    </table>
+
+    <button mat-raised-button (click)="onAttendantsPermissionAcceptChanges()" color="primary">Change rights</button>
+  </div>
 
 </div>

@@ -63,11 +63,14 @@ export class CreateEventComponent implements OnInit {
       this.initMapLng = +params.get('lng');
 
       if (this.initMapLat === 0 && this.initMapLng === 0) {
+        console.log('idem si getnut position')
         this.locationService.getPosition().then(data => {
+          console.log('current pos: ', data)
           this.initMapLat = data.lat;
           this.initMapLng = data.lng;
         }).catch(
-          () => {
+          error => {
+            console.log('error get location ', error)
             this.initMapLat = 49;
             this.initMapLng = 16;
           }
@@ -179,7 +182,6 @@ export class CreateEventComponent implements OnInit {
           })
 
           this.allMarkers = this.filterCleanedAndSelected(this.allMarkers)
-          console.log('I have markers: ',this.allMarkers)
         }
 
         const viewCenter = this.map.getCenter()

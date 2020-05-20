@@ -8,6 +8,7 @@ import (
 	"github.com/olo/litter3/models"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type trashService struct {
@@ -55,6 +56,19 @@ func (s *trashService) GetTrashById(c echo.Context) error {
 	id := c.Param("id")
 
 	trash, err := s.TrashAccess.GetTrash(id)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetTrashById, err))
+	}
+
+	return c.JSON(http.StatusOK, trash)
+}
+
+func (s *trashService) GetTrashByIds(c echo.Context) error {
+	idsString := c.QueryParam("ids")
+	ids := strings.Split(idsString, ",")
+	fmt.Println(ids)
+
+	trash, err := s.TrashAccess.GetTrashByIds(ids)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetTrashById, err))
 	}

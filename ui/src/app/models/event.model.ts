@@ -77,3 +77,19 @@ export interface EventWithPagingAnsw {
   Events: EventModel[];
   Paging: PagingModel;
 }
+
+interface rolesInterface {
+  key:string,
+  value: string,
+}
+
+export const roles: rolesInterface[] = [
+  {
+    key:'editor',
+    value: 'Editor',
+  },
+  {
+    key:'viewer',
+    value: 'Viewer',
+  },
+]

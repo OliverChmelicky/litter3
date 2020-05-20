@@ -13,6 +13,7 @@ import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MarkerModel} from "../google-map/Marker.model";
 import {ApisModel} from "../../api/api-urls";
 import {MapLocationModel} from "../../models/GPSlocation.model";
+import {AuthService} from "../../services/auth/auth.service";
 
 export const czechPosition: MapLocationModel = {
   lat: 49.81500022397678,
@@ -29,7 +30,15 @@ export const czechPosition: MapLocationModel = {
 export class EventDetailsComponent implements OnInit {
   isLoggedIn: boolean = false;
   statusAttend: boolean = false;
-  me: UserModel;
+  me: UserModel = {
+    Id: '',
+    FirstName: '',
+    LastName: '',
+    Email: '',
+    Uid: '',
+    Avatar: '',
+    CreatedAt: new Date(),
+  };
   map: GoogleMap;
   event: EventModel = {
     Date: new Date,
@@ -63,74 +72,67 @@ export class EventDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.userService.getMe().subscribe(
-        me => {
-          this.me = me;
-          this.availableDecisionsAs.push({
-            VisibleName: me.Email,
-            Id: me.Id,
-            AsSociety: false
-          })
-          this.isLoggedIn = true;
-          this.userService.getMyEditableSocieties().subscribe(
-            societies => {
-              if (societies) {
-                this.editableSocieties = societies
-                this.editableSocietiesIds = societies.map(soc => {
-                  this.availableDecisionsAs.push({
-                    VisibleName: soc.Name,
-                    Id: soc.Id,
-                    AsSociety: true
-                  })
-                  return soc.Id
+      this.eventService.getEvent(params.get('eventId')).subscribe(event => {
+        this.convertToLocalTime()
+        this.event = event
+        if (event.Trash) {
+          this.initLat = event.Trash[0].Location[0]
+          this.initLng = event.Trash[0].Location[1]
+        }
+        if (this.event.Trash){
+          this.assignMarkers()
+        }
+
+        if (event.UsersIds) {
+          const userIds = event.UsersIds.map(u => u.UserId)
+          this.fetchUsersWhoAttends(userIds, event.UsersIds)
+        }
+
+        if (event.SocietiesIds) {
+          const societyIds = event.SocietiesIds.map(s => s.SocietyId)
+          this.fetchSocietiesWhichAttend(societyIds, event.SocietiesIds)
+        }
+
+        //looks at permission of actual user
+        this.getEventAttendanceOnUser()
+      },
+      () => {},
+        () => {
+          this.userService.getMe().subscribe(
+            me => {
+              this.me = me;
+              this.availableDecisionsAs.push({
+                VisibleName: me.Email,
+                Id: me.Id,
+                AsSociety: false
+              })
+              this.isLoggedIn = true;
+              this.userService.getMyEditableSocieties().subscribe(
+                societies => {
+                  if (societies) {
+                    this.editableSocieties = societies
+                    this.editableSocietiesIds = societies.map(soc => {
+                      this.availableDecisionsAs.push({
+                        VisibleName: soc.Name,
+                        Id: soc.Id,
+                        AsSociety: true
+                      })
+                      return soc.Id
+                    })
+                  }
+                }
+              )
+              //find out my status
+              if (this.event.UsersIds) {
+                this.event.UsersIds.map(attendant => {
+                  if (attendant.Permission === 'creator' && attendant.UserId === this.me.Id) {
+                    this.isAdmin = true
+                  }
                 })
               }
-            }
-          )
-        },
-        () => this.isLoggedIn = false,
-        () => {
-          this.eventService.getEvent(params.get('eventId')).subscribe(event => {
-            this.convertToLocalTime()
-            this.event = event
-            if (event.Trash) {
-              this.initLat = event.Trash[0].Location[0]
-              this.initLng = event.Trash[0].Location[1]
-            }
-            this.assignMarkers()
-            if (event.UsersIds) {
-              event.UsersIds.map(attendant => {
-                if (attendant.Permission === 'creator' && attendant.UserId === this.me.Id) {
-                  this.isAdmin = true
-                }
-              })
-            }
-
-            //Seems to me not needed, I guess everyone will have isAdmin set to troue even though he is not an admin od society
-            // //continiue if not user admin and
-            // //is society admin and I have society rights editor and more so I am admin
-            // if (!this.isAdmin && event.SocietiesIds && this.editableSocieties.length > 0) {
-            //   event.SocietiesIds.map( attendant => {
-            //     if (attendant.Permission === 'creator') {
-            //       if (this.editableSocietiesIds.includes(attendant.SocietyId)){
-            //         this.isAdmin = true
-            //       }
-            //     }
-            //   })
-            // }
-
-            if (event.UsersIds) {
-              const userIds = event.UsersIds.map(u => u.UserId)
-              this.fetchUsersWhoAttends(userIds, event.UsersIds)
-            }
-
-            if (event.SocietiesIds) {
-              const societyIds = event.SocietiesIds.map(s => s.SocietyId)
-              this.fetchSocietiesWhichAttend(societyIds, event.SocietiesIds)
-            }
-
-            this.getEventAttendanceOnUser()
-          })
+            },
+            () => console.log('You are not registered')
+            )
         }
       )
 
@@ -215,7 +217,7 @@ export class EventDetailsComponent implements OnInit {
 
   onEdit() {
     this.eventService.setEventEditor(this.availableDecisionsAs[this.selectedCreator])
-    this.router.navigate(['event/details', this.event.Id])
+    this.router.navigate(['events/edit', this.event.Id])
   }
 
   fetchUsersWhoAttends(userIds: string[], userEventDetails: EventUserModel[]) {

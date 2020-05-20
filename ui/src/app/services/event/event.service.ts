@@ -4,14 +4,14 @@ import {ApisModel} from "../../api/api-urls";
 import {Observable, of, throwError} from "rxjs";
 import {catchError} from "rxjs/operators";
 import {
-  AttendanceRequestModel,
+  AttendanceRequestModel, ChangePermisssionRequest,
   EventModel,
   EventPickerModel,
   EventRequestModel,
   EventWithPagingAnsw
 } from "../../models/event.model";
 import {SocietyWithPagingAnsw} from "../../models/society.model";
-import {PagingModel} from "../../models/shared.models";
+import {AttendantsModel, PagingModel} from "../../models/shared.models";
 
 @Injectable({
   providedIn: 'root'
@@ -104,6 +104,27 @@ export class EventService {
     const url = `${this.apiUrl}/${ApisModel.event}`;
     return this.http.post<EventRequestModel>(url, request).pipe(
       catchError(err => EventService.handleError<EventRequestModel>(err))
+    );
+  }
+
+  updateUserPermission(user: AttendantsModel, editor: EventPickerModel, eventId: string) {
+    const request: ChangePermisssionRequest = {
+      ChangingRightsTo: user.id,
+      EventId: eventId,
+      Permission: user.role,
+      AsSociety: editor.AsSociety,  //userId can be extracted from token
+      SocietyId: editor.Id,
+    }
+    const url = `${this.apiUrl}/${ApisModel.event}/members/update`;
+    return this.http.post<ChangePermisssionRequest>(url, request).pipe(
+      catchError(err => EventService.handleError<ChangePermisssionRequest>(err))
+    );
+  }
+
+  deleteEvent(eventEditor: EventPickerModel, eventId: string) {
+    const url = `${this.apiUrl}/${ApisModel.event}/delete?event=${eventId}&picker=${eventEditor.Id}&asSociety=${eventEditor.AsSociety}`;
+    return this.http.delete(url).pipe(
+      catchError(err => EventService.handleError(err))
     );
   }
 }

@@ -23,7 +23,6 @@ export const czechPosition: MapLocationModel = {
 })
 export class GoogleMapComponent implements OnInit {
   @ViewChild('agmMap') agmMap: AgmMap;
-  exampleBinUrl: 'https://www.google.com/url?https://i.vimeocdn.com/portrait/912580_640x640';
 
   location: MapLocationModel;
   defaultLocation = czechPosition;
@@ -40,7 +39,7 @@ export class GoogleMapComponent implements OnInit {
   borderLeft: number;
   borderRight: number;
 
-  initioalDistance = 3000000
+  initialDistance:number = 3000000
 
   constructor(
     private readonly locationService: LocationService,
@@ -75,7 +74,7 @@ export class GoogleMapComponent implements OnInit {
     this.borderRight = c.lng() + 8.82
     this.borderLeft = c.lng() - 8.82
 
-    this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initioalDistance).subscribe(
+    this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initialDistance).subscribe(
       trash => {
         this.allMarkers = this.getOnlyNewMarkers();
         for (let i = 0; i < trash.length; i++) {
@@ -85,7 +84,7 @@ export class GoogleMapComponent implements OnInit {
             new: false,
             id: trash[i].Id,
             cleaned: trash[i].Cleaned,
-            images: trash[i].Images ? trash[i].Images : [this.exampleBinUrl],
+            images: trash[i].Images ? trash[i].Images : [],
             numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
           })
 
@@ -154,7 +153,6 @@ export class GoogleMapComponent implements OnInit {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     const d = R * c; // in metres
-    console.log(d * 2)
 
     //get double range for markers
     this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), d * 2).subscribe(
@@ -167,7 +165,7 @@ export class GoogleMapComponent implements OnInit {
             new: false,
             id: trash[i].Id,
             cleaned: trash[i].Cleaned,
-            images: trash[i].Images ? trash[i].Images : [this.exampleBinUrl],
+            images: trash[i].Images ? trash[i].Images : [],
             numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
           })
 

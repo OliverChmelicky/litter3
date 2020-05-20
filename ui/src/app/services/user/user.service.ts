@@ -73,7 +73,7 @@ export class UserService {
 
   getUsersDetails(ids: string[]): Observable<UserModel[]> {
     const idsQueryParam = ids.join();
-    const url = `${this.apiUrl}/${ApisModel.user}/details?Ids=${idsQueryParam}`;
+    const url = `${this.apiUrl}/${ApisModel.user}/details?ids=${idsQueryParam}`;
     return this.http.get<UserModel[]>(url).pipe(
       catchError(err => UserService.handleError<UserModel[]>(err)
       )

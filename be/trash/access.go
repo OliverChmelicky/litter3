@@ -33,6 +33,19 @@ func (s *TrashAccess) GetTrash(id string) (*models.Trash, error) {
 	return trash, nil
 }
 
+func (s *TrashAccess) GetTrashByIds(ids []string) ([]models.Trash, error) {
+	var trash []models.Trash
+	err := s.Db.Model(&trash).Where("id IN (?)", pg.In(ids)).Column("trash.*").
+		Relation("Collections").
+		Relation("Images").
+		Select()
+	if err != nil {
+		return []models.Trash{}, err
+	}
+
+	return trash, nil
+}
+
 func (s *TrashAccess) GetTrashInRange(request *models.RangeRequest) ([]models.Trash, error) {
 	//https://postgis.net/docs/PostGIS_FAQ.html#idm1368
 	trash := []models.Trash{}

@@ -94,7 +94,7 @@ func main() {
 	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)
 	e.GET("/societies/admins/:societyId", userService.GetSocietyAdmins)
 	e.GET("/societies/members/:societyId", userService.GetSocietyMembers)
-	e.GET("/societies/requests/:societyId", userService.GetSocietyRequests)
+	e.GET("/societies/requests/:societyId", userService.GetSocietyRequests, tokenMiddleware.AuthorizeUser)
 	e.PUT("/societies/change-permission", userService.ChangeMemberRights, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/societies/:societyId/:removingId", userService.RemoveMember, tokenMiddleware.AuthorizeUser)
 
@@ -108,16 +108,18 @@ func main() {
 	e.GET("/events/:eventId", eventService.GetEvent)
 	e.POST("/events/attend", eventService.AttendEvent, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/events/not-attend", eventService.CannotAttendEvent, tokenMiddleware.AuthorizeUser)
+	e.PUT("/events/members", eventService.EditEventRights, tokenMiddleware.AuthorizeUser)
+	e.PUT("/events/delete", eventService.DeleteEvent, tokenMiddleware.AuthorizeUser)
 
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)
+	e.GET("/trash", trashService.GetTrashByIds)
 	e.GET("/trash/range", trashService.GetTrashInRange)
 	e.POST("/trash/new", trashService.CreateTrash, tokenMiddleware.FillUserContext)
 	e.PUT("/trash/update", trashService.UpdateTrash, tokenMiddleware.AuthorizeUser)
-	e.DELETE("/trash/delete/:trashId", trashService.DeleteTrash)
+	e.DELETE("/trash/delete/:trashId", trashService.DeleteTrash, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
-
 	e.GET("/fileupload/societies/:image", fileuploadService.GetSocietyImage)
 	e.POST("/fileupload/societies/:societyId", fileuploadService.UploadSocietyImage, tokenMiddleware.AuthorizeUser)
 

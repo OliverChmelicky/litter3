@@ -15,7 +15,9 @@ export class LocationService {
         },
         err => {
           reject(err);
-        });
+        },
+        {timeout: 10000}
+        );
     });
 
   }

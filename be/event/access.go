@@ -201,10 +201,6 @@ func (s *eventAccess) EditEventRights(request *models.EventPermissionRequest, us
 		if !permission {
 			return &models.EventPermissionRequest{}, fmt.Errorf("You have no permisssion to edit event ")
 		}
-		isCreator, err = s.HasSocietyEventPermission(request.SocietyId, request.EventId, &[]models.EventPermission{"creator"})
-		if err != nil {
-			return &models.EventPermissionRequest{}, fmt.Errorf("Error check is creator: %w ", err)
-		}
 	} else {
 		permission, err := s.HasUserEventPermission(userWhoDoesOperation, request.EventId, &[]models.EventPermission{"editor", "creator"})
 		if err != nil {
@@ -220,7 +216,7 @@ func (s *eventAccess) EditEventRights(request *models.EventPermissionRequest, us
 	}
 
 	if isCreator && request.Permission == models.EventPermission("creator") {
-		return &models.EventPermissionRequest{}, fmt.Errorf("You there can be only one creator of event ")
+		return &models.EventPermissionRequest{}, fmt.Errorf("There can be only one creator of event ")
 	}
 
 	if request.AsSociety {
@@ -268,44 +264,50 @@ func (s *eventAccess) DeleteEvent(request *models.EventPickerRequest, userWhoDoe
 		}
 	}
 
-	tx, err := s.db.Begin()
-	if err != nil {
-		return fmt.Errorf("Error creating transaction: %w ", err)
-	}
-	defer tx.Rollback()
-
-	userEvent := new(models.EventUser)
-	_, err = tx.Model(userEvent).Where("event_id = ?", request.EventId).Delete()
-	if err != nil {
-		return fmt.Errorf("Error delete users from event %w ", err)
-	}
-
-	societyEvent := new(models.EventSociety)
-	_, err = tx.Model(societyEvent).Where("event_id = ?", request.EventId).Delete()
-	if err != nil {
-		return fmt.Errorf("Error delete societies from event %w ", err)
-	}
-
-	trashEvent := new(models.EventTrash)
-	_, err = tx.Model(trashEvent).Where("event_id = ?", request.EventId).Delete()
-	if err != nil {
-		return fmt.Errorf("Error delete trash from event %w ", err)
-	}
-
-	//maybe navráť stav ak nie je later collection
-	collection := new(models.Collection)
-	_, err = tx.Model(collection).Where("event_id = ?", request.EventId).Delete()
-	if err != nil {
-		return fmt.Errorf("Error delete collection from event %w ", err)
-	}
-
 	event := &models.Event{Id: request.EventId}
-	err = tx.Delete(event)
+	err := s.db.Delete(event)
 	if err != nil {
 		return fmt.Errorf("Error delete event %w ", err)
 	}
 
-	return tx.Commit()
+	//tx, err := s.db.Begin()
+	//if err != nil {
+	//	return fmt.Errorf("Error creating transaction: %w ", err)
+	//}
+	//defer tx.Rollback()
+	//
+	//userEvent := new(models.EventUser)
+	//_, err = tx.Model(userEvent).Where("event_id = ?", request.EventId).Delete()
+	//if err != nil {
+	//	return fmt.Errorf("Error delete users from event %w ", err)
+	//}
+	//
+	//societyEvent := new(models.EventSociety)
+	//_, err = tx.Model(societyEvent).Where("event_id = ?", request.EventId).Delete()
+	//if err != nil {
+	//	return fmt.Errorf("Error delete societies from event %w ", err)
+	//}
+	//
+	//trashEvent := new(models.EventTrash)
+	//_, err = tx.Model(trashEvent).Where("event_id = ?", request.EventId).Delete()
+	//if err != nil {
+	//	return fmt.Errorf("Error delete trash from event %w ", err)
+	//}
+	//
+	////maybe navráť stav ak nie je later collection
+	//collection := new(models.Collection)
+	//_, err = tx.Model(collection).Where("event_id = ?", request.EventId).Delete()
+	//if err != nil {
+	//	return fmt.Errorf("Error delete collection from event %w ", err)
+	//}
+	//
+	//event := &models.Event{Id: request.EventId}
+	//err = tx.Delete(event)
+	//if err != nil {
+	//	return fmt.Errorf("Error delete event %w ", err)
+	//}
+
+	return nil
 }
 
 func (s *eventAccess) GetSocietyEvents(societyId string) ([]models.Event, error) {

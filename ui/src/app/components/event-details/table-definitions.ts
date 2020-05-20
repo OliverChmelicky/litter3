@@ -4,3 +4,10 @@ export const attendantsTableColumns: string[] = [
   'role',
 ]
 
+export const editAttendantsTableColumns: string[] = [
+  'image',
+  'name',
+  'role',
+  'new-role',
+]
+
