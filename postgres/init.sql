@@ -227,26 +227,6 @@ CREATE TRIGGER del_user_trigger
     FOR EACH ROW
 EXECUTE PROCEDURE del_user_events();
 
---
---
-
--- TODO test
--- CREATE OR REPLACE FUNCTION del_collection_after_last_user()
---     RETURNS trigger AS
--- $$
--- BEGIN
---     IF EXISTS (SELECT FROM users_collections WHERE (collection_id = OLD.collection_id)) THEN
---         DELETE FROM collections where id = old.collection_id AND event_id IS NULL;
---     END IF;
---     return OLD;
--- END;
--- $$
---     LANGUAGE plpgsql;
---
--- CREATE TRIGGER del_colection_trigger
---     AFTER DELETE ON users_collections
---     FOR EACH ROW
--- EXECUTE PROCEDURE del_collection_after_last_user();
 
 
 

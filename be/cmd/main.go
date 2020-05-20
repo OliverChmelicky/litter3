@@ -107,7 +107,7 @@ func main() {
 	e.GET("/events/societies/:societyId", eventService.GetSocietyEvents)
 	e.GET("/events/:eventId", eventService.GetEvent)
 	e.POST("/events/attend", eventService.AttendEvent, tokenMiddleware.AuthorizeUser)
-	e.DELETE("/events/not-attend", eventService.CannotAttendEvent)
+	e.DELETE("/events/not-attend", eventService.CannotAttendEvent, tokenMiddleware.AuthorizeUser)
 
 	trashService := trash.CreateService(db)
 	e.GET("/trash/:id", trashService.GetTrashById)

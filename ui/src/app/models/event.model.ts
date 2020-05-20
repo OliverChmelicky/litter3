@@ -30,7 +30,7 @@ export interface EventModel {
   Date: Date,
   Description: string,
   CreatedAt?: Date,
-  Trash?: TrashModel,
+  Trash?: TrashModel[],
   UsersIds?: EventUserModel[],
   SocietiesIds?: EventSocietyModel[],
 }

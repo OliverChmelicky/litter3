@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {UserModel} from "../../models/user.model";
 import {EventModel, EventPickerModel, EventSocietyModel, EventUserModel} from "../../models/event.model";
 import {attendantsTableColumns} from "./table-definitions";
@@ -9,6 +9,17 @@ import {EventService} from "../../services/event/event.service";
 import {SocietyService} from "../../services/society/society.service";
 import {SocietyModel} from "../../models/society.model";
 import {MatTableDataSource} from "@angular/material/table";
+import {GoogleMap} from "@agm/core/services/google-maps-types";
+import {MarkerModel} from "../google-map/Marker.model";
+import {ApisModel} from "../../api/api-urls";
+import {MapLocationModel} from "../../models/GPSlocation.model";
+
+export const czechPosition: MapLocationModel = {
+  lat: 49.81500022397678,
+  lng: 20.0,
+  zoom: 7,
+  minZoom: 3,
+};
 
 @Component({
   selector: 'app-event-details',
@@ -19,6 +30,7 @@ export class EventDetailsComponent implements OnInit {
   isLoggedIn: boolean = false;
   statusAttend: boolean = false;
   me: UserModel;
+  map: GoogleMap;
   event: EventModel = {
     Date: new Date,
     Description: '',
@@ -32,6 +44,12 @@ export class EventDetailsComponent implements OnInit {
   editableSocieties: SocietyModel[] = [];
   editableSocietiesIds: string[] = [];
 
+  markers: MarkerModel[] = [];
+  initLat: number = czechPosition.lat;
+  initLng: number = czechPosition.lng;
+
+  societies: SocietyModel[] = [];
+  users: UserModel[] = [];
 
 
   constructor(
@@ -40,7 +58,8 @@ export class EventDetailsComponent implements OnInit {
     private userService: UserService,
     private societyService: SocietyService,
     private eventService: EventService,
-  ) { }
+  ) {
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -57,7 +76,7 @@ export class EventDetailsComponent implements OnInit {
             societies => {
               if (societies) {
                 this.editableSocieties = societies
-                this.editableSocietiesIds = societies.map( soc => {
+                this.editableSocietiesIds = societies.map(soc => {
                   this.availableDecisionsAs.push({
                     VisibleName: soc.Name,
                     Id: soc.Id,
@@ -71,35 +90,41 @@ export class EventDetailsComponent implements OnInit {
         },
         () => this.isLoggedIn = false,
         () => {
-          this.eventService.getEvent(params.get('eventId')).subscribe( event => {
+          this.eventService.getEvent(params.get('eventId')).subscribe(event => {
             this.convertToLocalTime()
             this.event = event
+            if (event.Trash) {
+              this.initLat = event.Trash[0].Location[0]
+              this.initLng = event.Trash[0].Location[1]
+            }
+            this.assignMarkers()
             if (event.UsersIds) {
-              event.UsersIds.map( attendant => {
+              event.UsersIds.map(attendant => {
                 if (attendant.Permission === 'creator' && attendant.UserId === this.me.Id) {
                   this.isAdmin = true
                 }
               })
             }
 
-            //continiue if not user admin and
-            //is society admin and I have society rights editor and more so I am admin
-            if (!this.isAdmin && event.SocietiesIds && this.editableSocieties.length > 0) {
-              event.SocietiesIds.map( attendant => {
-                if (attendant.Permission === 'creator') {
-                  if (this.editableSocietiesIds.includes(attendant.SocietyId)){
-                    this.isAdmin = true
-                  }
-                }
-              })
-            }
+            //Seems to me not needed, I guess everyone will have isAdmin set to troue even though he is not an admin od society
+            // //continiue if not user admin and
+            // //is society admin and I have society rights editor and more so I am admin
+            // if (!this.isAdmin && event.SocietiesIds && this.editableSocieties.length > 0) {
+            //   event.SocietiesIds.map( attendant => {
+            //     if (attendant.Permission === 'creator') {
+            //       if (this.editableSocietiesIds.includes(attendant.SocietyId)){
+            //         this.isAdmin = true
+            //       }
+            //     }
+            //   })
+            // }
 
             if (event.UsersIds) {
               const userIds = event.UsersIds.map(u => u.UserId)
               this.fetchUsersWhoAttends(userIds, event.UsersIds)
             }
 
-            if (event.SocietiesIds){
+            if (event.SocietiesIds) {
               const societyIds = event.SocietiesIds.map(s => s.SocietyId)
               this.fetchSocietiesWhichAttend(societyIds, event.SocietiesIds)
             }
@@ -112,12 +137,18 @@ export class EventDetailsComponent implements OnInit {
     })
   }
 
+  onMapReady(map: GoogleMap) {
+    this.map = map;
+  }
+
   onCreateCollections() {
     this.router.navigateByUrl('/collections/event')
   }
 
   onDesideAsChange() {
-    if (this.selectedCreator === 0){  //User
+    this.statusAttend = false
+    this.isAdmin = false
+    if (this.selectedCreator === 0) {  //User
       this.getEventAttendanceOnUser()
     } else {
       this.getSocietyEventAttendance()
@@ -125,14 +156,12 @@ export class EventDetailsComponent implements OnInit {
   }
 
   private getEventAttendanceOnUser() {
-    this.statusAttend = false
-    this.isAdmin = false
     if (this.event.UsersIds) {
       this.event.UsersIds.map(
         user => {
           if (user.UserId == this.me.Id) {
             this.statusAttend = true
-            if (user.Permission === 'admin') {
+            if (user.Permission === 'creator') {
               this.isAdmin = true
             }
           }
@@ -141,16 +170,13 @@ export class EventDetailsComponent implements OnInit {
     }
   }
 
-  private getSocietyEventAttendance(){
-    this.statusAttend = false
-    this.isAdmin = false
-
+  private getSocietyEventAttendance() {
     if (this.event.SocietiesIds) {
       this.event.SocietiesIds.map(
         society => {
           if (society.SocietyId == this.availableDecisionsAs[this.selectedCreator].Id) {
             this.statusAttend = true
-            if (society.Permission === 'admin') {
+            if (society.Permission === 'creator') {
               this.isAdmin = true
             }
           }
@@ -161,27 +187,67 @@ export class EventDetailsComponent implements OnInit {
 
   onAttend() {
     this.eventService.attendEvent(this.event.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
-      () => {}
+      () => {
+        console.log('attendants before: ', this.attendants)
+        this.pushAttendant(this.availableDecisionsAs[this.selectedCreator])
+        console.log('attendant is pushed: ', this.attendants)
+
+        const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
+        this.attendants = []
+        for (let i = 0; i < newData.data.length; i++) {
+          this.attendants.push(newData.data[i])
+        }
+      }
     )
   }
 
   onNotAttend() {
-    this.eventService.notAttendEvent(this.event.Id, this.availableDecisionsAs[this.selectedCreator])
+    this.eventService.notAttendEvent(this.event.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
+      res => {
+        console.log('RES', res)
+
+        this.router.navigateByUrl('events')
+      },
+      error => console.log(error),
+      () => console.log('end')
+    )
   }
 
   onEdit() {
     this.router.navigate(['event/details', this.event.Id])
   }
 
-  private fetchUsersWhoAttends(userIds: string[], userEventDetails: EventUserModel[]) {
-    this.userService.getUsersDetails(userIds).subscribe(
-      users => {
-        users.map( u => {
-          userEventDetails.map( detail => {
-            if (u.Id === detail.UserId) {
+  fetchUsersWhoAttends(userIds: string[], userEventDetails: EventUserModel[]) {
+    if (userIds.length > 1) {
+      this.userService.getUsersDetails(userIds).subscribe(
+        users => {
+          this.users = users
+          users.map(u => {
+            userEventDetails.map(detail => {
+              if (u.Id === detail.UserId) {
+                this.attendants.push({
+                  name: u.Email,
+                  avatar: u.Avatar ? u.Avatar : '',
+                  role: detail.Permission,
+                })
+              }
+              const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
+              this.attendants = []
+              for (let i = 0; i < newData.data.length; i++) {
+                this.attendants.push(newData.data[i])
+              }
+            });
+          })
+        })
+    } else {
+      this.userService.getUser(userIds[0]).subscribe(
+        user => {
+          this.users.push(user)
+          userEventDetails.map(detail => {
+            if (user.Id === detail.UserId) {
               this.attendants.push({
-                name: u.Email,
-                avatar: u.Avatar? u.Avatar : '',
+                name: user.Email,
+                avatar: user.Avatar ? user.Avatar : '',
                 role: detail.Permission,
               })
             }
@@ -191,38 +257,105 @@ export class EventDetailsComponent implements OnInit {
               this.attendants.push(newData.data[i])
             }
           });
+
         })
-      })
+    }
   }
 
-  private fetchSocietiesWhichAttend(societiesIds: string[], societyEventDetails: EventSocietyModel[]) {
-    this.societyService.getSocietiesByIds(societiesIds).subscribe(
-      societies => {
-        societies.map( s => {
-          societyEventDetails.map( detail => {
-            if (s.Id === detail.SocietyId) {
+  fetchSocietiesWhichAttend(societiesIds: string[], societyEventDetails: EventSocietyModel[]) {
+    if (societiesIds.length > 1) {
+      this.societyService.getSocietiesByIds(societiesIds).subscribe(
+        societies => {
+          this.societies = societies
+          societies.map(s => {
+            societyEventDetails.map(detail => {
+              if (s.Id === detail.SocietyId) {
+                this.attendants.push({
+                  name: s.Name,
+                  avatar: s.Avatar ? s.Avatar : '',
+                  role: detail.Permission,
+                })
+              }
+            })
+          })
+          const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
+          this.attendants = []
+          for (let i = 0; i < newData.data.length; i++) {
+            this.attendants.push(newData.data[i])
+          }
+        })
+    } else {
+      this.societyService.getSociety(societiesIds[0]).subscribe(
+        society => {
+          this.societies.push(society)
+          societyEventDetails.map(detail => {
+            if (society.Id === detail.SocietyId) {
               this.attendants.push({
-                name: s.Name,
-                avatar: s.Avatar? s.Avatar : '',
+                name: society.Name,
+                avatar: society.Avatar ? society.Avatar : '',
                 role: detail.Permission,
               })
             }
-          });
+          })
+          const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
+          this.attendants = []
+          for (let i = 0; i < newData.data.length; i++) {
+            this.attendants.push(newData.data[i])
+          }
         })
-        const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
-        this.attendants = []
-        for (let i = 0; i < newData.data.length; i++) {
-          this.attendants.push(newData.data[i])
-        }
-      })
-
+    }
   }
 
   private convertToLocalTime() {
     let dateStr = this.event.Date.toString()
     dateStr += ' UTC'
-    console.log('old date: ', dateStr)
     this.event.Date = new Date(dateStr)
-    console.log('new date: ', this.event.Date)
+  }
+
+  navigateToTrash(trashId: string) {
+    this.router.navigate(['trash/details', trashId])
+  }
+
+  private assignMarkers() {
+    this.event.Trash.map(t => {
+      let collLength = 0
+      if (t.Collections) {
+        collLength = t.Collections.length
+      }
+      if (!t.Images) {
+        t.Images = [''];
+      }
+      this.markers.push({
+        id: t.Id,
+        lat: t.Location[0],
+        lng: t.Location[1],
+        cleaned: t.Cleaned,
+        images: t.Images,
+        numOfCollections: collLength
+      })
+    })
+  }
+
+  private pushAttendant(picker: EventPickerModel) {
+    if (picker.AsSociety) {
+      this.editableSocieties.map(s => {
+        if (s.Id === picker.Id) {
+          this.attendants.push({
+            name: picker.VisibleName,
+            avatar: s.Avatar ? s.Avatar : '',
+            role: 'viewer',
+          })
+        }
+      })
+    } else {
+      this.attendants.push({
+        name: this.me.Email,
+        avatar: this.me.Avatar ? this.me.Avatar : '',
+        role: 'viewer',
+      })
+
+    }
+
+
   }
 }

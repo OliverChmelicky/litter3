@@ -1,4 +1,4 @@
-<div>
+<div class="view-container">
 
   <h1>EVENT DETAILS</h1>
 
@@ -38,9 +38,26 @@
     </textarea>
   </div>
 
-  <div>
-    <agm-map>
+  <div class="map-class">
+    <agm-map
+      [latitude]="initLat"
+      [longitude]="initLng"
+      [zoom]="5"
+      (mapReady)="onMapReady($event)"
+      disableDoubleClickZoom="true">
 
+      <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
+        <agm-info-window [disableAutoPan]="true">
+          <div class="show-trash-on-map">
+            <app-image [image]="marker.images[0]"></app-image>
+              <div>
+                <p>Collections made: {{marker.numOfCollections}}</p>
+                <p>Cleaned: {{marker.cleaned ? "yes" : "no"}}</p>
+                <button (click)="navigateToTrash(marker.id)">Details</button>
+              </div>
+          </div>
+        </agm-info-window>
+      </agm-marker>
     </agm-map>
   </div>
 

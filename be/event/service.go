@@ -151,7 +151,7 @@ func (s *EventService) CannotAttendEvent(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCannotAttendEvent, err))
 	}
 
-	return c.JSON(http.StatusOK, "")
+	return c.NoContent(http.StatusOK)
 }
 
 func (s *EventService) UpdateEvent(c echo.Context) error {

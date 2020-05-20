@@ -84,10 +84,10 @@ export class EventService {
     );
   }
 
-  notAttendEvent(eventId: string, eventPickerModel: EventPickerModel) {
+  notAttendEvent(eventId: string, eventPickerModel: EventPickerModel): Observable<any> {
     const url = `${this.apiUrl}/${ApisModel.event}/not-attend?event=${eventId}&picker=${eventPickerModel.Id}&asSociety=${eventPickerModel.AsSociety}`;
-    return this.http.delete<AttendanceRequestModel>(url).pipe(
-      catchError(err => EventService.handleError<AttendanceRequestModel>(err))
+    return this.http.delete(url).pipe(
+      catchError(err => EventService.handleError(err))
     );
   }
 
