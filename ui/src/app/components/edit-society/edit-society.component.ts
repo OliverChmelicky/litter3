@@ -1,32 +1,44 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {membersColumnsSocietyEditDefinition, roles} from "../society-details/table-definitions";
 import {ActivatedRoute, Router} from "@angular/router";
 import {SocietyService} from "../../services/society/society.service";
 import {UserService} from "../../services/user/user.service";
-import {MemberModel, SocietyModel} from "../../models/society.model";
+import {DefaultSociety, MemberModel, SocietyModel} from "../../models/society.model";
 import {UserInSocietyModel, UserModel} from "../../models/user.model";
 import {FormBuilder} from "@angular/forms";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
 import {MatSelectChange} from "@angular/material/select";
 import {ApisModel} from "../../api/api-urls";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {animate, state, style, transition, trigger} from "@angular/animations";
+import {MatTableDataSource} from "@angular/material/table";
+import {MarkerModel} from "../google-map/Marker.model";
+
+export interface DialogData {
+  header: string,
+  commandName: string,
+}
 
 @Component({
   selector: 'app-edit-society',
   templateUrl: './edit-society.component.html',
-  styleUrls: ['./edit-society.component.css']
+  styleUrls: ['./edit-society.component.css'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({height: '0px', minHeight: '0'})),
+      state('expanded', style({height: '*'})),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
 })
 export class EditSocietyComponent implements OnInit {
   membersColumnsDef = membersColumnsSocietyEditDefinition;
   changeMemberPermission: MemberModel[] = []
-  members: UserInSocietyModel[];
-  origMembers: UserInSocietyModel[];
+  members: UserInSocietyModel[] = [];
+  origMembers: UserInSocietyModel[] = [];
 
   roles = roles;
-  society: SocietyModel = {
-    Name: 'dacp',
-    Description: 'ine',
-    Avatar: '98fbffb9-7cd5-4959-bd3e-2f04f8d6052e.png'
-  };
+  society: SocietyModel = DefaultSociety;
   fd: FormData = new FormData();
 
   adminsMembers: MemberModel[];
@@ -48,68 +60,70 @@ export class EditSocietyComponent implements OnInit {
     private userService: UserService,
     private formBuilder: FormBuilder,
     private fileuploadService: FileuploadService,
+    public removeUserDialog: MatDialog,
   ) { }
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       this.societyService.getSociety(params.get('societyId')).subscribe(
         society => {
-            this.society = society
+          this.society = society
+
+          let adminNumber = 0
+            this.society.MemberRights.map( m => {
+              if (m.Permission === 'admin') {
+                adminNumber += 1;
+              }
+            })
+
+          society.Users.map( user => {
+            this.society.MemberRights.map( right => {
+              if (user.Id === right.UserId) {
+                let showRemove = true
+                if (adminNumber === 1 && right.Permission === 'admin') {
+                  showRemove = false
+                }
+
+                this.members.push({
+                  user: user,
+                  role: right.Permission,
+                  showRemove: showRemove
+                })
+              }
+            })
+          })
+          this.members.map( m => this.origMembers.push({
+            user: m.user,
+            role: m.role,
+            showRemove: m.showRemove
+          }))
+          this.refreshMembersTable()
+
           this.userService.getMe().subscribe(
             res => {
               this.me = res
-              this.societyService.getSocietyMembers(this.society.Id).subscribe(m => {
-                this.getMembers(m)
-                this.adminsMembers = m.filter( mem => mem.Permission === 'admin')
-                this.adminsMembers.map( a => {
-                    if (a.UserId === this.me.Id)
-                      this.isAdmin = true;
-                })
+              this.adminsMembers = this.society.MemberRights.filter( mem => mem.Permission === 'admin')
+              this.adminsMembers.map( a => {
+                if (a.UserId === this.me.Id)
+                  this.isAdmin = true;
               })
             })
         })
     });
   }
 
-  private getMembers(membersPermissions: MemberModel[]) {
-    const membIds = membersPermissions.map( m => m.UserId)
-    this.userService.getUsersDetails(membIds).subscribe( m => {
-      this.members = [];
-      m.map( usr =>
-        {
-          const roleOfUser = membersPermissions.map( membership =>
-            {if (membership.UserId === usr.Id) {
-              return membership
-            }
-          })
-          if (roleOfUser.length === 1) {
-            this.members.push({
-              user: usr,
-              role: roleOfUser[0].Permission,
-            })
-          }
-
-        })
-      this.origMembers = []
-      for (let i = 0; i < this.members.length; i++) {
-        this.origMembers.push(
-          {
-            user: this.members[i].user,
-            role: this.members[i].role,
-          }
-        )
-      }
-    })
-  }
-
   memberPermissionChange(event: MatSelectChange, i: number) {
+    console.log(this.origMembers[i])
     if (event.value === this.origMembers[i].role) {
       //back to the same permission
       const index = this.changeMemberPermission.findIndex(u => u.UserId === this.members[i].user.Id)
       this.changeMemberPermission.splice(index, 1)
+      console.log('Changed permission: ',this.changeMemberPermission)
+      return
     } else {
       //find old permission
       const exists = this.changeMemberPermission.filter( mem => mem.UserId === this.members[i].user.Id)
+      console.log('exists? ', exists)
       if (exists.length !== 0) {
         //remove
         const index = this.changeMemberPermission.findIndex(u => u.UserId === this.members[i].user.Id)
@@ -123,16 +137,31 @@ export class EditSocietyComponent implements OnInit {
         Permission: event.value.toString(),
         CreatedAt: new Date(),  //server does not use this property
       })
+      console.log('Changed permission: ',this.changeMemberPermission)
     }
   }
 
   onMemberPermissionAcceptChanges() {
+    console.log(this.changeMemberPermission)
     if (this.changeMemberPermission.length > 0) {
-      this.societyService.changePermissions(this.changeMemberPermission).subscribe()
+      this.societyService.changePermissions(this.changeMemberPermission).subscribe(
+        () => {
+          this.changeMemberPermission = [];
+
+          this.origMembers = []
+          this.members.map( m => this.origMembers.push({
+            user: m.user,
+            role: m.role,
+            showRemove: m.showRemove
+          }))
+        },
+        error => console.log(error)
+      )
     }
   }
 
   onUpdate() {
+    console.log(this.societyForm.value)
     if (this.societyForm.value['name'] !== '') {
       this.society.Name = this.societyForm.value['name']
     }
@@ -153,19 +182,74 @@ export class EditSocietyComponent implements OnInit {
   }
 
   removeUser(id: string) {
-    this.societyService.removeUser(id, this.society.Id).subscribe(
-      () => {
-        if (this.me.Id === id) {
-          this.router.navigateByUrl('map')
-        } else {
-          const index = this.members.findIndex( m => m.user.Id === id)
-          this.members.splice(index, 1)
-        }
+    const dialogRef = this.removeUserDialog.open(RemoveMemberComponent, {
+      width: '800px',
+      data: {
+        header: 'Remove user?',
+        commandName: 'REMOVE',
       }
-    )
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Idem removnut: ',id)
+        this.societyService.removeUser(id, this.society.Id).subscribe(
+          () => {
+            if (this.me.Id === id) {
+              this.router.navigateByUrl('map')
+            } else {
+              const index = this.members.findIndex( m => m.user.Id === id)
+              this.members.splice(index, 1)
+
+              this.refreshMembersTable()
+            }
+          }
+        )
+      }
+    });
   }
 
   onDelete() {
-    //testni delete society
+    const dialogRef = this.removeUserDialog.open(RemoveMemberComponent, {
+      width: '800px',
+      data: {
+        header: 'Delete society?',
+        commandName: 'DELETE',
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.societyService.deleteSociety(this.society.Id).subscribe(
+          () => {
+            this.router.navigateByUrl('map')
+          }
+        )
+      }
+    });
+  }
+
+  refreshMembersTable() {
+    const newData = new MatTableDataSource<UserInSocietyModel>(this.members);
+    this.members = []
+    for (let i = 0; i < newData.data.length; i++) {
+      this.members.push(newData.data[i])
+    }
+  }
+}
+
+@Component({
+  selector: 'app-edit-soc-modal',
+  templateUrl: './dialog/edit-soc-modal.component.html',
+  //styleUrls: ['./dialog/edit-soc-modal.component.css]
+})
+export class RemoveMemberComponent {
+
+  constructor(public dialogRef: MatDialogRef<RemoveMemberComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
   }
 }

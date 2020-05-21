@@ -95,10 +95,13 @@ func main() {
 	e.GET("/societies/admins/:societyId", userService.GetSocietyAdmins)
 	e.GET("/societies/members/:societyId", userService.GetSocietyMembers)
 	e.GET("/societies/requests/:societyId", userService.GetSocietyRequests, tokenMiddleware.AuthorizeUser)
-	e.PUT("/societies/change-permission", userService.ChangeMemberRights, tokenMiddleware.AuthorizeUser)
+	e.PUT("/societies/change/permission", userService.ChangeMemberRights, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/societies/:societyId/:removingId", userService.RemoveMember, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/societies/delete/:societyId", userService.DeleteSociety, tokenMiddleware.AuthorizeUser)
 
 	e.POST("/membership", userService.ApplyForMembership, tokenMiddleware.AuthorizeUser)
+	e.POST("/membership/accept/:societyId/:userId", userService.AcceptApplicant, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/membership/deny/:societyId/:userId", userService.DismissApplicant, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/membership/:societyId", userService.RemoveApplicationForMembership, tokenMiddleware.AuthorizeUser)
 
 	eventService := event.CreateService(db)

@@ -6,6 +6,7 @@ import {TrashModel, MarkerCollectionModel} from "../../models/trash.model";
 import {MarkerModel} from "../google-map/Marker.model";
 import {czechPosition} from "../event-details/event-details.component";
 import {MatTableDataSource} from "@angular/material/table";
+import {AuthService} from "../../services/auth/auth.service";
 
 export const createCollectionTrashColumns: string[] = [
   'trash-image',

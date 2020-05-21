@@ -22,11 +22,13 @@ export class AuthService {
   ) {
     this.afAuth.authState.subscribe(user => {
       if (user) {
+        this.loggedIn.next(true);
         localStorage.setItem('firebaseUser', JSON.stringify(user));
 
         user.getIdToken().then(token => localStorage.setItem('token', token))
           .catch(() => localStorage.setItem('token', null));
       } else {
+        this.loggedIn.next(false);
         localStorage.setItem('firebaseUser', null);
         localStorage.setItem('token', null);
       }

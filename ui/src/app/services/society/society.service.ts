@@ -12,7 +12,7 @@ import {
 } from "../../models/society.model";
 import {ApisModel} from "../../api/api-urls";
 import {PagingModel} from "../../models/shared.models";
-import {UserModel} from "../../models/user.model";
+import {UserGroupModel, UserModel} from "../../models/user.model";
 
 @Injectable({
   providedIn: 'root'
@@ -78,8 +78,18 @@ export class SocietyService {
     );
   }
 
+  askForMembership(societyId: string) {
+    const request = {
+      Id: societyId
+    }
+    const url = `${this.apiUrl}/membership`;
+    return this.http.post(url, request).pipe(
+      catchError(err => SocietyService.handleError(err))
+    );
+  }
+
   leaveSociety(societyId, userId: string) {
-    const url = `${this.apiUrl}/${ApisModel.user}/${this.societyUrl}/${societyId}/${userId}`;
+    const url = `${this.apiUrl}/${this.societyUrl}/${societyId}/${userId}`;
     return this.http.delete(url).pipe(
       catchError(err => SocietyService.handleError(err))
     );
@@ -105,20 +115,6 @@ export class SocietyService {
   };
 
 
-  getSocietyAdmins(societyId: string): Observable<string[]> {
-    const url = `${this.apiUrl}/${ApisModel.society}/admins/${societyId}`;
-    return this.http.get<string[]>(url).pipe(
-      catchError(err => SocietyService.handleError<string[]>(err, []))
-    );
-  }
-
-  getSocietyRequests(societyId: string): Observable<ApplicantModel[]> {
-    const url = `${this.apiUrl}/${ApisModel.society}/requests/${societyId}`;
-    return this.http.get<ApplicantModel[]>(url).pipe(
-      catchError(err => SocietyService.handleError<ApplicantModel[]>(err, []))
-    );
-  }
-
   updateSociety(society: SocietyModel): Observable<SocietyModel> {
     const url = `${this.apiUrl}/${ApisModel.society}/update`;
     return this.http.put<SocietyModel>(url, society).pipe(
@@ -127,7 +123,7 @@ export class SocietyService {
   }
 
   changePermissions(changeMemberPermission: MemberModel[]) {
-      const url = `${this.apiUrl}/${ApisModel.society}/change-permission/`;
+      const url = `${this.apiUrl}/${ApisModel.society}/change/permission`;
       return this.http.put<SocietyModel>(url, changeMemberPermission).pipe(
         catchError(err => SocietyService.handleError<SocietyModel>(err))
       );
@@ -139,4 +135,37 @@ export class SocietyService {
       catchError(err => SocietyService.handleError(err))
     );
   }
+
+  deleteSociety(societyId: string) {
+    const url = `${this.apiUrl}/${ApisModel.society}/delete/${societyId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => SocietyService.handleError(err))
+    );
+  }
+
+  removeApplication(societyId: string) {
+    const url = `${this.apiUrl}/membership/${societyId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => SocietyService.handleError(err))
+    );
+  }
+
+  acceptApplicant(societyId: string, userId: string) {
+    const request: UserGroupModel = {
+      UserId: userId,
+      SocietyId: societyId
+    }
+    const url = `${this.apiUrl}/membership/accept/${societyId}/${userId}`;
+    return this.http.post(url, request).pipe(
+      catchError(err => SocietyService.handleError(err))
+    );
+  }
+
+  dismissApplicant(societyId, userId: string) {
+    const url = `${this.apiUrl}/membership/deny/${societyId}/${userId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => SocietyService.handleError(err))
+    );
+  }
+
 }

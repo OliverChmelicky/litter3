@@ -5,16 +5,10 @@ export const societyRequestsColumnDefinition: string[] = [
   'button',
 ]
 
-export const upcommingEventsColumnsDefinition: string[] = [
-  'image',
+export const EventsColumnsDefinition: string[] = [
   'date',
-  'interestedPeople',
-]
-
-export const participatedEventsColumnsDefinition: string[] = [
-  'image',
-  'date',
-  'attendedPeople',
+  'interested-people',
+  'details',
 ]
 
 export const membersColumnsDefinition: string[] = [

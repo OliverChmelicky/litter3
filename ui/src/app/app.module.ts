@@ -36,7 +36,7 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatInputModule} from "@angular/material/input";
 import { EditTrashComponent } from './components/edit-trash/edit-trash.component';
-import { EditSocietyComponent } from './components/edit-society/edit-society.component';
+import { EditSocietyComponent, RemoveMemberComponent } from './components/edit-society/edit-society.component';
 import { LazyLoadImgComponent } from './components/lazy-load-img/lazy-load-img.component';
 import {LazyLoadImageModule} from "ng-lazyload-image";
 import { CreateEventComponent } from './components/create-event/create-event.component';
@@ -71,6 +71,7 @@ import {
     CreateSocietyComponent,
     EditTrashComponent,
     EditSocietyComponent,
+    RemoveMemberComponent,
     LazyLoadImgComponent,
     CreateEventComponent,
     EventDetailsComponent,

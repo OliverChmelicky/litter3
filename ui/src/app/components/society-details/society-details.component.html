@@ -1,20 +1,30 @@
-<link rel="stylesheet" href="society-details.component.css">
 <div class="society-container">
 
   <div class="information-container">
+    <h1>{{society.Name}}</h1>
     <div *ngIf="isAdmin">
-      <button mat-button (click)="onEdit()" >Edit</button>
+      <button mat-button color="primary" (click)="onEdit()" >Edit</button>
     </div>
-    <img src="{{society.Avatar ? society.Avatar : 'img.png'}}">
-    <p>{{society.Name}}</p>
+    <div *ngIf="isLoggedIn">
+      <div *ngIf="!isAdmin && isMember">
+        <button *ngIf="isMember" mat-button color="primary" (click)="onLeave()">Leave</button>
+      </div>
+      <div *ngIf="!isAdmin && !isMember && !askedForMembership">
+        <button *ngIf="!isMember" mat-button color="primary" (click)="onAskForMembership()">Ask for membership</button>
+      </div>
+      <div *ngIf="!isAdmin && !isMember && askedForMembership">
+        <button *ngIf="!isMember" mat-button color="primary" (click)="onRemoveApplication()">Remove application</button>
+      </div>
+    </div>
+
+    <app-image [service]="'societies'" image="{{society.Avatar}}"></app-image>
     <p>{{society.Description}}</p>
   </div>
 
 
-<!--  pravy stlpec-->
-  <div class="side-tables">
+<!--  FOR admin only -->
     <div *ngIf="isAdmin">
-      <table mat-table [dataSource]="requesters" class="mat-elevation-z8">
+      <table mat-table [dataSource]="applicants" class="mat-elevation-z8">
 
         <ng-container matColumnDef="first-name">
           <th mat-header-cell *matHeaderCellDef> First name </th>
@@ -30,13 +40,13 @@
         <!-- Weight Column -->
         <ng-container matColumnDef="accept-button">
           <th mat-header-cell *matHeaderCellDef> Accept </th>
-          <td mat-cell *matCellDef="let element"><button>Accept</button></td>
+          <td mat-cell *matCellDef="let element"><button (click)="onAccept(element.Id)">Accept</button></td>
         </ng-container>
 
         <!-- Symbol Column -->
         <ng-container matColumnDef="deny-button">
           <th mat-header-cell *matHeaderCellDef> Deny </th>
-          <td mat-cell *matCellDef="let element"> <button>Deny</button> </td>
+          <td mat-cell *matCellDef="let element"> <button (click)="onDeny(element.Id)">Deny</button> </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="requestsReceivedColumns"></tr>
@@ -44,17 +54,12 @@
       </table>
     </div>
 
-    <div class="upcoming-events">
-
-    </div>
-
     <div class="members">
-      <div>
         <table mat-table [dataSource]="members" class="mat-elevation-z8">
           <!-- Weight Column -->
           <ng-container matColumnDef="image">
             <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let element"><app-image [image]="element.Avatar"></app-image></td>
+            <td mat-cell *matCellDef="let element"><app-image service="'users'" [image]="element.Avatar"></app-image></td>
           </ng-container>
 
           <ng-container matColumnDef="first-name">
@@ -68,28 +73,56 @@
             <td mat-cell *matCellDef="let element"> {{element.LastName}} </td>
           </ng-container>
 
-          <!-- Symbol Column -->
-          <ng-container matColumnDef="deny-button">
-            <th mat-header-cell *matHeaderCellDef> Deny </th>
-            <td mat-cell *matCellDef="let element"> <button>Deny</button> </td>
-          </ng-container>
-
           <tr mat-header-row *matHeaderRowDef="membersColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: membersColumns;"></tr>
         </table>
-      </div>
     </div>
+
+  <div class="past-events">
+    <label>Participated at events:</label>
+    <table mat-table [dataSource]="participatedEvents" class="mat-elevation-z8">
+
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef> Date </th>
+        <td mat-cell *matCellDef="let element"> {{element.Date | date: 'dd/MM/yyyy HH:mm'}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="interested-people">
+        <th mat-header-cell *matHeaderCellDef> Interested people </th>
+        <td mat-cell *matCellDef="let element"> {{element.attendingPeople}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="details">
+        <th mat-header-cell *matHeaderCellDef> See details </th>
+        <td mat-cell *matCellDef="let element"><button mat-button (click)="onSeeDetails(element.id)">See</button></td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="participatedEventsColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: participatedEventsColumns;"></tr>
+    </table>
   </div>
 
-<!--  dole v strede-->
-  <div class="past-events">
+  <div class="upcoming-events">
+    <label>Upcoming events:</label>
+    <table mat-table [dataSource]="futureEvents" class="mat-elevation-z8">
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef> Date </th>
+        <td mat-cell *matCellDef="let element"> {{element.Date | date: 'dd/MM/yyyy HH:mm'}} </td>
+      </ng-container>
 
+      <ng-container matColumnDef="interested-people">
+        <th mat-header-cell *matHeaderCellDef> Interested people </th>
+        <td mat-cell *matCellDef="let element"> {{element.attendingPeople}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="details">
+        <th mat-header-cell *matHeaderCellDef> See details </th>
+        <td mat-cell *matCellDef="let element"><button mat-button (click)="onSeeDetails(element.id)">See</button></td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="upcomingEventsColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: upcomingEventsColumns;"></tr>
+    </table>
   </div>
 
 </div>
-
-
-
-
-<p>Vylepsi</p>
-<!--<app-user-society-list></app-user-society-list> list users v society-->

@@ -8,12 +8,12 @@
   <form [formGroup]="societyForm">
     <div>
       <label>Name:</label>
-      <input [value]="this.society.Name">
+      <input formControlName="name" [value]="this.society.Name">
     </div>
 
     <div>
       <label>Description:</label>
-      <input [value]="this.society.Name">
+      <input formControlName="description" [value]="this.society.Description">
     </div>
     <button mat-raised-button (click)="onUpdate()" color="primary">Save</button>
   </form>
@@ -50,7 +50,7 @@
           <th mat-header-cell *matHeaderCellDef> Roles </th>
           <td mat-cell *matCellDef="let element;let i = index">
             <mat-form-field>
-              <mat-select (selectionChange)="memberPermissionChange($event, i)" [(value)]="element.role" style="min-width: 200px;" placeholder="">
+              <mat-select (selectionChange)="memberPermissionChange($event, i)" disabled="{{!element.showRemove}}" [(value)]="element.role" style="min-width: 200px;" placeholder="">
                 <mat-option *ngFor="let role of roles" [value]="role.key">{{role.value}}</mat-option>
               </mat-select>
             </mat-form-field>
@@ -59,7 +59,7 @@
 
         <ng-container matColumnDef="deleteUser">
           <th mat-header-cell *matHeaderCellDef> Remove from society </th>
-          <td mat-cell *matCellDef="let element">  <button mat-raised-button (click)="removeUser(element.user.id)" color="warn">Remove</button> </td>
+          <td mat-cell *matCellDef="let element">  <button *ngIf="element.showRemove" mat-raised-button (click)="removeUser(element.user.Id)" color="warn">Remove</button> </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="membersColumnsDef"></tr>

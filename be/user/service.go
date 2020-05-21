@@ -493,16 +493,16 @@ func (s *userService) AcceptApplicant(c echo.Context) error {
 }
 
 func (s *userService) DismissApplicant(c echo.Context) error {
-	admin := c.Get("userId").(string)
+	requester := c.Get("userId").(string)
 	societyId := c.Param("societyId")
 	removingUserId := c.Param("userId")
 
-	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(admin, societyId)
+	hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(requester, societyId)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
-
-	if !isAdmin {
+	fmt.Println("HAS RIGHTS? ", hasRights)
+	if !hasRights {
 		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrDismissApplicant, fmt.Errorf("You are not an admin ")))
 	}
 
@@ -511,7 +511,7 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 
-	return c.String(http.StatusOK, "")
+	return c.NoContent(http.StatusOK)
 }
 
 func (s *userService) ChangeMemberRights(c echo.Context) error {
@@ -585,7 +585,7 @@ func (s *userService) RemoveMember(c echo.Context) error {
 		}
 	}
 
-	return c.String(http.StatusOK, "")
+	return c.NoContent(http.StatusOK)
 }
 
 func (s *userService) DeleteSociety(c echo.Context) error {
@@ -606,7 +606,7 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteSociety, err))
 	}
 
-	return c.JSON(http.StatusOK, "Implement me")
+	return c.NoContent(http.StatusOK)
 }
 
 //

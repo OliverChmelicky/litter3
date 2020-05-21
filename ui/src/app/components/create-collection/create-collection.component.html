@@ -8,7 +8,7 @@
       <div class="collection-form" *ngFor="let element of selectedMarkers; let i = index">
         <app-image [image]="element.image"></app-image>
         <input ngModel="">
-        <mat-checkbox formControlName="anonymously">Report anonymously</mat-checkbox>
+        <mat-checkbox formControlName="cleaned">Cleaned trash</mat-checkbox>
 <!--        <input type="file" (change)="onFileSelected($event)" multiple>-->
 <!--        <button mat-button (click)="removeFromList(element.TrashId)">Report later</button>-->
       </div>

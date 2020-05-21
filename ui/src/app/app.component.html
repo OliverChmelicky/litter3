@@ -2,8 +2,11 @@
   <app-nav-list class="sidenav" id="leftpane"></app-nav-list>
   <div class="main-container">
     <router-outlet class="main" id="rightpane"></router-outlet>
-    <div id="child">
-      <button>Tu bude logout</button>
+    <div id="child" *ngIf="isLoggedIn$ | async">
+<!--      <button>Tu bude logout</button>-->
+      <button (click)="logout()" mat-button>
+        <mat-icon>exit_to_app</mat-icon>
+      </button>
     </div>
   </div>
 </div>

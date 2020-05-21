@@ -1,0 +1,5 @@
+<h1 mat-dialog-title>{{data.header}}</h1>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Close</button>
+  <button mat-button color="warn" [mat-dialog-close]="data" cdkFocusInitial>{{data.commandName}}</button>
+</div>

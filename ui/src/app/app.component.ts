@@ -1,4 +1,6 @@
 import {Component} from '@angular/core';
+import {AuthService} from "./services/auth/auth.service";
+import {Observable} from "rxjs";
 
 @Component({
   selector: 'app-root',
@@ -8,6 +10,16 @@ import {Component} from '@angular/core';
 export class AppComponent {
   title = 'ui';
 
-  constructor() {
+  isLoggedIn$: Observable<boolean>;
+
+  constructor(
+    private authService: AuthService
+  ) {
+    this.isLoggedIn$ = this.authService.isLoggedIn;
+    this.authService.isLoggedIn.subscribe();
+  }
+
+  logout() {
+    this.authService.logout()
   }
 }

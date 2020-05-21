@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-pg/pg/v9"
+	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
 )
@@ -196,7 +197,8 @@ func (s *UserAccess) GetSocietiesWithPaging(from, to int) ([]models.Society, int
 func (s *UserAccess) GetSociety(id string) (*models.Society, error) {
 	society := &models.Society{Id: id}
 	err := s.Db.Model(society).Column("society.*").
-		Relation("Users").
+		Relation("Users").Relation("Applicants").
+		Relation("MemberRights").Relation("ApplicantsIds").
 		Where("id = ?", id).First()
 	if err != nil {
 		return &models.Society{}, err
@@ -226,33 +228,15 @@ func (s *UserAccess) GetUserSocieties(id string) ([]models.Society, error) {
 	return []models.Society{}, nil
 }
 
-//worth thinking more how to explicitly involve my friends who are in the wanted society
-//func (s *UserAccess) GetMyFriendsInSociety(societyId, userId string) ([]models.User, error) {
-//	friends := []models.Friends{}
-//	err := s.Db.Model(&friends).Where("user1_id = ? or user2_id = ?", userId, userId).
-//		Select()
-//	if err != nil {
-//		return nil, fmt.Errorf("Error querying friends of user: %w ", err)
-//	}
-//
-//	socMemb := []models.User{}
-//	err := s.Db.Model(&socMemb).Column("societies_members.*").Where("society_id = ?", societyId).
-//		Relation("UserDetails").
-//		Select()
-//	if err != nil {
-//		return nil, fmt.Errorf("Error querying normal members view: %w ", err)
-//	}
-//
-//
-//}
-
 func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	members := new(models.Member)
 	var admins []string
+	fmt.Println("Zo society: ", societyId)
 	err := s.Db.Model(members).Column("user_id").Where("permission = 'admin' and society_id = ? ", societyId).Select(&admins)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("Vo fnc getSocAdmins: ", admins)
 	if len(admins) == 0 {
 		return nil, pg.ErrNoRows
 	}
@@ -363,41 +347,39 @@ func (s *UserAccess) AcceptApplicant(userId, societyId string) (*models.Member, 
 
 func (s *UserAccess) ChangeUserRights(requests []models.Member, societyId string) ([]models.Member, error) {
 	var members []models.Member
-	for _, request := range requests {
-		tx, err := s.Db.Begin()
-		if err != nil {
-			return []models.Member{}, err
-		}
-		defer tx.Rollback()
+	tx, err := s.Db.Begin()
+	if err != nil {
+		return []models.Member{}, err
+	}
+	defer tx.Rollback()
 
+	for _, request := range requests {
 		member := new(models.Member)
 		member.UserId = request.UserId
 		member.SocietyId = societyId
 		err = tx.Select(member)
 		if err != nil {
-			return []models.Member{}, err
+			continue
 		}
 
 		member.Permission = request.Permission
 		err = tx.Update(member)
 		if err != nil {
-			return []models.Member{}, err
+			continue
 		}
 
 		members = append(members, *member)
-
-		err = tx.Commit()
-		if err != nil {
-			log.Error(err)
-		}
 	}
 
-	return members, nil
+	return members, tx.Commit()
 }
 
 func (s *UserAccess) RemoveMember(userId, societyId string) error {
 	member := new(models.Member)
-	_, err := s.Db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Delete()
+
+	s.Db.AddQueryHook(middlewareService.DbMiddleware{})
+	res, err := s.Db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Delete()
+	fmt.Println(res)
 	return err
 }
 
@@ -415,7 +397,7 @@ func (s *UserAccess) IsMember(userId, societyId string) (bool, error) {
 }
 
 func (s *UserAccess) DeleteSociety(id string) error {
-	tx, err := s.Db.Begin()
+	tx, err := s.Db.Begin() //there is trigger running but I am not sure if it catches - I guess not
 	if err != nil {
 		return err
 	}
@@ -553,6 +535,7 @@ func (s *UserAccess) RemoveFriend(friendship *models.Friends) error {
 func (s *UserAccess) IsUserSocietyAdmin(userId, societyId string) (bool, int, error) {
 	admins, err := s.GetSocietyAdmins(societyId)
 	if err != nil {
+		fmt.Println("Is admin err: ", err)
 		return false, 0, err
 	}
 	if len(admins) == 0 {

@@ -5,9 +5,18 @@ export interface SocietyModel {
   Id?: string;
   Name: string;
   Avatar?: string;
-  Users?: UserModel[];
   Description?: string;
+  Users?: UserModel[];
+  Applicants?: UserModel[],
+  ApplicantsIds?: ApplicantModel,
+  MemberRights?: MemberModel[],
   CreatedAt?: Date;
+}
+
+export const DefaultSociety: SocietyModel = {
+  Name: '',
+  Description: '',
+  Avatar: ''
 }
 
 export interface SocietyAnswSimpleModel {

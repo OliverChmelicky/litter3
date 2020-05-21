@@ -18,9 +18,8 @@ export class LazyLoadImgComponent implements OnInit {
   @Input() image: string;
   @Input() service: string;
 
-  exampleAvatar: string = 'https://cdn.onlinewebfonts.com/svg/img_258083.png';
   exampleBinUrl: string = 'https://static.independent.co.uk/s3fs-public/thumbnails/image/2019/04/15/17/alto-habitat-bin.jpg?w660';
-  defaultImage: string
+  defaultImage: string = 'https://cdn.onlinewebfonts.com/svg/img_258083.png';
 
   constructor(
     private authService: AuthService,
@@ -30,10 +29,8 @@ export class LazyLoadImgComponent implements OnInit {
   ngOnInit() {
     if (this.service === ApisModel.user) {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.user + '/' + this.image
-      this.defaultImage = this.exampleAvatar
     } else if (this.service === ApisModel.society){
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.society + '/' + this.image
-      this.defaultImage = this.exampleAvatar
     } else if (this.service === ApisModel.collection){
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.collection + '/' + this.image
       this.defaultImage = this.exampleBinUrl

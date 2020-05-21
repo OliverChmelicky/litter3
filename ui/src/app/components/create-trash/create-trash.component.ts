@@ -8,6 +8,7 @@ import {LocationService} from "../../services/location/location.service";
 import {TrashModel,} from "../../models/trash.model";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
 import {accessibilityChoces} from "../../models/accessibilityChocies";
+import {AuthService} from "../../services/auth/auth.service";
 
 @Component({
   selector: 'app-create-trash',
@@ -38,6 +39,8 @@ export class CreateTrashComponent implements OnInit {
     anonymously: false,
   });
 
+  isLoggedIn: boolean = false
+
   accessibilityChoices = accessibilityChoces;
 
   map: GoogleMap
@@ -55,6 +58,7 @@ export class CreateTrashComponent implements OnInit {
     private fileuploadService: FileuploadService,
     private formBuilder: FormBuilder,
     private readonly locationService: LocationService,
+    private authService: AuthService,
   ) {
   }
 
@@ -81,6 +85,7 @@ export class CreateTrashComponent implements OnInit {
         );
       }
     });
+    this.authService.isLoggedIn.subscribe( res => this.isLoggedIn = res)
   }
 
   onMapReady(map: GoogleMap) {

@@ -1,7 +1,5 @@
-<script src="../my-profile/my-profile.component.ts"></script>
 <div class="mat-elevation-z8 table-wrapper">
-  <table mat-table
-         [dataSource]="dataSource" multiTemplateDataRows
+  <table mat-table [dataSource]="dataSource"
          class="mat-elevation-z8 societies-table">
 
     <ng-container matColumnDef="position">
@@ -26,7 +24,7 @@
     </ng-container>
     <ng-container matColumnDef="showMore">
       <th mat-header-cell *matHeaderCellDef> Show more </th>
-      <td mat-cell *matCellDef="let element"><button (click)="showSocietyDetails(element.Society.Id)">Details</button></td>
+      <td mat-cell *matCellDef="let element"><button mat-button (click)="showSocietyDetails(element.Society.Id)">Details</button></td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -40,4 +38,4 @@
   </mat-paginator>
 </div>
 
-<button class="create-button" mat-button (click)="openDialog()">Create society</button>
+<button class="create-button" *ngIf="isLoggedIn" mat-button (click)="openDialog()">Create society</button>

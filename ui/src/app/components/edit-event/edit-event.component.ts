@@ -207,7 +207,7 @@ export class EditEventComponent implements OnInit {
     this.allMarkers.push(this.selectedMarkers[index])
     this.selectedMarkers.splice(index, 1)
 
-    //rerender table
+    //refresh table
     const newData = new MatTableDataSource<MarkerModel>(this.selectedMarkers);
     this.selectedMarkers = []
     for (let i = 0; i < newData.data.length; i++) {

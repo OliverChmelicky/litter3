@@ -35,6 +35,12 @@ export interface EventModel {
   SocietiesIds?: EventSocietyModel[],
 }
 
+export interface EventModelTable {
+  id: string,
+  date: Date,
+  attendingPeople:number;
+}
+
 export interface ListEventsModel {
   Id: string,
   Date: Date,

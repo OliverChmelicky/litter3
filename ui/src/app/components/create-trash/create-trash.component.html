@@ -47,7 +47,7 @@
       </div>
 
       <div class="finish-form">
-        <mat-checkbox formControlName="anonymously">Report anonymously</mat-checkbox>
+        <mat-checkbox *ngIf="isLoggedIn" formControlName="anonymously">Report anonymously</mat-checkbox>
         <br>
         <input type="file" (change)="onFileSelected($event)" multiple>
         <button mat-stroked-button color="primary" type="submit">Submit</button>

@@ -7,6 +7,7 @@ import {animate, state, style, transition, trigger} from '@angular/animations';
 import {Router} from "@angular/router";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ApisModel} from "../../api/api-urls";
+import {AuthService} from "../../services/auth/auth.service";
 
 export interface DialogData {
   name: string;
@@ -31,11 +32,13 @@ export class SocietiesComponent implements OnInit {
   displayedColumns: string[] = ['position', 'avatar','name', 'members', 'createdAt', 'showMore'];
   dataSource: SocietiesTableElementModel[];
   expandedElement: SocietiesTableElementModel | null;
+  private isLoggedIn: boolean = false;
 
   constructor(
     private societyService: SocietyService,
     private router: Router,
     public createSocietyDialog: MatDialog,
+    private authService: AuthService,
   ) {
     this.dataSource = [];
     this.actualPaging = {
@@ -60,6 +63,7 @@ export class SocietiesComponent implements OnInit {
           )
         })
     })
+    this.authService.isLoggedIn.subscribe( res => this.isLoggedIn = res)
   }
 
   openDialog(): void {
@@ -78,7 +82,11 @@ export class SocietiesComponent implements OnInit {
           this.societyService.createSociety({
             Name: result.name,
             Description: result.description,
-          }).subscribe()
+          }).subscribe(
+            newSoc => {
+              this.router.navigate(['societies', newSoc.Id])
+            }
+          )
         }
       }
     });

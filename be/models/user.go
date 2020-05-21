@@ -28,13 +28,16 @@ func (u *User) BeforeInsert(ctx context.Context) (context.Context, error) {
 }
 
 type Society struct {
-	tableName   struct{} `pg:"societies"json:"-"`
-	Id          string   `pg:",pk"`
-	Name        string
-	Avatar      string
-	Description string
-	Users       []User    `pg:"many2many:societies_members"`
-	CreatedAt   time.Time `pg:"default:now()"`
+	tableName     struct{} `pg:"societies"json:"-"`
+	Id            string   `pg:",pk"`
+	Name          string
+	Avatar        string
+	Description   string
+	Users         []User `pg:"many2many:societies_members"`
+	Applicants    []User `pg:"many2many:societies_applicants"`
+	MemberRights  []Member
+	ApplicantsIds []Applicant
+	CreatedAt     time.Time `pg:"default:now()"`
 }
 
 type SocietyAnswSimple struct {
