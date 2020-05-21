@@ -63,16 +63,6 @@ export interface AttendanceRequestModel {
   AsSociety: boolean,
 }
 
-export interface EventRequest {
-  Id?:          string
-  UserId?:      string
-  SocietyId?:   string
-  AsSociety?:   boolean
-  Description?: string
-  Date?:        Date
-  Trash?:       string[]
-}
-
 export interface EventWithPagingAnsw {
   Events: EventModel[];
   Paging: PagingModel;

@@ -32,3 +32,11 @@ export interface AttendantsModel {
   avatar: string
   role: string
 }
+
+export interface MarkersAfterInitModel {
+  markers: MarkerModel,
+  borderTop: number,
+  borderBottom: number,
+  borderLeft: number,
+  borderRight: number,
+}

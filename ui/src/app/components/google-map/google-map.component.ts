@@ -121,13 +121,25 @@ export class GoogleMapComponent implements OnInit {
   }
 
   onBoundsChange() {
-    const p1 = this.map.getBounds().getNorthEast()
-    const p2 = this.map.getBounds().getSouthWest()
+    let c = this.map.getCenter()
 
-    const visibleTop = p1.lat()
-    const visibleRight = p1.lng()
-    const visibleBottom = p2.lat()
-    const visibleLeft = p2.lng()
+    let visibleTop = c.lat() + 3.4
+    let visibleBottom = c.lat() - 3.4
+    let visibleRight = c.lng() + 8.82
+    let visibleLeft = c.lng() - 8.82
+
+    if (!this.map.getBounds()) {
+      console.log('INIT MAP MODE')
+    } else {
+      const p1 = this.map.getBounds().getNorthEast()
+      const p2 = this.map.getBounds().getSouthWest()
+
+      visibleTop = p1.lat()
+      visibleRight = p1.lng()
+      visibleBottom = p2.lat()
+      visibleLeft = p2.lng()
+    }
+
 
     if (visibleRight > this.borderRight || visibleLeft < this.borderLeft) {
       this.loadNewMarkers()

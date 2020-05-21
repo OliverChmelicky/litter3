@@ -143,10 +143,6 @@ export class EventDetailsComponent implements OnInit {
     this.map = map;
   }
 
-  onCreateCollections() {
-    this.router.navigateByUrl('/collections/event')
-  }
-
   onDesideAsChange() {
     this.statusAttend = false
     this.isAdmin = false
@@ -360,5 +356,13 @@ export class EventDetailsComponent implements OnInit {
     }
 
 
+  }
+
+  onCreateCollections() {
+    let trashIds = []
+    if (this.event.Trash) {
+      trashIds = this.event.Trash.map( t => t.Id)
+    }
+    this.router.navigate(['collection'], { queryParams: { trashIds: trashIds, 'eventId': this.event.Id }})
   }
 }

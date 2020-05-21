@@ -175,12 +175,12 @@ func (s *eventAccess) UpdateEvent(request *models.EventRequest, userId string) (
 		return &models.CreateEvent{}, fmt.Errorf("Error selecting event for update: %w ", err)
 	}
 
+	event.Date = request.Date
+	event.Description = request.Description
 	err = tx.Update(event)
 	if err != nil {
 		return &models.CreateEvent{}, fmt.Errorf("Error updating event: %w ", err)
 	}
-
-	err = tx.Select(event)
 
 	event.TrashIds = request.Trash
 	err = s.AssignTrashToEvent(tx, event)
@@ -527,13 +527,12 @@ func (s *eventAccess) HasSocietyEventPermission(societyId, eventId string, editP
 
 func (s *eventAccess) AssignTrashToEvent(tx *pg.Tx, event *models.CreateEvent) error {
 	relation := new(models.EventTrash)
-	relation.EventId = event.Id
-
 	_, err := tx.Model(relation).Where("event_id = ?", event.Id).Delete()
 	if err != nil {
 		return fmt.Errorf("Error delete previous trash %w", err)
 	}
 
+	relation.EventId = event.Id
 	for _, trashId := range event.TrashIds {
 		relation.TrashId = trashId
 		err = tx.Insert(relation)

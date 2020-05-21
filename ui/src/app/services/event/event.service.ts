@@ -127,4 +127,12 @@ export class EventService {
       catchError(err => EventService.handleError(err))
     );
   }
+
+  updateEvent(request: EventRequestModel) {
+    console.log('Idem poslat request: ', request)
+    const url = `${this.apiUrl}/${ApisModel.event}/update`;
+    return this.http.put(url, request).pipe(
+      catchError(err => EventService.handleError(err))
+    );
+  }
 }

@@ -5,16 +5,18 @@
   </div>
 
   <div class="component-item">
-    <!--    <mat-form-field>-->
-    <!--      <input matInput [ngxMatDatetimePicker]="picker" placeholder="Choose a date" [formControl]="date">-->
-    <!--      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>-->
-    <!--      <ngx-mat-datetime-picker #picker [showSpinners]="true" [stepHour]="1" [stepMinute]="1" [stepSecond]="1">-->
-    <!--      </ngx-mat-datetime-picker>-->
-    <!--    </mat-form-field>-->
+    <label>Date: </label>
+        <mat-form-field>
+          <input matInput [ngxMatDatetimePicker]="picker" placeholder="Choose a date" [formControl]="date" >
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <ngx-mat-datetime-picker #picker [showSpinners]="true" [stepHour]="1" [stepMinute]="1" [stepSecond]="1">
+          </ngx-mat-datetime-picker>
+        </mat-form-field>
 
-    <!--    <label>-->
-    <!--      <textarea [(ngModel)]="description"></textarea>-->
-    <!--    </label>-->
+    <label>Description:</label>
+    <textarea [(ngModel)]="event.Description"></textarea>
+
+    <button mat-raised-button (click)="onUpdate()" color="primary">Save date and description</button>
   </div>
 
   <div class="mymap component-item">
@@ -45,7 +47,7 @@
 
       <ng-container matColumnDef="image">
         <th mat-header-cell *matHeaderCellDef></th>
-<!--       TODO Hod spravny image-->
+<!--       image is ok-->
         <td mat-cell *matCellDef="let element"> <app-image [image]="element.images[0]" [service]="'trash'"></app-image> </td> da
       </ng-container>
 

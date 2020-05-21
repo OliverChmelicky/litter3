@@ -1,8 +1,8 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {FormBuilder} from "@angular/forms";
+import {FormBuilder, FormControl} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {UserService} from "../../services/user/user.service";
-import {EventModel, EventPickerModel, EventUserModel, roles} from "../../models/event.model";
+import {EventModel, EventPickerModel, EventRequestModel, EventUserModel, roles} from "../../models/event.model";
 import {EventService} from "../../services/event/event.service";
 import {attendantsTableColumns, editAttendantsTableColumns} from "../event-details/table-definitions";
 import {MatSelectChange} from "@angular/material/select";
@@ -13,6 +13,8 @@ import {MatTable, MatTableDataSource} from "@angular/material/table";
 import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {AgmMap} from "@agm/core";
 import {createTrashkColumnsDefinition} from "../create-event/table-definitions";
+import {LocationService} from "../../services/location/location.service";
+import {CollectionModel, TrashModel} from "../../models/trash.model";
 
 @Component({
   selector: 'app-edit-event',
@@ -29,6 +31,7 @@ export class EditEventComponent implements OnInit {
     description: '',
     trash: [''], //modified users will be served separately
   });
+  date = new FormControl(new Date());
   usersInEvent: EventUserModel[] = [];
 
   editAttendantsTableColumns = editAttendantsTableColumns;
@@ -66,7 +69,7 @@ export class EditEventComponent implements OnInit {
           this.eventForm.value['date'] = e.Date
           this.eventForm.value['description'] = e.Description
           this.eventForm.value['trash'] = e.Trash
-
+          this.date.patchValue(e.Date)
         },
         () => {
         },
@@ -102,7 +105,7 @@ export class EditEventComponent implements OnInit {
             this.trashService.getTrashByIds(ids).subscribe(
               trash => {
                 if (trash) {
-                  trash.map( t => {
+                  trash.map(t => {
                     let numOfCol = 0
                     if (t.Collections) {
                       numOfCol = t.Collections.length
@@ -131,6 +134,23 @@ export class EditEventComponent implements OnInit {
       );
     })
     this.eventEditor = this.eventService.getEventEditor()
+  }
+
+  onUpdate() {
+    const trashIds = this.selectedMarkers.map(t => t.id)
+    const request: EventRequestModel = {
+      UserId: this.eventEditor.Id,
+      SocietyId: this.eventEditor.Id,
+      AsSociety: this.eventEditor.AsSociety,
+      Description: this.event.Description,
+      Date: this.date.value,
+      Id: this.event.Id,
+      Trash: trashIds,
+    }
+
+    this.eventService.updateEvent(request).subscribe( ret => console.log('updated event: ', ret),
+      error => console.log(error)
+      )
   }
 
   memberPermissionChange(event: MatSelectChange, i: any) {
@@ -285,10 +305,9 @@ export class EditEventComponent implements OnInit {
 
         const viewCenter = this.map.getCenter()
         let r = 2 * Math.abs(p1.lat() - viewCenter.lat())
-        console.log('R: ', r)
 
         if (p1.lat() < 0) {
-          this.borderTop =  p1.lat() + r
+          this.borderTop = p1.lat() + r
         } else if (p1.lat() >= 0) {
           this.borderTop = p1.lat() + r
         }
@@ -314,8 +333,8 @@ export class EditEventComponent implements OnInit {
   }
 
   private filterSelected() {
-    this.allMarkers = this.allMarkers.filter( m => {
-      this.selectedMarkers.map( selected => {
+    this.allMarkers = this.allMarkers.filter(m => {
+      this.selectedMarkers.map(selected => {
         if (m.id !== selected.id) {
           return m
         }

@@ -1,7 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormControl} from "@angular/forms";
 import {EventService} from "../../services/event/event.service";
-import {EventModel, EventPickerModel, EventRequest, EventRequestModel} from "../../models/event.model";
+import {EventModel, EventPickerModel, EventRequestModel} from "../../models/event.model";
 import {UserModel} from "../../models/user.model";
 import {UserService} from "../../services/user/user.service";
 import {LocationService} from "../../services/location/location.service";

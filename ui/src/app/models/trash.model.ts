@@ -14,13 +14,29 @@ export interface TrashModel {
 }
 
 export interface CollectionModel {
-  Id: string,
+  Id?: string,
   Weight: number,
   CleanedTrash: boolean,
   TrashId: string,
   EventId: string,
   Images: string[],
   CreatedAt?: Date,
+}
+
+export interface MarkerCollectionModel {
+  lat: number;
+  lng: number;
+  trashId: string,
+  cleaned?: boolean,
+  image: string,
+  numOfCollections?: number,
+
+  collectionWeight: number,
+  collectionCleanedTrash: boolean,
+  collectionEventId: string,
+  collectionImages: string[],
+
+  isInList: boolean,
 }
 
 export const TrashTypeHousehold     = 0b00000000001

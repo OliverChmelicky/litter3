@@ -1,1 +1,77 @@
-<p>create-collection works!</p>
+<div class="container">
+  <div>
+    <h1>Create Collection:</h1>
+  </div>
+
+  <div class="report-list">
+    <div class="report-items">
+      <div class="collection-form" *ngFor="let element of selectedMarkers; let i = index">
+        <app-image [image]="element.image"></app-image>
+        <input ngModel="">
+        <mat-checkbox formControlName="anonymously">Report anonymously</mat-checkbox>
+<!--        <input type="file" (change)="onFileSelected($event)" multiple>-->
+<!--        <button mat-button (click)="removeFromList(element.TrashId)">Report later</button>-->
+      </div>
+    </div>
+  </div>
+
+  <div class="map-class">
+    <agm-map
+      [latitude]="initLat"
+      [longitude]="initLng"
+      [zoom]="5"
+      (mapReady)="onMapReady($event)"
+      disableDoubleClickZoom="true">
+
+      <agm-marker *ngFor="let marker of allMarkers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
+        <agm-info-window [disableAutoPan]="true">
+          <div class="show-trash-on-map">
+            <app-image [service]="'trash'" [image]="marker.image"></app-image>
+            <div>
+              <p>Collections made: {{marker.numOfCollections}}</p>
+              <p>Cleaned: {{marker.cleaned ? "yes" : "no"}}</p>
+              <button *ngIf="!marker.isInList" (click)="addToList(marker)">Ad to list</button>
+              <button *ngIf="marker.isInList" (click)="removeFromList(marker.trashId)">Ad to list</button>
+            </div>
+          </div>
+        </agm-info-window>
+      </agm-marker>
+    </agm-map>
+  </div>
+
+</div>
+
+
+
+
+<!--  <div>-->
+<!--    <table mat-table [dataSource]="selectedMarkers" class="mat-elevation-z8">-->
+<!--      <ng-container matColumnDef="trash-image">-->
+<!--        <th mat-header-cell *matHeaderCellDef></th>-->
+<!--        <td mat-cell *matCellDef="let element"> <app-image [image]="element.image"></app-image> </td>-->
+<!--      </ng-container>-->
+
+<!--      <ng-container matColumnDef="weight">-->
+<!--        <th mat-header-cell *matHeaderCellDef>Weight</th>-->
+<!--        <td mat-cell *matCellDef="let element"> <input ngModel=""> </td>-->
+<!--      </ng-container>-->
+
+<!--      <ng-container matColumnDef="cleaned-trash">-->
+<!--        <th mat-header-cell *matHeaderCellDef>Cleaned trash</th>-->
+<!--        <td mat-cell *matCellDef="let element"> {{element.role}} </td>-->
+<!--      </ng-container>-->
+
+<!--      <ng-container matColumnDef="images-btn">-->
+<!--        <th mat-header-cell *matHeaderCellDef>Load images</th>-->
+<!--        <td mat-cell *matCellDef="let element"> {{element.name}} </td>-->
+<!--      </ng-container>-->
+
+<!--      <ng-container matColumnDef="remove-btn">-->
+<!--        <th mat-header-cell *matHeaderCellDef></th>-->
+<!--        <td mat-cell *matCellDef="let element"> <button mat-button (click)="removeFromList(element.TrashId)">Report later</button> </td>-->
+<!--      </ng-container>-->
+
+<!--      <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>-->
+<!--      <tr mat-row *matRowDef="let row; columns: tableColumns;"></tr>-->
+<!--    </table>-->
+<!--  </div>-->

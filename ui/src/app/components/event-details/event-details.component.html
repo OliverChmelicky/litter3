@@ -26,7 +26,7 @@
     </div>
   </div>
 
-
+<div>
   <div>
     <label>Date:</label>
     <p>{{event.Date | date: 'dd/MM/yyyy HH:mm'}}</p>
@@ -37,6 +37,11 @@
     <textarea [value]="event.Description">
     </textarea>
   </div>
+
+  <div *ngIf="isAdmin && event.Trash">
+    <button mat-button (click)="onCreateCollections()" > Create collection </button>
+  </div>
+</div>
 
   <div class="map-class">
     <agm-map
@@ -49,7 +54,7 @@
       <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
         <agm-info-window [disableAutoPan]="true">
           <div class="show-trash-on-map">
-            <app-image [image]="marker.images[0]"></app-image>
+            <app-image [service]="'trash'" [image]="marker.images[0]"></app-image>
               <div>
                 <p>Collections made: {{marker.numOfCollections}}</p>
                 <p>Cleaned: {{marker.cleaned ? "yes" : "no"}}</p>
@@ -61,12 +66,7 @@
     </agm-map>
   </div>
 
-  <div *ngIf="isAdmin">
-    <button mat-button (click)="onCreateCollections()" > Create collection </button>
-  </div>
-
   <div>
-    <div>
       <table mat-table [dataSource]="attendants" class="mat-elevation-z8">
         <ng-container matColumnDef="image">
           <th mat-header-cell *matHeaderCellDef></th>
@@ -86,7 +86,6 @@
         <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: tableColumns;"></tr>
       </table>
-    </div>
   </div>
 
 </div>
