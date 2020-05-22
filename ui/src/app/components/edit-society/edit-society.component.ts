@@ -161,7 +161,6 @@ export class EditSocietyComponent implements OnInit {
   }
 
   onUpdate() {
-    console.log(this.societyForm.value)
     if (this.societyForm.value['name'] !== '') {
       this.society.Name = this.societyForm.value['name']
     }

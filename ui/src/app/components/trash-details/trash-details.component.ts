@@ -5,6 +5,8 @@ import {TrashModel, TrashTypeBooleanValues} from "../../models/trash.model";
 import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {AuthService} from "../../services/auth/auth.service";
 import {CollectionTableDisplayedColumns} from "./collectionTableModel";
+import {UserModel} from "../../models/user.model";
+import {UserService} from "../../services/user/user.service";
 
 @Component({
   selector: 'app-trash-details',
@@ -18,12 +20,14 @@ export class TrashDetailsComponent implements OnInit {
   trash: TrashModel;
   trashTypeBool: TrashTypeBooleanValues;
   tableColumnsTrashCollections = CollectionTableDisplayedColumns;
+  finder: UserModel = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private trashService: TrashService,
     private authService: AuthService,
+    private userService: UserService,
   ) {
   }
 
@@ -34,15 +38,24 @@ export class TrashDetailsComponent implements OnInit {
       this.trashId = params.get('id');
       this.trashService.getTrashById(this.trashId).subscribe(
         trash => {
+          console.log(trash)
+
+          if (trash.FinderId) {
+            this.userService.getUser(trash.FinderId).subscribe( u => {
+              this.finder = u
+              console.log('Finder je: ', this.finder)
+            })
+          }
+
           if (!trash.Collections) {
             trash.Collections = []
           }
+          if (!trash.Images) {
+            trash.Images = []
+          }
           this.trash = trash
           this.trashTypeBool = this.trashService.convertTrashTypeNumToBools(this.trash.TrashType);
-          console.log(this.trashTypeBool.TrashTypeHousehold)
-          console.log(trash)
-        }
-      )
+        })
     });
   }
 

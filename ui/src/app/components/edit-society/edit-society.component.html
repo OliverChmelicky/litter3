@@ -8,12 +8,12 @@
   <form [formGroup]="societyForm">
     <div>
       <label>Name:</label>
-      <input formControlName="name" [value]="this.society.Name">
+      <input formControlName="name" [ngModel]="this.society.Name">
     </div>
 
     <div>
       <label>Description:</label>
-      <input formControlName="description" [value]="this.society.Description">
+      <input formControlName="description" [ngModel]="this.society.Description">
     </div>
     <button mat-raised-button (click)="onUpdate()" color="primary">Save</button>
   </form>

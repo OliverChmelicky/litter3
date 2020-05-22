@@ -15,6 +15,7 @@ import {EventDetailsComponent} from "./components/event-details/event-details.co
 import {EventsComponent} from "./components/events/events.component";
 import {EditEventComponent} from "./components/edit-event/edit-event.component";
 import {CreateCollectionComponent} from "./components/create-collection/create-collection.component";
+import {UserDetailComponent} from "./components/user-detail/user-detail.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'map', pathMatch: 'full'},
@@ -34,7 +35,7 @@ const routes: Routes = [
   {path: 'collection', component: CreateCollectionComponent},
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
-  //{ path: 'profile/:userId', component: UserDetailComponent },
+  { path: 'users/profile/:userId', component: UserDetailComponent },
 ];
 
 @NgModule({

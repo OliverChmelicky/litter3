@@ -107,10 +107,8 @@ export class CreateTrashComponent implements OnInit {
       Location: [this.markerLat, this.markerLng],
       Description: this.trashForm.value['description'],
       FinderId: '',
-      Anonymously: this.trashForm.value['anonymously'] !== '',
+      Anonymously: this.trashForm.value['anonymously'],
     }
-
-    console.log(this.trash)
 
     this.trashService.createTrash(this.trash).subscribe(
       trash => {

@@ -1,91 +1,100 @@
-<script src="../society-details/society-details.component.ts"></script>
-<div class="upper-map">
-  <agm-map
-    [latitude]="trash.Location[0]"
-    [longitude]="trash.Location[1]"
-    [zoom]="8"
-    (mapReady)="onMapReady($event)"
-    disableDoubleClickZoom="true">
+<div class="trash-container">
 
-    <agm-marker [latitude]="trash.Location[0]" [longitude]="trash.Location[0]">
-    </agm-marker>
-  </agm-map>
-</div>
-
-<div>
-  <button mat-button (click)="onCreateEvent()">Create event</button>
-</div>
-
-<div>
-  <button mat-button (click)="onEdit()">Edit</button>
-  <div>
-<!--    &lt;!&ndash;vypisovanie lokacie pod tym&ndash;&gt;-->
-<!--    &lt;!&ndash;    <input disabled="true" type="text" [value]="markerLat" formControlName="lat"><br>&ndash;&gt;-->
-<!--    &lt;!&ndash;    <input disabled="true" type="text" [value]="markerLng" formControlName="lng">&ndash;&gt;-->
-<!--  </div>-->
-<!--</div>-->
-
-
-
-<div class="detail-container">
-
-  <div class="border-merger">
-    <label>
-      Size: {{trash.Size}}
-    </label>
+  <div class="upper-map">
+    <agm-map
+      [latitude]="trash.Location[0]"
+      [longitude]="trash.Location[1]"
+      [zoom]="8"
+      (mapReady)="onMapReady($event)"
+      disableDoubleClickZoom="true">
+      <agm-marker [latitude]="trash.Location[0]" [longitude]="trash.Location[1]">
+      </agm-marker>
+    </agm-map>
   </div>
 
-  <label></label>
-  <div class="trash-types">
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeHousehold" >Household</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeAutomotive" >Automotive</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeConstruction" >Construction</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypePlastics" >Plastics</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeElectronic" >Electronic</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeGlass" >Glass</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeMetal" >Metal</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeDangerous" >Dangerous</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeCarcass" >Carcass</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeOrganic" >Organic</mat-checkbox>
-      <mat-checkbox [checked]="trashTypeBool.TrashTypeOther" >Other</mat-checkbox>
+<!--  row under map-->
+  <div>
+    <div>
+      <p>{{trash.Location[0]}}</p>
+      <p>{{trash.Location[1]}}</p>
     </div>
 
-  <label>Description</label><br>
-  <label>
-<textarea [ngModel]="trash.Description" placeholder="No description provided"
-          class="description" type="text"> </textarea>
-  </label><br>
-
-  <label>Accessibility: {{trash.Accessibility}}</label><br>
-
-  <button *ngIf="isLoggedIn" mat-button (click)="onEdit()">Edit trash</button>
-
-  <div *ngIf="trash.Collections.length <= 0">
-    <p>No collections</p>
+    <div>
+      <button mat-button (click)="onCreateEvent()">Create event</button>
+    </div>
+    <div>
+      <button *ngIf="isLoggedIn" mat-button (click)="onEdit()">Edit trash</button>
+    </div>
   </div>
 
+<!--  next row-->
+  <div *ngIf="finder">
+    <label>Founder:</label><br>
+    <app-image [service]="'users'" [image]="finder.Avatar" ></app-image>
+    <a [routerLink]="['/users/profile', finder.Id]">
+      {{finder.FirstName}} {{finder.LastName}}
+    </a>
+  </div>
+<!--  next row-->
+  <div>
+      <div class="detail-container">
 
-  <table *ngIf="trash.Collections.length > 0" mat-table [dataSource]="trash.Collections" class="mat-elevation-z8">
+        <div class="border-merger">
+          <label>
+            Size: {{trash.Size}}
+          </label>
+        </div>
 
-    <ng-container matColumnDef="weight">
-      <th mat-header-cell *matHeaderCellDef> Weight[kg] </th>
-      <td mat-cell *matCellDef="let element"> {{element.Weight}} </td>
-    </ng-container>
+        <label></label>
+        <div class="trash-types">
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeHousehold" >Household</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeAutomotive" >Automotive</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeConstruction" >Construction</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypePlastics" >Plastics</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeElectronic" >Electronic</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeGlass" >Glass</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeMetal" >Metal</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeDangerous" >Dangerous</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeCarcass" >Carcass</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeOrganic" >Organic</mat-checkbox>
+          <mat-checkbox [checked]="trashTypeBool.TrashTypeOther" >Other</mat-checkbox>
+        </div>
 
-    <ng-container matColumnDef="createdAt">
-      <th mat-header-cell *matHeaderCellDef> Date </th>
-      <td mat-cell *matCellDef="let element"> {{element.CreatedAt | date: 'dd/MM/yyyy'}} </td>
-    </ng-container>
+        <label>Description:</label><br>
+        <p>{{trash.Description}}</p><br>
 
-    <ng-container matColumnDef="showMore">
-      <th mat-header-cell *matHeaderCellDef> Show more </th>
-      <td mat-cell *matCellDef="let element"><button (click)="showCollectionDetails(element.Id)">Show details</button></td>
-    </ng-container>
+        <label>Accessibility:</label><br>
+        <p>{{trash.Accessibility}}</p><br>
+
+        <div *ngIf="trash.Collections.length <= 0">
+          <p>No collections</p>
+        </div>
+        <table *ngIf="trash.Collections.length > 0" mat-table [dataSource]="trash.Collections" class="mat-elevation-z8">
+
+          <ng-container matColumnDef="weight">
+            <th mat-header-cell *matHeaderCellDef> Weight[kg] </th>
+            <td mat-cell *matCellDef="let element"> {{element.Weight}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let element"> {{element.CreatedAt | date: 'dd/MM/yyyy'}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="showMore">
+            <th mat-header-cell *matHeaderCellDef> Show more </th>
+            <td mat-cell *matCellDef="let element"><button (click)="showCollectionDetails(element.Id)">Show details</button></td>
+          </ng-container>
 
 
-    <tr mat-header-row *matHeaderRowDef="tableColumnsTrashCollections"></tr>
-    <tr mat-row *matRowDef="let row; columns: tableColumnsTrashCollections;"></tr>
-  </table>
+          <tr mat-header-row *matHeaderRowDef="tableColumnsTrashCollections"></tr>
+          <tr mat-row *matRowDef="let row; columns: tableColumnsTrashCollections;"></tr>
+        </table>
+      </div>
+
+  </div>
+
 </div>
+
 
 
