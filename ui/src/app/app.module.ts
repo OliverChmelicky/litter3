@@ -51,6 +51,7 @@ import {
   NgxMatNativeDateModule,
   NgxMatTimepickerModule
 } from '@angular-material-components/datetime-picker';
+import { CollectionDetailsComponent } from './components/collection-details/collection-details.component';
 
 
 @NgModule({
@@ -79,6 +80,7 @@ import {
     EventsComponent,
     EditEventComponent,
     CreateCollectionComponent,
+    CollectionDetailsComponent,
   ],
   imports: [
     BrowserModule,

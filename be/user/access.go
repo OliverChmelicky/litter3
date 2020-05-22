@@ -271,8 +271,9 @@ func (s *UserAccess) GetEditableSocieties(userId string) ([]models.Society, erro
 		societiesIds = append(societiesIds, m.SocietyId)
 	}
 
+	//next time when it won`t work use db middleware to log information
 	var societies []models.Society
-	err = s.Db.Model(&societies).Where("id IN (?)", societiesIds).Select()
+	err = s.Db.Model(&societies).Where("id IN (?)", pg.Strings(societiesIds)).Select()
 	if err != nil {
 		return []models.Society{}, err
 	}

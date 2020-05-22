@@ -217,7 +217,14 @@ export class EditEventComponent implements OnInit {
   }
 
   navigateToTrash(id: any) {
-    this.router.navigate(['trash/details', id])
+    let url = window.location.href
+    let urlArr = url.split('/')
+
+    if (urlArr.length > 3) {
+      url = urlArr[0] + '//' + urlArr[2] + '/trash' + '/details/' + id
+      console.log(url)
+      window.open(url)
+    }
   }
 
   async onMapReady(map: GoogleMap) {
@@ -235,6 +242,7 @@ export class EditEventComponent implements OnInit {
 
     this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initialDistance).subscribe(
       trash => {
+        console.log('map reaady: ', trash)
         for (let i = 0; i < trash.length; i++) {
           this.allMarkers.push({
             lat: trash[i].Location[0],

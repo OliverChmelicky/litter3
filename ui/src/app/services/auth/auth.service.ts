@@ -25,7 +25,7 @@ export class AuthService {
         this.loggedIn.next(true);
         localStorage.setItem('firebaseUser', JSON.stringify(user));
 
-        user.getIdToken().then(token => localStorage.setItem('token', token))
+        user.getIdToken(true).then(token => localStorage.setItem('token', token))
           .catch(() => localStorage.removeItem('token'));
       } else {
         this.loggedIn.next(false);
@@ -54,7 +54,7 @@ export class AuthService {
       })
   }
 
-  renewToken() {
+  renewTokenAfterRegister() {
     this.afAuth.currentUser.then(user => {
       user.getIdToken(true)
         .then((token) =>
@@ -86,7 +86,7 @@ export class AuthService {
           CreatedAt: new Date()
         }).subscribe(
           () => {
-            this.renewToken();
+            this.renewTokenAfterRegister();
             this.loggedIn.next(true);
             this.router.navigate(['/me']);
           },

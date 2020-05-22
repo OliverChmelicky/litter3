@@ -128,4 +128,11 @@ export class TrashService {
       catchError(err => TrashService.handleError(err))
     );
   }
+
+  getCollectionById(collectionId: string): Observable<CollectionModel> {
+    const url = `${this.apiUrl}/${ApisModel.collection}/${collectionId}`;
+    return this.http.get<CollectionModel>(url).pipe(
+      catchError(err => TrashService.handleError<CollectionModel>(err))
+    );
+  }
 }

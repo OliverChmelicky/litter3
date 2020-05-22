@@ -101,6 +101,7 @@ type Collection struct {
 	TrashId      string
 	EventId      string
 	Images       []CollectionImage
+	Users        []User    `pg:"many2many:users_collections"`
 	CreatedAt    time.Time `pg:"default:now()"`
 }
 

@@ -159,6 +159,7 @@ func (s *TrashAccess) CreateCollectionRandom(in *models.CreateCollectionRandomRe
 func (s *TrashAccess) GetCollection(id string) (*models.Collection, error) {
 	collection := new(models.Collection)
 	err := s.Db.Model(collection).Where("id = ? ", id).
+		Relation("Users").
 		Relation("Images", func(q *orm.Query) (*orm.Query, error) {
 			return q.Where("collection_id = ?", id), nil
 		}).Select()

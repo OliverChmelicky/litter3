@@ -1,0 +1,15 @@
+<div class="deatil-container">
+
+  <p *ngIf="collection.CleanedTrash">This collection cleaned trash!</p>
+  <button mat-button color="primary" (click)="onGoToTrash()">See trash detail</button>
+  <button *ngIf="collection.EventId" mat-button color="primary" (click)="onGoToEvent()">Go to event of collection</button>
+
+  <div class="image-list" *ngFor="let collection of collection.Images">
+    <app-image [service]="'collections'" image="{{collection.Url}}"></app-image>
+  </div>
+
+  <button *ngIf="isInCollection" mat-button color="primary" (click)="onEdit()">Edit</button>
+  <div *ngIf="collection.Users">
+<!--    table-->
+  </div>
+</div>

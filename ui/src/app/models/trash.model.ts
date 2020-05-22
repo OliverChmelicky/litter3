@@ -1,3 +1,5 @@
+import {UserModel} from "./user.model";
+
 export interface TrashModel {
   Id: string,
   Cleaned: boolean,
@@ -11,6 +13,22 @@ export interface TrashModel {
   Images?: TrashImageModel[],
   CreatedAt?: Date,
   Anonymously?: boolean,
+}
+
+export interface MarkerCollectionModel {
+  lat: number;
+  lng: number;
+  trashId: string,
+  cleaned?: boolean,
+  image: TrashImageModel,
+  numOfCollections?: number,
+
+  collectionWeight: number,
+  collectionCleanedTrash: boolean,
+  collectionEventId: string,
+  collectionImages: string[],
+
+  isInList: boolean,
 }
 
 export interface TrashImageModel {
@@ -44,37 +62,38 @@ export interface CollectionModel {
   CleanedTrash: boolean,
   TrashId: string,
   EventId: string,
-  Images: string[],
+  Users: UserModel[],
+  Images: CollectionImageModel[],
   CreatedAt?: Date,
 }
 
-export interface MarkerCollectionModel {
-  lat: number;
-  lng: number;
-  trashId: string,
-  cleaned?: boolean,
-  image: TrashImageModel,
-  numOfCollections?: number,
-
-  collectionWeight: number,
-  collectionCleanedTrash: boolean,
-  collectionEventId: string,
-  collectionImages: string[],
-
-  isInList: boolean,
+export const defaultCollectionModel: CollectionModel = {
+  Id: '',
+  Weight: 0,
+  CleanedTrash: false,
+  TrashId: '',
+  EventId: '',
+  Users: null,
+  Images: [],
+  CreatedAt: null,
 }
 
-export const TrashTypeHousehold     = 0b00000000001
-export const TrashTypeAutomotive    = 0b00000000010
-export const TrashTypeConstruction  = 0b00000000100
-export const TrashTypePlastics      = 0b00000001000
-export const TrashTypeElectronic    = 0b00000010000
-export const TrashTypeGlass         = 0b00000100000
-export const TrashTypeMetal         = 0b00001000000
-export const TrashTypeDangerous     = 0b00010000000
-export const TrashTypeCarcass       = 0b00100000000
-export const TrashTypeOrganic       = 0b01000000000
-export const TrashTypeOther         = 0b10000000000
+export interface CollectionImageModel {
+  Url: string,
+  CollectionId: string,
+}
+
+export const TrashTypeHousehold = 0b00000000001
+export const TrashTypeAutomotive = 0b00000000010
+export const TrashTypeConstruction = 0b00000000100
+export const TrashTypePlastics = 0b00000001000
+export const TrashTypeElectronic = 0b00000010000
+export const TrashTypeGlass = 0b00000100000
+export const TrashTypeMetal = 0b00001000000
+export const TrashTypeDangerous = 0b00010000000
+export const TrashTypeCarcass = 0b00100000000
+export const TrashTypeOrganic = 0b01000000000
+export const TrashTypeOther = 0b10000000000
 
 export const TrashTypeMask = 0b11111111111
 

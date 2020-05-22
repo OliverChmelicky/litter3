@@ -24,6 +24,7 @@ func main() {
 	viper.SetDefault("dbPass", "goo")
 	viper.SetDefault("dbName", "goo")
 	viper.SetDefault("dbAddr", "localhost:5432")
+	viper.SetDefault("address", ":8080")
 	viper.SetDefault("firebaseCredentials", "../secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json")
 	viper.SetDefault("gcpBucketName", "litter3-olo-gcp.appspot.com")
 
@@ -129,7 +130,7 @@ func main() {
 	e.GET("/fileupload/trash/load/:image", fileuploadService.GetTrashImage)
 	e.DELETE("/fileupload/trash/delete/:trashId/:image", fileuploadService.DeleteTrashImage)
 
-	e.Logger.Fatal(e.Start(":8081"))
+	e.Logger.Fatal(e.Start(viper.GetString("address")))
 }
 
 func getFirebaseAuth(opt option.ClientOption) (*auth.Client, error) {
