@@ -122,4 +122,10 @@ export class TrashService {
 
   }
 
+  deleteTrashImage(image: string, trashId: string) {
+    const url = `${this.apiUrl}/${ApisModel.fileupload}/${ApisModel.trash}/delete/${trashId}/${image}`;
+    return this.http.delete(url).pipe(
+      catchError(err => TrashService.handleError(err))
+    );
+  }
 }

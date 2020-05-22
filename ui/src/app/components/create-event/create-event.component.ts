@@ -13,6 +13,7 @@ import {TrashService} from "../../services/trash/trash.service";
 import {createTrashkColumnsDefinition} from "./table-definitions";
 import {AgmMap} from "@agm/core";
 import {MatTable, MatTableDataSource} from "@angular/material/table";
+import {defaultTrashImage} from "../../models/trash.model";
 
 @Component({
   selector: 'app-create-event',
@@ -177,7 +178,7 @@ export class CreateEventComponent implements OnInit {
             new: false,
             id: trash[i].Id,
             cleaned: trash[i].Cleaned,
-            images: trash[i].Images ? trash[i].Images : [this.exampleBinUrl],
+            images: trash[i].Images ? trash[i].Images : [defaultTrashImage],
             numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
           })
 

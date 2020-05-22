@@ -14,7 +14,7 @@ import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {AgmMap} from "@agm/core";
 import {createTrashkColumnsDefinition} from "../create-event/table-definitions";
 import {LocationService} from "../../services/location/location.service";
-import {CollectionModel, TrashModel} from "../../models/trash.model";
+import {CollectionModel, defaultTrashImage, TrashModel} from "../../models/trash.model";
 
 @Component({
   selector: 'app-edit-event',
@@ -115,7 +115,7 @@ export class EditEventComponent implements OnInit {
                       lat: t.Location[0],
                       lng: t.Location[1],
                       cleaned: t.Cleaned,
-                      images: t.Images ? t.Images : [''],
+                      images: t.Images ? t.Images : [],
                       numOfCollections: numOfCol,
                     })
 

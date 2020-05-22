@@ -94,6 +94,11 @@
 
   </div>
 
+  <div *ngFor="let pic of trash.Images">
+    <app-image [image]="pic.Url" [service]="'trash'"></app-image>
+    <p>{{pic}}</p>
+  </div>
+
 </div>
 
 

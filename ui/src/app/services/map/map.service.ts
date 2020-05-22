@@ -4,6 +4,7 @@ import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MarkerModel} from "../../components/google-map/Marker.model";
 import {MapLoadAnswer} from "../../models/shared.models";
 import {BehaviorSubject, Observable} from "rxjs";
+import {defaultTrashImage} from "../../models/trash.model";
 
 @Injectable({
   providedIn: 'root'
@@ -60,7 +61,7 @@ export class MapService {
             new: false,
             id: trash[i].Id,
             cleaned: trash[i].Cleaned,
-            images: trash[i].Images ? trash[i].Images : [this.exampleBinUrl],
+            images: trash[i].Images ? trash[i].Images : [defaultTrashImage],
             numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
           })
         }

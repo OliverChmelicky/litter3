@@ -8,9 +8,34 @@ export interface TrashModel {
   Description: string,
   FinderId: string,
   Collections?: CollectionModel[],
-  Images?: string[],
+  Images?: TrashImageModel[],
   CreatedAt?: Date,
   Anonymously?: boolean,
+}
+
+export interface TrashImageModel {
+  Url: string,
+  TrashId: string,
+}
+
+export const defaultTrashImage: TrashImageModel = {
+  Url: '',
+  TrashId: '',
+}
+
+export const defaultTrashModel: TrashModel = {
+  Id: '',
+  Cleaned: false,
+  Size: '',
+  Accessibility: '',
+  TrashType: 0,
+  Location: [],
+  Description: '',
+  FinderId: '',
+  Collections: [],
+  Images: [],
+  CreatedAt: null,
+  Anonymously: false,
 }
 
 export interface CollectionModel {
@@ -28,7 +53,7 @@ export interface MarkerCollectionModel {
   lng: number;
   trashId: string,
   cleaned?: boolean,
-  image: string,
+  image: TrashImageModel,
   numOfCollections?: number,
 
   collectionWeight: number,
@@ -65,4 +90,18 @@ export interface TrashTypeBooleanValues {
   TrashTypeCarcass: boolean,
   TrashTypeOrganic: boolean,
   TrashTypeOther: boolean,
+}
+
+export const defaultTrashTypeBooleanValues: TrashTypeBooleanValues = {
+  TrashTypeHousehold: false,
+  TrashTypeAutomotive: false,
+  TrashTypeConstruction: false,
+  TrashTypePlastics: false,
+  TrashTypeElectronic: false,
+  TrashTypeGlass: false,
+  TrashTypeMetal: false,
+  TrashTypeDangerous: false,
+  TrashTypeCarcass: false,
+  TrashTypeOrganic: false,
+  TrashTypeOther: false,
 }

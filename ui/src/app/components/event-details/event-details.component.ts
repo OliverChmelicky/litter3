@@ -14,6 +14,7 @@ import {MarkerModel} from "../google-map/Marker.model";
 import {ApisModel} from "../../api/api-urls";
 import {MapLocationModel} from "../../models/GPSlocation.model";
 import {AuthService} from "../../services/auth/auth.service";
+import {defaultTrashImage} from "../../models/trash.model";
 
 export const czechPosition: MapLocationModel = {
   lat: 49.81500022397678,
@@ -322,7 +323,7 @@ export class EventDetailsComponent implements OnInit {
         collLength = t.Collections.length
       }
       if (!t.Images) {
-        t.Images = [''];
+        t.Images = [defaultTrashImage];
       }
       this.markers.push({
         id: t.Id,

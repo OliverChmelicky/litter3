@@ -147,17 +147,45 @@ func (s *FileuploadService) GetSocietyImage(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	fmt.Println("dlzka dat je:")
-	fmt.Println(len(data))
-
 	return c.Blob(http.StatusOK, attr.ContentType, data)
 }
 
 
 
-//func (s *FileuploadService) GetTrashImages() error {
-//
-//}
+func (s *FileuploadService) GetTrashImage(c echo.Context) error {
+	imageName := c.Param("image")
+
+	if imageName == "" {
+		return c.NoContent(http.StatusConflict)
+	}
+
+	oh := s.bh.Object(imageName)
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+
+	attr, err := oh.Attrs(ctx)
+	if err != nil {
+		log.Error("ATTR_OBJECT_ERROR", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	rc, err := oh.NewReader(ctx)
+	if err != nil {
+		fmt.Println("Err new reader: ", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	defer rc.Close()
+
+	data, err := ioutil.ReadAll(rc)
+	if err != nil {
+		fmt.Println("Error read all: ", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.Blob(http.StatusOK, attr.ContentType, data)
+}
 //func (s *FileuploadService) GetCollectionImages() error {
 //
 //}
@@ -169,9 +197,34 @@ func (s *FileuploadService) GetSocietyImage(c echo.Context) error {
 //func (s *FileuploadService) DeleteSocietyImage() error {
 //
 //}
-//func (s *FileuploadService) DeleteTrashImages() error {
-//
-//}
+func (s *FileuploadService) DeleteTrashImage(c echo.Context) error {
+	imageName := c.Param("image")
+	trashId := c.Param("trashId")
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+	}
+	defer tx.Rollback()
+
+	imageDb := new(models.TrashImage)
+	_, err = tx.Model(imageDb).Where("url = ? and trash_id = ?", imageName, trashId).Delete()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+	}
+
+	err = s.DeleteImage(imageName)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+	}
+
+	return c.NoContent(http.StatusOK)
+}
 //func (s *FileuploadService) DeleteCollectionImages() error {
 //
 //}

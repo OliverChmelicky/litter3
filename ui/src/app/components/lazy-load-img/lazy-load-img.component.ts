@@ -1,17 +1,16 @@
 import {Component, Input, OnInit, ViewChild} from '@angular/core';
 import {ApisModel} from "../../api/api-urls";
 import {LoadImageProps, SetLoadedImageProps,} from 'ng-lazyload-image';
-import {AuthService} from "../../services/auth/auth.service";
 
 @Component({
   selector: 'app-image',
   template: `
-    <img #element [defaultImage]="defaultImage" [lazyLoad]="image">
+    <img id="test" #element [defaultImage]="defaultImage" [lazyLoad]="url">
   `,
   styleUrls: ['./lazy-load-img.component.css']
 })
 export class LazyLoadImgComponent implements OnInit {
-  @ViewChild('element', {static: false}) el: HTMLImageElement;
+  @ViewChild('element') el: HTMLImageElement;
 
   url: string;
 
@@ -22,59 +21,56 @@ export class LazyLoadImgComponent implements OnInit {
   defaultImage: string = 'https://cdn.onlinewebfonts.com/svg/img_258083.png';
 
   constructor(
-    private authService: AuthService,
   ) {
   }
 
   ngOnInit() {
     if (this.service === ApisModel.user) {
-      this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.user + '/' + this.image
+      this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.user + '/load/' + this.image
     } else if (this.service === ApisModel.society){
-      this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.society + '/' + this.image
+      this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.society + '/load/' + this.image
     } else if (this.service === ApisModel.collection){
-      this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.collection + '/' + this.image
+      this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.collection + '/load/' + this.image
       this.defaultImage = this.exampleBinUrl
     } else if (this.service === ApisModel.trash){
-      this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.trash + '/' + this.image
+      this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.trash + '/load/' + this.image
       this.defaultImage = this.exampleBinUrl
     }
-
-    console.log('image co som dostal je: ', this.image)
-    console.log('sevice co som dostal je: ', this.service)
-    console.log('default image: ', this.defaultImage)
   }
 
-  async ngAfterViewInit() {
-    if (this.image === '' || this.image == null){
-      this.el.src = this.defaultImage
-      return
-    }
+  //setting downloaded image does not work
 
-    if (this.el) {
-      const imageBlob = await this.loadImage({
-        element: this.el,
-        imagePath: this.url
-      })
-
-      console.log('blob je: ', imageBlob)
-      this.el.src = imageBlob
-      this.setLoadedImage({element: this.el, imagePath: imageBlob})
-    }
-  }
-
-  async loadImage({imagePath}: LoadImageProps) {
-    const token = this.authService.getToken()
-    return await fetch(imagePath, {
-      headers: {
-        Authorization: 'Bearer ' + token
-      }
-    }).then(res => res.blob()).then(blob => URL.createObjectURL(blob))
-  }
-
-  setLoadedImage({element, imagePath, useSrcset}: SetLoadedImageProps) {
-    console.log(this.el.currentSrc)
-    this.el.src = imagePath
-    console.log(this.el.currentSrc)
-  }
+  // async ngAfterViewInit() {
+  //   if (this.image === '' || this.image == null){
+  //     this.el.src = this.defaultImage
+  //     return
+  //   }
+  //
+  //   if (this.el) {
+  //     const imageBlob = await this.loadImage({
+  //       element: this.el,
+  //       imagePath: this.url
+  //     })
+  //
+  //     console.log('blob is: ', imageBlob)
+  //     this.el.src = imageBlob
+  //     this.setLoadedImage({element: this.el, imagePath: imageBlob})
+  //   }
+  // }
+  //
+  // async loadImage({imagePath}: LoadImageProps) {
+  //   const token = this.authService.getToken()
+  //   return await fetch(imagePath, {
+  //     headers: {
+  //       Authorization: 'Bearer ' + token
+  //     }
+  //   }).then(res => res.blob()).then(blob => URL.createObjectURL(blob))
+  // }
+  //
+  // setLoadedImage({element, imagePath, useSrcset}: SetLoadedImageProps) {
+  //   console.log(this.el.currentSrc)
+  //   this.el.src = imagePath
+  //   console.log(this.el.currentSrc)
+  // }
 
 }

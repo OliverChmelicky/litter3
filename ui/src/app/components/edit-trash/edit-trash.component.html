@@ -9,7 +9,7 @@
         </label>
         <mat-slider
           class="slider-margin"
-          [value]="sizeValue"
+          [(value)]="sizeValue"
           [max]="3"
           [min]="0"
           [step]="1"
@@ -22,7 +22,7 @@
 
       <label></label>
       <div class="trash-types form-item">
-        <mat-checkbox [(ngModel)]="trash.Cleaned" formControlName="cleaned">Cleaned</mat-checkbox>
+        <mat-checkbox [checked]="trash.Cleaned" formControlName="cleaned">Cleaned</mat-checkbox>
       </div>
 
       <label>Trash types:</label>
@@ -53,7 +53,13 @@
         </mat-form-field>
       </div>
 
+      <div *ngFor="let image of trash.Images">
+        <a (click)="onOpenImage(image.Url)"><app-image [image]="image.Url" [service]="'trash'"></app-image></a>
+        <button mat-button color="warn" (click)="onDeleteImage(image.Url)">Delete image</button>
+      </div>
+
       <div class="finish-form">
+        <label>Load new images:</label>
         <input type="file" (change)="onFileSelected($event)" multiple>
       </div>
 

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {ActivatedRoute} from "@angular/router";
 import {TrashService} from "../../services/trash/trash.service";
-import {TrashModel, MarkerCollectionModel} from "../../models/trash.model";
+import {TrashModel, MarkerCollectionModel, defaultTrashImage} from "../../models/trash.model";
 import {MarkerModel} from "../google-map/Marker.model";
 import {czechPosition} from "../event-details/event-details.component";
 import {MatTableDataSource} from "@angular/material/table";
@@ -67,14 +67,14 @@ export class CreateCollectionComponent implements OnInit {
         collLength = t.Collections.length
       }
       if (!t.Images) {
-        t.Images = [''];
+        t.Images = [];
       }
       this.allMarkers.push({
         trashId: t.Id,
         lat: t.Location[0],
         lng: t.Location[1],
         cleaned: t.Cleaned,
-        image: t.Images ? t.Images[0] : '',
+        image: t.Images ? t.Images[0] : defaultTrashImage,
         numOfCollections: collLength,
         collectionWeight: 0,
         collectionCleanedTrash: false,

@@ -1,10 +1,22 @@
-import { Component, OnInit } from '@angular/core';
-import {TrashModel, TrashTypeBooleanValues} from "../../models/trash.model";
+import {Component, Inject, OnInit} from '@angular/core';
+import {
+  defaultTrashModel,
+  defaultTrashTypeBooleanValues,
+  TrashModel,
+  TrashTypeBooleanValues
+} from "../../models/trash.model";
 import {accessibilityChoces} from "../../models/accessibilityChocies";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Location} from '@angular/common';
 import {TrashService} from "../../services/trash/trash.service";
 import {FormBuilder} from "@angular/forms";
+import {FileuploadService} from "../../services/fileupload/fileupload.service";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {CreateSocietyComponent} from "../societies/societies.component";
+
+export interface DialogData {
+  Url: string;
+}
 
 @Component({
   selector: 'app-edit-trash',
@@ -12,12 +24,11 @@ import {FormBuilder} from "@angular/forms";
   styleUrls: ['./edit-trash.component.css']
 })
 export class EditTrashComponent implements OnInit {
-  trashId: string;
-  trash: TrashModel;
+  trash: TrashModel = defaultTrashModel;
   sizeView: string;
   sizeValue: number;
   fd: FormData = new FormData();
-  trashTypeBool: TrashTypeBooleanValues;
+  trashTypeBool: TrashTypeBooleanValues = defaultTrashTypeBooleanValues;
 
   trashForm = this.formBuilder.group({
     lat: [''],
@@ -39,7 +50,6 @@ export class EditTrashComponent implements OnInit {
 
     accessibility: [''],
     description: '',
-    anonymously: [false],
   });
 
   accessibilityChoices = accessibilityChoces;
@@ -50,15 +60,19 @@ export class EditTrashComponent implements OnInit {
     private router: Router,
     private trashService: TrashService,
     private formBuilder: FormBuilder,
+    private fileuploadService: FileuploadService,
+    public openImageDialog: MatDialog,
   ) {
   }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      this.trashId = params.get('id');
-      this.trashService.getTrashById(this.trashId).subscribe(
+      const trashId = params.get('id');
+      this.trashService.getTrashById(trashId).subscribe(
         trash => {
           this.trash = trash
+          console.log(trash.Images)
+          this.trashForm.controls['cleaned'].setValue(trash.Cleaned) //needed for correct using of checkbox
           this.convertSizeToNumber(trash.Size)
           this.convertTrashTypeToBools()
           this.printSize()
@@ -96,7 +110,17 @@ export class EditTrashComponent implements OnInit {
     }
 
     this.trashService.updateTrash(this.trash).subscribe(
-      () => this.location.back()
+      () => {
+        if (this.fd.getAll('files').length !== 0) {
+          this.fileuploadService.uploadTrashImages(this.fd, this.trash.Id).subscribe(
+            () => {
+              this.fd.delete('files')
+              this.location.back()
+            })
+        } else {
+          this.location.back()
+        }
+      }
     )
   }
 
@@ -153,4 +177,36 @@ export class EditTrashComponent implements OnInit {
       }
     );
   }
+
+  onDeleteImage(imageUrl: string) {
+    this.trashService.deleteTrashImage(imageUrl, this.trash.Id).subscribe()
+    const index = this.trash.Images.findIndex(i => i.Url === imageUrl)
+    this.trash.Images.splice(index, 1)
+  }
+
+  onOpenImage(url: string): void {
+    const dialogRef = this.openImageDialog.open(ImageDialogComponent, {
+      width: '800px',
+      data: {
+        Url: url,
+      }
+    });
+  }
+}
+
+@Component({
+  selector: 'app-image-dialog',
+  templateUrl: '../image-dialog/image-dialog.component.html',
+  //styleUrls: ['./dialog/edit-create-society.component.css]
+})
+export class ImageDialogComponent {
+
+  constructor(public dialogRef: MatDialogRef<ImageDialogComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
 }

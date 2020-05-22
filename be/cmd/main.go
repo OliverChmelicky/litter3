@@ -123,9 +123,11 @@ func main() {
 	e.PUT("/trash/update", trashService.UpdateTrash, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/trash/delete/:trashId", trashService.DeleteTrash, tokenMiddleware.AuthorizeUser)
 
-	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
-	e.GET("/fileupload/societies/:image", fileuploadService.GetSocietyImage)
 	e.POST("/fileupload/societies/:societyId", fileuploadService.UploadSocietyImage, tokenMiddleware.AuthorizeUser)
+	e.GET("/fileupload/societies/load/:image", fileuploadService.GetSocietyImage)
+	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
+	e.GET("/fileupload/trash/load/:image", fileuploadService.GetTrashImage)
+	e.DELETE("/fileupload/trash/delete/:trashId/:image", fileuploadService.DeleteTrashImage)
 
 	e.Logger.Fatal(e.Start(":8081"))
 }
