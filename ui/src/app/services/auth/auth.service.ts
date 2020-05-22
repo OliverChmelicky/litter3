@@ -26,11 +26,11 @@ export class AuthService {
         localStorage.setItem('firebaseUser', JSON.stringify(user));
 
         user.getIdToken().then(token => localStorage.setItem('token', token))
-          .catch(() => localStorage.setItem('token', null));
+          .catch(() => localStorage.removeItem('token'));
       } else {
         this.loggedIn.next(false);
-        localStorage.setItem('firebaseUser', null);
-        localStorage.setItem('token', null);
+        localStorage.removeItem('firebaseUser');
+        localStorage.removeItem('token');
       }
     })
   }
@@ -46,12 +46,11 @@ export class AuthService {
           this.router.navigate(['/me']);
         })
           .catch(() =>
-            localStorage.setItem('token', null)
+            localStorage.removeItem('token')
           );
       }).catch(() => {
-        localStorage.setItem('firebaseUser', null);
-        localStorage.setItem('token', null);
-        return null;
+        localStorage.removeItem('firebaseUser');
+        localStorage.removeItem('token');
       })
   }
 
@@ -95,8 +94,8 @@ export class AuthService {
         );
       })
       .catch(err => {
-          localStorage.setItem('firebaseUser', null);
-          localStorage.setItem('token', null);
+          localStorage.removeItem('firebaseUser');
+          localStorage.removeItem('token');
           throw err;
         }
       )
@@ -110,13 +109,13 @@ export class AuthService {
     await this.afAuth.signOut();
     this.loggedIn.next(false);
     this.router.navigate(['/login']);
-    localStorage.setItem('firebaseUser', null);
-    localStorage.setItem('token', null);
+    localStorage.removeItem('firebaseUser');
+    localStorage.removeItem('token');
   }
 
   get isLoggedIn() {
     const isLogged = localStorage.getItem('firebaseUser')
-    if (isLogged != null) {
+    if (isLogged !== null) {
       this.loggedIn.next(true)
     } else {
       this.loggedIn.next(false)
