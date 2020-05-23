@@ -27,17 +27,30 @@ export class LazyLoadImgComponent implements OnInit {
   ngOnInit() {
     if (this.service === ApisModel.user) {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.user + '/load/' + this.image
-    } else if (this.service === ApisModel.society){
+      this.checkEmpty(this.defaultImage)
+    }
+    else if (this.service === ApisModel.society){
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.society + '/load/' + this.image
-    } else if (this.service === ApisModel.collection){
+      this.checkEmpty(this.defaultImage)
+    }
+    else if (this.service === ApisModel.collection){
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.collection + '/load/' + this.image
       this.defaultImage = this.exampleBinUrl
-    } else if (this.service === ApisModel.trash){
+      this.checkEmpty(this.defaultImage)
+    }
+    else if (this.service === ApisModel.trash){
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.trash + '/load/' + this.image
       this.defaultImage = this.exampleBinUrl
+      this.checkEmpty(this.defaultImage)
     }
 
     console.log('URL: ', this.url)
+  }
+
+  checkEmpty(exampleUrl: string){
+    if (this.image === ''){
+      this.url = exampleUrl
+    }
   }
 
   //setting downloaded image does not work

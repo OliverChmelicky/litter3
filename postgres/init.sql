@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS users_collections;
 DROP TABLE IF EXISTS societies_events;
 DROP TABLE IF EXISTS users_events;
 
-DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS trash_comments;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS collections;
 DROP TABLE IF EXISTS trash; /*trash is countable and uncountable*/
@@ -80,8 +80,8 @@ create table trash
 create table trash_comments
 (
     id         varchar PRIMARY KEY,
-    trash_id   VARCHAR REFERENCES trash (id) on delete cascade,
-    user_id    VARCHAR REFERENCES users (id) on delete set null,
+    trash_id   VARCHAR REFERENCES trash (id) on delete cascade not null,
+    user_id    VARCHAR REFERENCES users (id) on delete set null not null,
     message    varchar     not null,
     created_at timestamptz NOT NULL
 );

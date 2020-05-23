@@ -98,6 +98,20 @@
     <app-image [image]="pic.Url" [service]="'trash'"></app-image>
   </div>
 
+  <div>
+    <div class="comments" *ngFor="let comment of comments">
+      <p>{{comment.UserName}}:</p>
+      <p>{{comment.Message}}</p>
+      <p>{{comment.CreatedAt | date:"dd/MM/yyyy HH:mm"}}</p>
+    </div>
+
+    <div *ngIf="isLoggedIn" class="text-part">
+      <input [ngModel]="message" class="comment-input">
+      <button mat-button (click)="commentOnTrash()">Comment</button>
+    </div>
+  </div>
+
+
 </div>
 
 

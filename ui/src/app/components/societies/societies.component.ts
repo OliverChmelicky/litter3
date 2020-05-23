@@ -1,6 +1,6 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {SocietyService} from "../../services/society/society.service";
-import {PagingModel} from "../../models/shared.models";
+import {AttendantsModel, PagingModel} from "../../models/shared.models";
 import {PageEvent} from '@angular/material/paginator';
 import {SocietiesTableElementModel} from "./societiesTable.model";
 import {animate, state, style, transition, trigger} from '@angular/animations';
@@ -8,6 +8,7 @@ import {Router} from "@angular/router";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {ApisModel} from "../../api/api-urls";
 import {AuthService} from "../../services/auth/auth.service";
+import {MatTableDataSource} from "@angular/material/table";
 
 export interface DialogData {
   name: string;
@@ -30,7 +31,7 @@ export class SocietiesComponent implements OnInit {
   actualPaging: PagingModel;
   pageEvent: PageEvent;
   displayedColumns: string[] = ['position', 'avatar','name', 'members', 'createdAt', 'showMore'];
-  dataSource: SocietiesTableElementModel[];
+  dataSource: SocietiesTableElementModel[] = [];
   private isLoggedIn: boolean = false;
 
   constructor(
@@ -39,7 +40,6 @@ export class SocietiesComponent implements OnInit {
     public createSocietyDialog: MatDialog,
     private authService: AuthService,
   ) {
-    this.dataSource = [];
     this.actualPaging = {
         From: 0,
         To: 10,
@@ -52,7 +52,7 @@ export class SocietiesComponent implements OnInit {
     this.societyService.getSocieties(this.actualPaging)
       .subscribe(resp => {
       this.actualPaging = resp.Paging
-        this.dataSource = [];
+        console.log(resp)
         resp.Societies.map( (soc, i) => {
           this.dataSource.push(
             {
@@ -61,6 +61,13 @@ export class SocietiesComponent implements OnInit {
             }
           )
         })
+        //reinit societies table
+        const newData = new MatTableDataSource<SocietiesTableElementModel>(this.dataSource);
+        this.dataSource = []
+        for (let i = 0; i < newData.data.length; i++) {
+          this.dataSource.push(newData.data[i])
+        }
+
     })
     this.authService.isLoggedIn.subscribe( res => this.isLoggedIn = res)
   }
@@ -99,8 +106,6 @@ export class SocietiesComponent implements OnInit {
         this.actualPaging = resp.Paging
         this.dataSource = [];
         resp.Societies.map( (soc, i) => {
-          soc.Avatar = ApisModel.pictureBucketPrefix + soc.Avatar
-          console.log(soc.Avatar)
           this.dataSource.push(
           {
             Society: soc,

@@ -5,13 +5,14 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {ApisModel} from "../../api/api-urls";
 import {UserModel} from "../../models/user.model";
 import {
-  CollectionModel,
+  CollectionModel, CommentModel,
   TrashModel,
   TrashTypeAutomotive,
   TrashTypeBooleanValues, TrashTypeCarcass,
   TrashTypeConstruction, TrashTypeDangerous, TrashTypeElectronic, TrashTypeGlass,
   TrashTypeHousehold, TrashTypeMask, TrashTypeMetal, TrashTypeOrganic, TrashTypeOther, TrashTypePlastics
 } from "../../models/trash.model";
+import {MarkerModel} from "../../components/google-map/Marker.model";
 
 @Injectable({
   providedIn: 'root'
@@ -141,5 +142,25 @@ export class TrashService {
     return this.http.get<CollectionModel>(url).pipe(
       catchError(err => TrashService.handleError<CollectionModel>(err))
     );
+  }
+
+  commentTrash(message: string, trashId: string): Observable<CommentModel> {
+    const request = {
+      message: message,
+      id: trashId,
+    }
+    const url = `${this.apiUrl}/${ApisModel.trash}/comment`;
+    return this.http.post<CommentModel>(url, request).pipe(
+      catchError(err => TrashService.handleError<CommentModel>(err))
+    );
+  }
+
+  //I want not cleaned and if I doscover new places in map I don`t want the one in table
+  filterCleanedAndSelected(markers: MarkerModel[], selectedTrash: MarkerModel[]): MarkerModel[]{
+    return markers.filter( marker => {
+      if (marker.cleaned === false || selectedTrash.some(t => t.id !== marker.id)) {
+        return marker
+      }
+    })
   }
 }

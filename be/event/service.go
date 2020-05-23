@@ -8,6 +8,7 @@ import (
 	"github.com/olo/litter3/models"
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 )
@@ -57,12 +58,13 @@ func (s *EventService) GetEvent(c echo.Context) error {
 
 	event, err := s.eventAccess.GetEventWithCollection(eventId)
 	if err != nil {
+		logrus.Error("Co je tu zza err: ", err)
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetEvent, err))
 	}
 
 	fmt.Println("Vraciam event: ",event)
 	fmt.Println("Collections are: ", event.Collections)
-	fmt.Println("images in col: ", event.Collections[0].Images)
+	//fmt.Println("images in col: ", event.Collections[0].Images)
 
 	return c.JSON(http.StatusOK, event)
 }

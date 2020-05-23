@@ -12,7 +12,8 @@ import {TrashService} from "../../services/trash/trash.service";
 import {FormBuilder} from "@angular/forms";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {CreateSocietyComponent} from "../societies/societies.component";
+import {MarkerModel} from "../google-map/Marker.model";
+import {GoogleMap} from "@agm/core/services/google-maps-types";
 
 export interface DialogData {
   Url: string;
@@ -51,7 +52,6 @@ export class EditTrashComponent implements OnInit {
     accessibility: [''],
     description: '',
   });
-
   accessibilityChoices = accessibilityChoces;
 
   constructor(

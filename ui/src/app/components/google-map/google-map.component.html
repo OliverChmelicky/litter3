@@ -30,7 +30,7 @@
           <button (click)="createTrash(marker)">Report dump</button>
         </div>
         <div *ngIf="!marker.new" class="show-trash-on-map">
-          <img src="{{marker.images[0]}}">
+          <app-image *ngIf="marker.images.length > 0" [image]="marker.images[0].Url" [service]="'trash'"></app-image>
           <div>
             <p>Collections made: {{marker.numOfCollections}}</p>
             <p>Cleaned: {{marker.cleaned ? "yes" : "no"}}</p>

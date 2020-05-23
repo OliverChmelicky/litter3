@@ -35,6 +35,16 @@ export interface EventModel {
   SocietiesIds?: EventSocietyModel[],
 }
 
+export const defaultEventModel: EventModel = {
+  Id: '',
+  Date: new Date,
+  Description: '',
+  CreatedAt: new Date,
+  Trash: [],
+  UsersIds: [],
+  SocietiesIds: [],
+}
+
 export interface EventWithCollectionsModel {
   Id?: string,
   Date: Date,

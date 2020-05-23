@@ -85,12 +85,14 @@ func (s *eventAccess) GetEventWithCollection(eventId string) (*models.EventWithC
 	err := s.db.Model(event).Where("id = ?", eventId).Column("event.*").
 		Relation("Trash").Relation("SocietiesIds").Relation("UsersIds").First()
 	if err != nil {
+		fmt.Println("error prve: ", err)
 		return &models.EventWithCollections{}, err
 	}
 
 	var collections []models.Collection
 	err = s.db.Model(&collections).Where("event_id = ?", event.Id).Select()
 	if err != nil {
+		fmt.Println("error druhe: ", err)
 		return &models.EventWithCollections{}, err
 	}
 
@@ -109,7 +111,7 @@ func (s *eventAccess) GetEventWithCollection(eventId string) (*models.EventWithC
 
 		err = s.db.Model(&images).Where("collection_id = ?", c.Id).Select()
 		if err != nil {
-			logrus.Error(err)
+			logrus.Error("Tretie: ",err)
 			eventWithCollections.Collections[i].Images = []models.CollectionImage{}
 		}
 		eventWithCollections.Collections[i].Images = images
@@ -383,9 +385,11 @@ func (s *eventAccess) GetUserEvents(userId string) ([]models.Event, error) {
 	}
 
 	var events []models.Event
-	err = s.db.Model(&events).Where("id IN (?)", pg.In(eventsArr)).Select()
-	if err != nil {
-		return nil, fmt.Errorf("Error get society events: %w ", err)
+	if len(eventsArr) > 0 {
+		err = s.db.Model(&events).Where("id IN (?)", pg.In(eventsArr)).Select()
+		if err != nil {
+			return nil, fmt.Errorf("Error get society events: %w ", err)
+		}
 	}
 	return events, nil
 }

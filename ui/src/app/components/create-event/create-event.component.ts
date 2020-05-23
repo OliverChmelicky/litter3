@@ -14,6 +14,7 @@ import {createTrashkColumnsDefinition} from "./table-definitions";
 import {AgmMap} from "@agm/core";
 import {MatTable, MatTableDataSource} from "@angular/material/table";
 import {defaultTrashImage} from "../../models/trash.model";
+import {initialDistance} from "../../models/shared.models";
 
 @Component({
   selector: 'app-create-event',
@@ -24,7 +25,7 @@ export class CreateEventComponent implements OnInit {
   @ViewChild('agmMap') agmMap: AgmMap;
   @ViewChild('table') table: MatTable<any>;
 
-  allMarkers: MarkerModel[];
+  allMarkers: MarkerModel[] = [];
   selectedTrash: MarkerModel[] = [];
   tableColumns = createTrashkColumnsDefinition
   exampleBinUrl: string = ApisModel.exampleBinUrl;
@@ -45,6 +46,7 @@ export class CreateEventComponent implements OnInit {
   };
   description: string;
   date = new FormControl(new Date());
+  private initialDistance: number = initialDistance;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -64,14 +66,11 @@ export class CreateEventComponent implements OnInit {
       this.initMapLng = +params.get('lng');
 
       if (this.initMapLat === 0 && this.initMapLng === 0) {
-        console.log('idem si getnut position')
         this.locationService.getPosition().then(data => {
-          console.log('current pos: ', data)
           this.initMapLat = data.lat;
           this.initMapLng = data.lng;
         }).catch(
-          error => {
-            console.log('error get location ', error)
+          () => {
             this.initMapLat = 49;
             this.initMapLng = 16;
           }
@@ -102,13 +101,39 @@ export class CreateEventComponent implements OnInit {
         )
       }
     )
-
   }
 
   ngAfterViewInit(){
     this.agmMap.mapReady.subscribe(map => {
       this.map = map
-      this.loadNewMarkers();
+
+      let c = this.map.getCenter()
+      this.borderTop = c.lat() + 3.4
+      this.borderBottom = c.lat() - 3.4
+
+      this.borderRight = c.lng() + 8.82
+      this.borderLeft = c.lng() - 8.82
+
+      this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initialDistance).subscribe(
+        trash => {
+          for (let i = 0; i < trash.length; i++) {
+            if (!trash[i].Images) {
+              trash[i].Images = [];
+            }
+            this.allMarkers.push({
+              lat: trash[i].Location[0],
+              lng: trash[i].Location[1],
+              new: false,
+              id: trash[i].Id,
+              cleaned: trash[i].Cleaned,
+              images: trash[i].Images,
+              numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
+            })
+
+            this.trashService.filterCleanedAndSelected(this.allMarkers, this.selectedTrash)
+          }
+        })
+
     });
   }
 
@@ -182,7 +207,7 @@ export class CreateEventComponent implements OnInit {
             numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
           })
 
-          this.allMarkers = this.filterCleanedAndSelected(this.allMarkers)
+          this.allMarkers = this.trashService.filterCleanedAndSelected(this.allMarkers, this.selectedTrash)
         }
 
         const viewCenter = this.map.getCenter()
@@ -215,21 +240,21 @@ export class CreateEventComponent implements OnInit {
     )
   }
 
-
-  //I want not cleaned
-  filterCleanedAndSelected(markers: MarkerModel[]): MarkerModel[]{
-    return markers.filter( marker => {
-      if (marker.cleaned === false || this.selectedTrash.some(t => t.id !== marker.id)) {
-        return marker
-      }
-    })
-  }
-
   addToList(marker: MarkerModel) {
+    console.log('pred push: ', this.selectedTrash)
     this.selectedTrash.push(marker)
+    console.log('po push: ', this.selectedTrash)
+
 
     const index = this.allMarkers.findIndex(t => t.id === marker.id)
-    this.selectedTrash = this.allMarkers.splice(index, 1)
+    this.allMarkers.splice(index, 1)
+
+    //rerender table
+    const newData = new MatTableDataSource<MarkerModel>(this.selectedTrash);
+    this.selectedTrash = []
+    for (let i = 0; i < newData.data.length; i++) {
+      this.selectedTrash.push(newData.data[i])
+    }
   }
 
   removeFromList(trashId: string) {

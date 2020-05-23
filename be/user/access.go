@@ -44,11 +44,12 @@ func (s *UserAccess) GetUserById(id string) (*models.User, error) {
 
 func (s *UserAccess) GetUsersByIds(ids []string) ([]models.User, error) {
 	users := []models.User{}
-	err := s.Db.Model(&users).Where("id IN (?)", pg.In(ids)).Select()
-	if err != nil {
-		return []models.User{}, err
+	if len(ids) > 0 {
+		err := s.Db.Model(&users).Where("id IN (?)", pg.In(ids)).Select()
+		if err != nil {
+			return []models.User{}, err
+		}
 	}
-
 	if len(users) == 0 {
 		return []models.User{}, fmt.Errorf("No record GetUsersByIds")
 	}
@@ -167,7 +168,7 @@ func (s *UserAccess) CreateSocietyWithAdmin(in *models.Society, adminId string) 
 func (s *UserAccess) GetSocietiesWithPaging(from, to int) ([]models.Society, int, error) {
 	limit := to - from
 	societies := []models.Society{}
-	err := s.Db.Model(&societies).Order("created_at DESC").Select()
+	err := s.Db.Model(&societies).Order("created_at ASC").Select()
 	if err != nil {
 		return []models.Society{}, 0, err
 	}
@@ -178,19 +179,23 @@ func (s *UserAccess) GetSocietiesWithPaging(from, to int) ([]models.Society, int
 	if len(societies[from:]) < limit {
 		to = from + len(societies[from:])
 	}
+	length := len(societies)
+	societies = societies[from:to]
 
 	var ids []string
 	for _, society := range societies {
 		ids = append(ids, society.Id)
 	}
-	err = s.Db.Model(&societies).Column("society.*").
-		Relation("Users").
-		Where("id IN (?)", pg.In(ids)).Select()
-	if err != nil {
-		return []models.Society{}, 0, err
+	if len(ids) > 0 {
+		err = s.Db.Model(&societies).Column("society.*").
+			Relation("Users").
+			Where("id IN (?)", pg.In(ids)).Select()
+		if err != nil {
+			return []models.Society{}, 0, err
+		}
 	}
 
-	return societies[from:to], len(societies), nil
+	return societies, length, nil
 }
 
 func (s *UserAccess) GetSociety(id string) (*models.Society, error) {
@@ -203,6 +208,20 @@ func (s *UserAccess) GetSociety(id string) (*models.Society, error) {
 		return &models.Society{}, err
 	}
 	return society, nil
+}
+
+func (s *UserAccess) GetSocieties(ids []string) ([]models.Society, error) {
+	societies := []models.Society{}
+	if len(ids) > 0 {
+		err := s.Db.Model(&societies).Column("society.*").
+			Relation("Users").Relation("Applicants").
+			Relation("MemberRights").Relation("ApplicantsIds").
+			Where("id IN (?)", pg.In(ids)).Select()
+		if err != nil {
+			return []models.Society{}, err
+		}
+	}
+	return societies, nil
 }
 
 func (s *UserAccess) GetUserSocieties(id string) ([]models.Society, error) {
@@ -269,7 +288,6 @@ func (s *UserAccess) GetEditableSocieties(userId string) ([]models.Society, erro
 	for _, m := range memberships {
 		societiesIds = append(societiesIds, m.SocietyId)
 	}
-
 
 	var societies []models.Society
 	if len(societiesIds) > 0 {

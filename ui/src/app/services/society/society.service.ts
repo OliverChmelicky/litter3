@@ -65,7 +65,8 @@ export class SocietyService {
   }
 
   getSocietiesByIds(ids: string[]): Observable<SocietyModel[]> {
-    const url = `${this.apiUrl}/${this.societyUrl}/${ids}`;
+    const idsQueryParam = ids.join();
+    const url = `${this.apiUrl}/${this.societyUrl}/more?ids=${idsQueryParam}`;
     return this.http.get<SocietyModel[]>(url).pipe(
       catchError(err => SocietyService.handleError<SocietyModel[]>(err, []))
     );

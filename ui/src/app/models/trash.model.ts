@@ -1,5 +1,21 @@
 import {UserModel} from "./user.model";
 
+export interface CommentModel {
+  Id: string,
+  UserId: string,
+  TrashId: string,
+  Message: string,
+  CreatedAt?: Date,
+}
+
+export interface CommentViewModel {
+  Id: string,
+  UserName: string,
+  TrashId: string,
+  Message: string,
+  CreatedAt: Date,
+}
+
 export interface TrashModel {
   Id: string,
   Cleaned: boolean,
@@ -11,6 +27,7 @@ export interface TrashModel {
   FinderId: string,
   Collections?: CollectionModel[],
   Images?: TrashImageModel[],
+  Comments?: CommentModel[],
   CreatedAt?: Date,
   Anonymously?: boolean,
 }
@@ -52,6 +69,7 @@ export const defaultTrashModel: TrashModel = {
   FinderId: '',
   Collections: [],
   Images: [],
+  Comments: [],
   CreatedAt: null,
   Anonymously: false,
 }

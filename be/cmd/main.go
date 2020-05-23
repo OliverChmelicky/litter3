@@ -91,6 +91,7 @@ func main() {
 
 	e.POST("/societies/new", userService.CreateSociety, tokenMiddleware.AuthorizeUser)
 	e.GET("/societies", userService.GetSocietiesWithPaging)
+	e.GET("/societies/more", userService.GetSocietiesByIds)
 	e.GET("/societies/:id", userService.GetSociety)
 	e.PUT("/societies/update", userService.UpdateSociety, tokenMiddleware.AuthorizeUser)
 	e.GET("/societies/admins/:societyId", userService.GetSocietyAdmins)
@@ -123,6 +124,10 @@ func main() {
 	e.POST("/trash/new", trashService.CreateTrash, tokenMiddleware.FillUserContext)
 	e.PUT("/trash/update", trashService.UpdateTrash, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/trash/delete/:trashId", trashService.DeleteTrash, tokenMiddleware.AuthorizeUser)
+
+	e.POST("/trash/comment", trashService.CreateTrashComment, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/trash/comment/:commentId", trashService.DeleteTrashComment, tokenMiddleware.AuthorizeUser)
+
 
 	e.POST("/fileupload/societies/:societyId", fileuploadService.UploadSocietyImage, tokenMiddleware.AuthorizeUser)
 	e.GET("/fileupload/societies/load/:image", fileuploadService.GetSocietyImage)

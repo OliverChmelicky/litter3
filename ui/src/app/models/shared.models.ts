@@ -40,3 +40,5 @@ export interface MarkersAfterInitModel {
   borderLeft: number,
   borderRight: number,
 }
+
+export const initialDistance: number = 3000000

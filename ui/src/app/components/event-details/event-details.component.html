@@ -13,15 +13,17 @@
       </mat-form-field>
     </div>
 
-    <div *ngIf="!statusAttend && !isAdmin">
+    <!--    not attend and is not admin (basic user)  or   not attend and is editor-->
+    <div *ngIf="(!statusAttend && !isAdmin)">
       <button mat-button (click)="onAttend()" > Attend </button>
     </div>
 
+    <!--    attend and is not admin (basic user)  or   attend and is editor but then losts editor rights-->
     <div *ngIf="statusAttend && !isAdmin">
       <button mat-button (click)="onNotAttend()" > Cannot attend </button>
     </div>
 
-    <div *ngIf="isAdmin">
+    <div *ngIf="isAdmin || isEditor">
       <button mat-button (click)="onEdit()" > EDIT </button>
     </div>
   </div>

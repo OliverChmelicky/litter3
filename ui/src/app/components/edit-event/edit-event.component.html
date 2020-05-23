@@ -30,7 +30,7 @@
       <agm-marker *ngFor="let marker of allMarkers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
         <agm-info-window [disableAutoPan]="true">
           <div class="show-trash-on-map">
-            <img src="{{marker.images[0]}}">
+            <app-image *ngIf="marker.images.length > 0" [service]="'trash'" [image]="marker.images[0].Url"></app-image>
             <div>
               <p>Collections made: {{marker.numOfCollections}}</p>
               <button (click)="addToList(marker)">Add</button>
@@ -48,7 +48,7 @@
       <ng-container matColumnDef="image">
         <th mat-header-cell *matHeaderCellDef></th>
 <!--       image is ok-->
-        <td mat-cell *matCellDef="let element"> <app-image [image]="element.images[0]" [service]="'trash'"></app-image> </td> da
+        <td mat-cell *matCellDef="let element"> <app-image *ngIf="element.images.length > 0" [image]="element.images[0].Url" [service]="'trash'"></app-image> </td> da
       </ng-container>
 
       <ng-container matColumnDef="number-of-collections">

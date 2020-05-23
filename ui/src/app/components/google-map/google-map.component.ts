@@ -8,6 +8,7 @@ import {Router} from "@angular/router";
 import {TrashService} from "../../services/trash/trash.service";
 import {AgmMap} from '@agm/core';
 import {MatCheckboxChange} from "@angular/material/checkbox";
+import {initialDistance} from "../../models/shared.models";
 
 export const czechPosition: MapLocationModel = {
   lat: 49.81500022397678,
@@ -39,7 +40,7 @@ export class GoogleMapComponent implements OnInit {
   borderLeft: number;
   borderRight: number;
 
-  initialDistance:number = 3000000
+  initialDistance:number = initialDistance
 
   constructor(
     private readonly locationService: LocationService,
@@ -67,30 +68,7 @@ export class GoogleMapComponent implements OnInit {
     await setTimeout(() => {
       this.agmMap.triggerResize();
     }, 1000)
-    let c = this.map.getCenter()
-    this.borderTop = c.lat() + 3.4
-    this.borderBottom = c.lat() - 3.4
-
-    this.borderRight = c.lng() + 8.82
-    this.borderLeft = c.lng() - 8.82
-
-    this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initialDistance).subscribe(
-      trash => {
-        this.allMarkers = this.getOnlyNewMarkers();
-        for (let i = 0; i < trash.length; i++) {
-          this.allMarkers.push({
-            lat: trash[i].Location[0],
-            lng: trash[i].Location[1],
-            new: false,
-            id: trash[i].Id,
-            cleaned: trash[i].Cleaned,
-            images: trash[i].Images ? trash[i].Images : [],
-            numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
-          })
-
-          this.applyMarkerFilters()
-        }
-      })
+    this.initialMapFetching();
   }
 
   addMarker(lat: number, lng: number) {
@@ -129,7 +107,7 @@ export class GoogleMapComponent implements OnInit {
     let visibleLeft = c.lng() - 8.82
 
     if (!this.map.getBounds()) {
-      console.log('INIT MAP MODE')
+      this.initialMapFetching()
     } else {
       const p1 = this.map.getBounds().getNorthEast()
       const p2 = this.map.getBounds().getSouthWest()
@@ -211,6 +189,33 @@ export class GoogleMapComponent implements OnInit {
 
       }
     )
+  }
+
+  initialMapFetching() {
+    let c = this.map.getCenter()
+    this.borderTop = c.lat() + 3.4
+    this.borderBottom = c.lat() - 3.4
+
+    this.borderRight = c.lng() + 8.82
+    this.borderLeft = c.lng() - 8.82
+
+    this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initialDistance).subscribe(
+      trash => {
+        this.allMarkers = this.getOnlyNewMarkers();
+        for (let i = 0; i < trash.length; i++) {
+          this.allMarkers.push({
+            lat: trash[i].Location[0],
+            lng: trash[i].Location[1],
+            new: false,
+            id: trash[i].Id,
+            cleaned: trash[i].Cleaned,
+            images: trash[i].Images ? trash[i].Images : [],
+            numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
+          })
+
+          this.applyMarkerFilters()
+        }
+      })
   }
 
   navigateToTrash(id: string) {

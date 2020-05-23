@@ -8,8 +8,8 @@ export interface SocietyModel {
   Description?: string;
   Users?: UserModel[];
   Applicants?: UserModel[],
-  ApplicantsIds?: ApplicantModel,
   MemberRights?: MemberModel[],
+  ApplicantsIds?: ApplicantModel,
   CreatedAt?: Date;
 }
 

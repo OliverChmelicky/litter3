@@ -25,8 +25,10 @@ func (s *TrashAccess) GetTrash(id string) (*models.Trash, error) {
 	err := s.Db.Model(trash).Where("id = ?", id).Column("trash.*").
 		Relation("Collections").
 		Relation("Images").
+		Relation("Comments").
 		First()
 	if err != nil {
+		fmt.Println(err)
 		return &models.Trash{}, err
 	}
 
@@ -35,12 +37,14 @@ func (s *TrashAccess) GetTrash(id string) (*models.Trash, error) {
 
 func (s *TrashAccess) GetTrashByIds(ids []string) ([]models.Trash, error) {
 	var trash []models.Trash
-	err := s.Db.Model(&trash).Where("id IN (?)", pg.In(ids)).Column("trash.*").
-		Relation("Collections").
-		Relation("Images").
-		Select()
-	if err != nil {
-		return []models.Trash{}, err
+	if len(ids) > 0 {
+		err := s.Db.Model(&trash).Where("id IN (?)", pg.In(ids)).Column("trash.*").
+			Relation("Collections").
+			Relation("Images").
+			Select()
+		if err != nil {
+			return []models.Trash{}, err
+		}
 	}
 
 	return trash, nil
@@ -350,7 +354,8 @@ func (s *TrashAccess) GetTrashCommentByTrashId(trashId string) (*models.TrashCom
 
 func (s *TrashAccess) GetTrashComments(trashId string) ([]models.TrashComment, error) {
 	var comments []models.TrashComment
-	err := s.Db.Model(&comments).Where("trash_id = ?", trashId).Select()
+
+	err := s.Db.Model(&comments).Where("trash_id = ?", trashId).Order("created_at ASC").Select()
 	if err != nil {
 		return nil, fmt.Errorf("GET TRASH COMMENTS: %w", err)
 	}

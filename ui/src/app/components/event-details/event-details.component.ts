@@ -63,6 +63,7 @@ export class EventDetailsComponent implements OnInit {
   selectedCreator: number = 0;
 
   isAdmin: boolean = false;
+  isEditor: boolean = false;
   editableSocieties: SocietyModel[] = [];
   editableSocietiesIds: string[] = [];
 
@@ -109,20 +110,19 @@ export class EventDetailsComponent implements OnInit {
           const societyIds = event.SocietiesIds.map(s => s.SocietyId)
           this.fetchSocietiesWhichAttend(societyIds, event.SocietiesIds)
         }
-        console.log('collections: ', event.Collections)
       },
       () => {},
         () => {
           this.userService.getMe().subscribe(
             me => {
               this.me = me;
+              this.isLoggedIn = true;
               this.availableDecisionsAs.push({
                 VisibleName: me.Email,
                 Id: me.Id,
                 AsSociety: false
               })
               this.getEventAttendanceOnUser()
-              this.isLoggedIn = true;
               this.userService.getMyEditableSocieties().subscribe(
                 societies => {
                   if (societies) {
@@ -141,6 +141,9 @@ export class EventDetailsComponent implements OnInit {
               //find out my status
               if (this.event.UsersIds) {
                 this.event.UsersIds.map(attendant => {
+                  if (attendant.Permission === 'editor' && attendant.UserId === this.me.Id) {
+                    this.isEditor = true
+                  }
                   if (attendant.Permission === 'creator' && attendant.UserId === this.me.Id) {
                     this.isAdmin = true
                   }
@@ -162,6 +165,7 @@ export class EventDetailsComponent implements OnInit {
   onDesideAsChange() {
     this.statusAttend = false
     this.isAdmin = false
+    this.isEditor = false
     if (this.selectedCreator === 0) {  //User
       this.getEventAttendanceOnUser()
     } else {
@@ -175,7 +179,9 @@ export class EventDetailsComponent implements OnInit {
         user => {
           if (user.UserId == this.me.Id) {
             this.statusAttend = true
-            if (user.Permission === 'creator' || user.Permission === 'viewer') {
+            if (user.Permission === 'editor') {
+              this.isEditor = true
+            } else if (user.Permission === 'creator') {
               this.isAdmin = true
             }
           }
@@ -190,7 +196,9 @@ export class EventDetailsComponent implements OnInit {
         society => {
           if (society.SocietyId == this.availableDecisionsAs[this.selectedCreator].Id) {
             this.statusAttend = true
-            if (society.Permission === 'creator' || society.Permission === 'viewer') {
+            if (society.Permission === 'editor') {
+              this.isEditor = true
+            } else if (society.Permission === 'creator') {
               this.isAdmin = true
             }
           }
@@ -218,8 +226,10 @@ export class EventDetailsComponent implements OnInit {
     this.eventService.notAttendEvent(this.event.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
       () => {
         this.statusAttend = false
+        this.isEditor = false
+        this.isAdmin = false
 
-        const index = this.attendants.findIndex(a => a.id === this.me.Id)
+        const index = this.attendants.findIndex(a => a.id === this.availableDecisionsAs[this.selectedCreator].Id)
         this.attendants.splice(index, 1)
 
         const newData = new MatTableDataSource<AttendantsModel>(this.attendants);

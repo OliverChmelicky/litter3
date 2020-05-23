@@ -2,7 +2,14 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormControl} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {UserService} from "../../services/user/user.service";
-import {EventModel, EventPickerModel, EventRequestModel, EventUserModel, roles} from "../../models/event.model";
+import {
+  defaultEventModel,
+  EventModel,
+  EventPickerModel,
+  EventRequestModel,
+  EventUserModel,
+  roles
+} from "../../models/event.model";
 import {EventService} from "../../services/event/event.service";
 import {attendantsTableColumns, editAttendantsTableColumns} from "../event-details/table-definitions";
 import {MatSelectChange} from "@angular/material/select";
@@ -24,7 +31,7 @@ import {CollectionModel, defaultTrashImage, TrashModel} from "../../models/trash
 export class EditEventComponent implements OnInit {
   @ViewChild('agmMap') agmMap: AgmMap;
 
-  event: EventModel;
+  event: EventModel = defaultEventModel;
   eventEditor: EventPickerModel;
   eventForm = this.formBuilder.group({
     date: new Date(),
@@ -63,6 +70,7 @@ export class EditEventComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
+      console.log('idem ferchnut eventy: ', params.get('eventId'))
       this.eventService.getEvent(params.get('eventId')).subscribe(e => {
           this.event = e;
           this.usersInEvent = e.UsersIds
@@ -136,6 +144,38 @@ export class EditEventComponent implements OnInit {
     this.eventEditor = this.eventService.getEventEditor()
   }
 
+  async onMapReady(map: GoogleMap) {
+    this.map = map;
+    //In an issue it was written that this helps but don`t
+    await setTimeout(() => {
+      this.agmMap.triggerResize();
+    }, 1000)
+    let c = this.map.getCenter()
+    this.borderTop = c.lat() + 3.4
+    this.borderBottom = c.lat() - 3.4
+
+    this.borderRight = c.lng() + 8.82
+    this.borderLeft = c.lng() - 8.82
+
+    this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initialDistance).subscribe(
+      trash => {
+        console.log('map reaady: ', trash)
+        for (let i = 0; i < trash.length; i++) {
+          this.allMarkers.push({
+            lat: trash[i].Location[0],
+            lng: trash[i].Location[1],
+            new: false,
+            id: trash[i].Id,
+            cleaned: trash[i].Cleaned,
+            images: trash[i].Images ? trash[i].Images : [],
+            numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
+          })
+
+          this.filterSelected()
+        }
+      })
+  }
+
   onUpdate() {
     const trashIds = this.selectedMarkers.map(t => t.id)
     const request: EventRequestModel = {
@@ -197,9 +237,15 @@ export class EditEventComponent implements OnInit {
 
   addToList(marker: MarkerModel) {
     this.selectedMarkers.push(marker)
+    //refresh table
+    const newData = new MatTableDataSource<MarkerModel>(this.selectedMarkers);
+    this.selectedMarkers = []
+    for (let i = 0; i < newData.data.length; i++) {
+      this.selectedMarkers.push(newData.data[i])
+    }
 
     const index = this.allMarkers.findIndex(t => t.id === marker.id)
-    this.selectedMarkers = this.allMarkers.splice(index, 1)
+    this.allMarkers.splice(index, 1)
   }
 
   removeFromList(trashId: string) {
@@ -225,38 +271,6 @@ export class EditEventComponent implements OnInit {
       console.log(url)
       window.open(url)
     }
-  }
-
-  async onMapReady(map: GoogleMap) {
-    this.map = map;
-    //In an issue it was written that this helps but don`t
-    await setTimeout(() => {
-      this.agmMap.triggerResize();
-    }, 1000)
-    let c = this.map.getCenter()
-    this.borderTop = c.lat() + 3.4
-    this.borderBottom = c.lat() - 3.4
-
-    this.borderRight = c.lng() + 8.82
-    this.borderLeft = c.lng() - 8.82
-
-    this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initialDistance).subscribe(
-      trash => {
-        console.log('map reaady: ', trash)
-        for (let i = 0; i < trash.length; i++) {
-          this.allMarkers.push({
-            lat: trash[i].Location[0],
-            lng: trash[i].Location[1],
-            new: false,
-            id: trash[i].Id,
-            cleaned: trash[i].Cleaned,
-            images: trash[i].Images ? trash[i].Images : [],
-            numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
-          })
-
-          this.filterSelected()
-        }
-      })
   }
 
   onBoundsChange() {

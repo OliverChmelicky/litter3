@@ -384,6 +384,18 @@ func (s *userService) GetSociety(c echo.Context) error {
 	return c.JSON(http.StatusOK, society)
 }
 
+func (s *userService) GetSocietiesByIds(c echo.Context) error {
+	idsString := c.QueryParam("ids")
+	ids := strings.Split(idsString, ",")
+
+	societies, err := s.UserAccess.GetSocieties(ids)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrGetUsers, err))
+	}
+
+	return c.JSON(http.StatusOK, societies)
+}
+
 func (s *userService) GetMySocieties(c echo.Context) error {
 	userId := c.Get("userId").(string)
 

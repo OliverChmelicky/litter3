@@ -72,6 +72,7 @@ type Trash struct {
 	FinderId      string
 	Collections   []Collection
 	Images        []TrashImage
+	Comments      []TrashComment
 	CreatedAt     time.Time `pg:"default:now()"`
 }
 
@@ -140,7 +141,6 @@ type TrashComment struct {
 	TrashId   string
 	Message   string
 	CreatedAt time.Time `pg:"default:now()"`
-	UpdatedAt time.Time `pg:"default:now()"`
 }
 
 var _ pg.BeforeInsertHook = (*TrashComment)(nil)
@@ -150,14 +150,6 @@ func (u *TrashComment) BeforeInsert(ctx context.Context) (context.Context, error
 		u.Id = uuid.NewV4().String()
 	}
 	u.CreatedAt = time.Now()
-	u.UpdatedAt = u.CreatedAt
-	return ctx, nil
-}
-
-var _ pg.BeforeUpdateHook = (*TrashComment)(nil)
-
-func (u *TrashComment) BeforeUpdate(ctx context.Context) (context.Context, error) {
-	u.UpdatedAt = time.Now()
 	return ctx, nil
 }
 
