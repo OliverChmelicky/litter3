@@ -30,7 +30,9 @@ export interface AttendantsModel {
   id?: string;
   name: string
   avatar: string
+  origRole?: string
   role: string
+  isSociety: boolean
 }
 
 export interface MarkersAfterInitModel {

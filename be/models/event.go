@@ -34,6 +34,7 @@ type EventPermissionRequest struct {
 	Permission       EventPermission
 	AsSociety        bool
 	SocietyId        string
+	ChangingToSociety bool
 }
 
 type CreateEvent struct {

@@ -130,7 +130,7 @@ export class CreateEventComponent implements OnInit {
               numOfCollections: trash[i].Collections ? trash[i].Collections.length : 0
             })
 
-            this.trashService.filterCleanedAndSelected(this.allMarkers, this.selectedTrash)
+            this.allMarkers = this.trashService.filterCleanedAndSelected(this.allMarkers, this.selectedTrash)
           }
         })
 
@@ -149,10 +149,8 @@ export class CreateEventComponent implements OnInit {
       Date: this.date.value,
       Trash: trashIds,
     }
-    console.log('Date: ', request.Date)
     this.eventService.createEvent(request).subscribe(
       e => {
-        console.log('New event: ',e)
         this.router.navigateByUrl('events')
       }
     )

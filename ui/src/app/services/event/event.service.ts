@@ -18,7 +18,6 @@ import {AttendantsModel, PagingModel} from "../../models/shared.models";
 })
 export class EventService {
   apiUrl: string;
-  eventEditor: EventPickerModel;
 
   constructor(
     private http: HttpClient,
@@ -27,11 +26,12 @@ export class EventService {
   }
 
   setEventEditor(e: EventPickerModel) {
-    this.eventEditor = e;
+    localStorage.setItem('eventEditor', JSON.stringify(e));
   }
 
   getEventEditor(): EventPickerModel {
-    return this.eventEditor
+    const eventEditor = localStorage.getItem('eventEditor');
+    return <EventPickerModel> JSON.parse(eventEditor);
   }
 
   getSocietyEvents(societyId: string): Observable<EventModel[]> {
@@ -101,22 +101,26 @@ export class EventService {
   }
 
   createEvent(request: EventRequestModel) {
+    console.log('date before: ', request.Date)
+    request.Date.setSeconds(0)
+    console.log('date after: ', request.Date)
     const url = `${this.apiUrl}/${ApisModel.event}`;
     return this.http.post<EventRequestModel>(url, request).pipe(
       catchError(err => EventService.handleError<EventRequestModel>(err))
     );
   }
 
-  updateUserPermission(user: AttendantsModel, editor: EventPickerModel, eventId: string) {
+  updateUserPermission(attendant: AttendantsModel, editor: EventPickerModel, eventId: string) {
     const request: ChangePermisssionRequest = {
-      ChangingRightsTo: user.id,
+      ChangingRightsTo: attendant.id,
       EventId: eventId,
-      Permission: user.role,
-      AsSociety: editor.AsSociety,  //userId can be extracted from token
+      Permission: attendant.role,
+      AsSociety: editor.AsSociety,  //userId is extracted from token
       SocietyId: editor.Id,
+      ChangingToSociety: attendant.isSociety,
     }
     const url = `${this.apiUrl}/${ApisModel.event}/members/update`;
-    return this.http.post<ChangePermisssionRequest>(url, request).pipe(
+    return this.http.put<ChangePermisssionRequest>(url, request).pipe(
       catchError(err => EventService.handleError<ChangePermisssionRequest>(err))
     );
   }
@@ -129,7 +133,9 @@ export class EventService {
   }
 
   updateEvent(request: EventRequestModel) {
-    console.log('Idem poslat request: ', request)
+    let newDate = new Date(request.Date)
+    newDate.setSeconds(0)
+    request.Date = newDate
     const url = `${this.apiUrl}/${ApisModel.event}/update`;
     return this.http.put(url, request).pipe(
       catchError(err => EventService.handleError(err))

@@ -91,27 +91,28 @@ export class EventDetailsComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       this.eventService.getEvent(params.get('eventId')).subscribe(event => {
-        this.convertToLocalTime()
-        this.event = event
-        if (event.Trash) {
-          this.initLat = event.Trash[0].Location[0]
-          this.initLng = event.Trash[0].Location[1]
-        }
-        if (this.event.Trash){
-          this.assignMarkers()
-        }
+          this.convertToLocalTime()
+          this.event = event
+          if (event.Trash) {
+            this.initLat = event.Trash[0].Location[0]
+            this.initLng = event.Trash[0].Location[1]
+          }
+          if (this.event.Trash) {
+            this.assignMarkers()
+          }
 
-        if (event.UsersIds) {
-          const userIds = event.UsersIds.map(u => u.UserId)
-          this.fetchUsersWhoAttends(userIds, event.UsersIds)
-        }
+          if (event.UsersIds) {
+            const userIds = event.UsersIds.map(u => u.UserId)
+            this.fetchUsersWhoAttends(userIds, event.UsersIds)
+          }
 
-        if (event.SocietiesIds) {
-          const societyIds = event.SocietiesIds.map(s => s.SocietyId)
-          this.fetchSocietiesWhichAttend(societyIds, event.SocietiesIds)
-        }
-      },
-      () => {},
+          if (event.SocietiesIds) {
+            const societyIds = event.SocietiesIds.map(s => s.SocietyId)
+            this.fetchSocietiesWhichAttend(societyIds, event.SocietiesIds)
+          }
+        },
+        () => {
+        },
         () => {
           this.userService.getMe().subscribe(
             me => {
@@ -151,7 +152,7 @@ export class EventDetailsComponent implements OnInit {
               }
             },
             () => console.log('You are not registered')
-            )
+          )
         }
       )
 
@@ -191,20 +192,17 @@ export class EventDetailsComponent implements OnInit {
   }
 
   private getSocietyEventAttendance() {
-    if (this.event.SocietiesIds) {
-      this.event.SocietiesIds.map(
-        society => {
-          if (society.SocietyId == this.availableDecisionsAs[this.selectedCreator].Id) {
-            this.statusAttend = true
-            if (society.Permission === 'editor') {
-              this.isEditor = true
-            } else if (society.Permission === 'creator') {
-              this.isAdmin = true
-            }
-          }
+    this.attendants.map(a => {
+      if (a.isSociety && this.availableDecisionsAs[this.selectedCreator].Id === a.id) {
+        this.statusAttend = true
+        if (a.role === 'editor') {
+          this.isEditor = true
         }
-      )
-    }
+        if (a.role === 'creator') {
+          this.isAdmin = true
+        }
+      }
+    })
   }
 
   onAttend() {
@@ -255,9 +253,11 @@ export class EventDetailsComponent implements OnInit {
             userEventDetails.map(detail => {
               if (u.Id === detail.UserId) {
                 this.attendants.push({
+                  id: u.Id,
                   name: u.Email,
                   avatar: u.Avatar ? u.Avatar : '',
                   role: detail.Permission,
+                  isSociety: false,
                 })
               }
               const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
@@ -275,9 +275,11 @@ export class EventDetailsComponent implements OnInit {
           userEventDetails.map(detail => {
             if (user.Id === detail.UserId) {
               this.attendants.push({
+                id: user.Id,
                 name: user.Email,
                 avatar: user.Avatar ? user.Avatar : '',
                 role: detail.Permission,
+                isSociety: false
               })
             }
             const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
@@ -300,9 +302,11 @@ export class EventDetailsComponent implements OnInit {
             societyEventDetails.map(detail => {
               if (s.Id === detail.SocietyId) {
                 this.attendants.push({
+                  id: s.Id,
                   name: s.Name,
                   avatar: s.Avatar ? s.Avatar : '',
                   role: detail.Permission,
+                  isSociety: true
                 })
               }
             })
@@ -320,9 +324,11 @@ export class EventDetailsComponent implements OnInit {
           societyEventDetails.map(detail => {
             if (society.Id === detail.SocietyId) {
               this.attendants.push({
+                id: society.Id,
                 name: society.Name,
                 avatar: society.Avatar ? society.Avatar : '',
                 role: detail.Permission,
+                isSociety: true,
               })
             }
           })
@@ -370,17 +376,21 @@ export class EventDetailsComponent implements OnInit {
       this.editableSocieties.map(s => {
         if (s.Id === picker.Id) {
           this.attendants.push({
+            id: s.Id,
             name: picker.VisibleName,
             avatar: s.Avatar ? s.Avatar : '',
             role: 'viewer',
+            isSociety: true,
           })
         }
       })
     } else {
       this.attendants.push({
+        id: this.me.Id,
         name: this.me.Email,
         avatar: this.me.Avatar ? this.me.Avatar : '',
         role: 'viewer',
+        isSociety: false
       })
 
     }
@@ -391,14 +401,14 @@ export class EventDetailsComponent implements OnInit {
   onCreateCollections() {
     let trashIds = []
     if (this.event.Trash) {
-      trashIds = this.event.Trash.map( t => t.Id)
+      trashIds = this.event.Trash.map(t => t.Id)
     }
-    this.router.navigate(['collection'], { queryParams: { trashIds: trashIds, 'eventId': this.event.Id }})
+    this.router.navigate(['collection'], {queryParams: {trashIds: trashIds, 'eventId': this.event.Id}})
   }
 
   onEditCollection(collectionId: string) {
     let collection: CollectionModel = defaultCollectionModel
-    this.event.Collections.map( c => {
+    this.event.Collections.map(c => {
       if (c.Id === collectionId) {
         collection = c
       }
@@ -418,20 +428,14 @@ export class EventDetailsComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result)
       if (result) {
-        console.log('FD: ', result.uploadImages.getAll('files'))
-        if (result.collection !== collection){
-          console.log('update colection')
-        }
-
-        console.log(result.uploadImages.has('files'))
-        if (result.uploadImages.has('files')){
+        if (result.uploadImages.has('files')) {
           this.fileuploadService.uploadCollectionImages(result.uploadImages, collectionId).subscribe()
         }
         if (result.deleteImages) {
-          result.deleteImages.map( i => this.trashService.deleteCollectionImage(i, collectionId).subscribe(
-            () => {},
+          result.deleteImages.map(i => this.trashService.deleteCollectionImage(i, collectionId).subscribe(
+            () => {
+            },
             error => console.log(error)
           ))
         }
@@ -457,7 +461,6 @@ export class EventDetailsComponent implements OnInit {
 }
 
 
-
 //DIALOG INFO
 
 
@@ -470,9 +473,8 @@ export class EditCollectionComponent {
   images = []
   show: boolean = true;
 
-  constructor( public dialogRef: MatDialogRef<EditCollectionComponent>,
-               @Inject(MAT_DIALOG_DATA) public data: DialogData)
-  {
+  constructor(public dialogRef: MatDialogRef<EditCollectionComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: DialogData) {
     data.collection.Images.map(i => this.images.push({
       Url: i.Url,
       CollectionId: i.CollectionId,
@@ -492,7 +494,7 @@ export class EditCollectionComponent {
     this.reload()
   }
 
-  onRemoveFromList(url: string){
+  onRemoveFromList(url: string) {
     let index = this.data.deleteImages.findIndex(i => i === url)
     this.data.deleteImages = this.data.deleteImages.splice(index, 1)
 

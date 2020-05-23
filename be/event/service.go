@@ -209,7 +209,7 @@ func (s *EventService) EditEventRights(c echo.Context) error {
 
 	newTrash, err := s.eventAccess.EditEventRights(request, userId)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateEvent, err))
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrEditEventRights, err))
 	}
 
 	return c.JSON(http.StatusOK, newTrash)

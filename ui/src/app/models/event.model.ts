@@ -11,6 +11,7 @@ export interface ChangePermisssionRequest {
   Permission: string,
   AsSociety: boolean
   SocietyId: string,
+  ChangingToSociety: boolean,
 }
 
 export interface EventUserModel {

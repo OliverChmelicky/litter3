@@ -157,10 +157,21 @@ export class TrashService {
 
   //I want not cleaned and if I doscover new places in map I don`t want the one in table
   filterCleanedAndSelected(markers: MarkerModel[], selectedTrash: MarkerModel[]): MarkerModel[]{
-    return markers.filter( marker => {
-      if (marker.cleaned === false || selectedTrash.some(t => t.id !== marker.id)) {
-        return marker
-      }
-    })
+   let filteredMarkers: MarkerModel[] = []
+    for (let i = 0; i < markers.length; i++) {
+     let found = false
+     for (let j = 0; j < selectedTrash.length; j++) {
+       if (markers[i].id === selectedTrash[j].id) {
+         found = true;
+         break
+       }
+     }
+     if (!found) {
+       filteredMarkers.push(markers[i])
+     }
+   }
+
+    filteredMarkers.filter( m => !m.cleaned)
+    return filteredMarkers
   }
 }

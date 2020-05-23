@@ -43,8 +43,6 @@ export class LazyLoadImgComponent implements OnInit {
       this.defaultImage = this.exampleBinUrl
       this.checkEmpty(this.defaultImage)
     }
-
-    console.log('URL: ', this.url)
   }
 
   checkEmpty(exampleUrl: string){

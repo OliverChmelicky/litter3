@@ -242,6 +242,13 @@ func (s *eventAccess) EditEventRights(request *models.EventPermissionRequest, us
 		if !permission {
 			return &models.EventPermissionRequest{}, fmt.Errorf("You have no permisssion to edit event ")
 		}
+		isCreator, err = s.HasSocietyEventPermission(request.SocietyId, request.EventId, &[]models.EventPermission{"creator"})
+		if err != nil {
+			return &models.EventPermissionRequest{}, fmt.Errorf("Error check permission: %w ", err)
+		}
+		if isCreator && request.ChangingRightsTo == request.SocietyId {
+			return &models.EventPermissionRequest{}, fmt.Errorf("You are creator and cannot change rights to yourself ")
+		}
 	} else {
 		permission, err := s.HasUserEventPermission(userWhoDoesOperation, request.EventId, &[]models.EventPermission{"editor", "creator"})
 		if err != nil {
@@ -250,33 +257,34 @@ func (s *eventAccess) EditEventRights(request *models.EventPermissionRequest, us
 		if !permission {
 			return &models.EventPermissionRequest{}, fmt.Errorf("You have no permisssion to edit event ")
 		}
+		isCreator, err = s.HasUserEventPermission(userWhoDoesOperation, request.EventId, &[]models.EventPermission{"creator"})
+		if err != nil {
+			return &models.EventPermissionRequest{}, fmt.Errorf("Error check permission: %w ", err)
+		}
+
+		if isCreator && request.ChangingRightsTo == userWhoDoesOperation {
+			return &models.EventPermissionRequest{}, fmt.Errorf("You are creator and cannot change rights to yourself ")
+		}
 	}
 
-	if request.ChangingRightsTo == userWhoDoesOperation || request.ChangingRightsTo == request.SocietyId {
-		return &models.EventPermissionRequest{}, fmt.Errorf("You cannot alter your permission ")
-	}
 
-	if isCreator && request.Permission == models.EventPermission("creator") {
-		return &models.EventPermissionRequest{}, fmt.Errorf("There can be only one creator of event ")
-	}
-
-	if request.AsSociety {
+	if request.ChangingToSociety {
 		updating := new(models.EventSociety)
 		updating.Permission = request.Permission
 		updating.SocietyId = request.ChangingRightsTo
 		updating.EventId = request.EventId
-		err := s.db.Update(&updating)
+		err := s.db.Update(updating)
 		if err != nil {
-			return &models.EventPermissionRequest{}, fmt.Errorf("Couldn`t update society ")
+			return &models.EventPermissionRequest{}, fmt.Errorf("Couldn`t update society permission: %w ", err)
 		}
 	} else {
 		updating := new(models.EventUser)
 		updating.Permission = request.Permission
 		updating.UserId = request.ChangingRightsTo
 		updating.EventId = request.EventId
-		err := s.db.Update(&updating)
+		err := s.db.Update(updating)
 		if err != nil {
-			return &models.EventPermissionRequest{}, fmt.Errorf("Couldn`t update user ")
+			return &models.EventPermissionRequest{}, fmt.Errorf("Couldn`t update user permision %w ", err)
 		}
 	}
 
@@ -556,7 +564,7 @@ func (s *eventAccess) HasSocietyEventPermission(societyId, eventId string, editP
 	relation := new(models.EventSociety)
 	relation.SocietyId = societyId
 	relation.EventId = eventId
-	err := s.db.Model(relation).Select(relation)
+	err := s.db.Select(relation)
 	if err != nil {
 		return false, fmt.Errorf("Error get society-event relation: %w", err)
 	}

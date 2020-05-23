@@ -114,7 +114,7 @@ func main() {
 	e.POST("/events/attend", eventService.AttendEvent, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/events/not-attend", eventService.CannotAttendEvent, tokenMiddleware.AuthorizeUser)
 	e.PUT("/events/update", eventService.UpdateEvent, tokenMiddleware.AuthorizeUser)
-	e.PUT("/events/members", eventService.EditEventRights, tokenMiddleware.AuthorizeUser)
+	e.PUT("/events/members/update", eventService.EditEventRights, tokenMiddleware.AuthorizeUser)
 	e.PUT("/events/delete", eventService.DeleteEvent, tokenMiddleware.AuthorizeUser)
 
 	trashService := trash.CreateService(db)
