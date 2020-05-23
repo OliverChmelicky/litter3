@@ -31,7 +31,6 @@ export class SocietiesComponent implements OnInit {
   pageEvent: PageEvent;
   displayedColumns: string[] = ['position', 'avatar','name', 'members', 'createdAt', 'showMore'];
   dataSource: SocietiesTableElementModel[];
-  expandedElement: SocietiesTableElementModel | null;
   private isLoggedIn: boolean = false;
 
   constructor(

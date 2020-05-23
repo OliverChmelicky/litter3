@@ -16,6 +16,7 @@ import {EventsComponent} from "./components/events/events.component";
 import {EditEventComponent} from "./components/edit-event/edit-event.component";
 import {CreateCollectionComponent} from "./components/create-collection/create-collection.component";
 import {UserDetailComponent} from "./components/user-detail/user-detail.component";
+import {CollectionDetailsComponent} from "./components/collection-details/collection-details.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'map', pathMatch: 'full'},
@@ -24,7 +25,6 @@ const routes: Routes = [
   { path: 'trash/details/:id', component: TrashDetailsComponent},
   { path: 'trash/edit/:id', component: EditTrashComponent},
   { path: 'map', component: GoogleMapComponent},
-  { path: 'me', component: MyProfileComponent},
   { path: 'societies', component: SocietiesComponent},
   {path: 'societies/:societyId', component: SocietyDetailsComponent},
   {path: 'societies/edit/:societyId', component: EditSocietyComponent},
@@ -32,10 +32,12 @@ const routes: Routes = [
   {path: 'events/create', component: CreateEventComponent},
   {path: 'events/details/:eventId', component: EventDetailsComponent},
   {path: 'events/edit/:eventId', component: EditEventComponent},
-  {path: 'collection', component: CreateCollectionComponent},
+  {path: 'collection/:eventId/:trashId', component: CreateCollectionComponent},
+  {path: 'collection/details/:id', component: CollectionDetailsComponent},
+  { path: 'me', component: MyProfileComponent},
+  { path: 'users/profile/:userId', component: UserDetailComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
-  { path: 'users/profile/:userId', component: UserDetailComponent },
 ];
 
 @NgModule({

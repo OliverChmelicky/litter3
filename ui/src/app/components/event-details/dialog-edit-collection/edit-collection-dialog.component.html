@@ -1,0 +1,24 @@
+<h1 mat-dialog-title>Collection</h1>
+<div mat-dialog-content class="margin">
+
+  <p>{{data.collection.Weight}}</p>
+
+  <div *ngIf="show">
+    <div *ngFor="let i of images">
+      <app-image [image]="i.Url" [service]="'collections'"></app-image>
+      <button *ngIf="!i.InList" mat-button color="warn" (click)="onDelete(i.Url)">Delete</button>
+      <button *ngIf="i.InList" mat-button (click)="onRemoveFromList(i.Url)">Undo</button>
+    </div>
+  </div>
+
+  <label>
+    Upload new images:
+  </label>
+  <input type="file" (change)="onUpload($event)" multiple>
+
+
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">Close</button>
+  <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Create</button>
+</div>

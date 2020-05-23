@@ -32,4 +32,8 @@ export class LoginComponent implements OnInit {
     catch(err => console.log('Error ', err));
   }
 
+  loginInWithGoogle(){
+    this.authService.loginWithGoogle()
+  }
+
 }

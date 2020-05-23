@@ -42,7 +42,7 @@ import {LazyLoadImageModule} from "ng-lazyload-image";
 import { CreateEventComponent } from './components/create-event/create-event.component';
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
-import { EventDetailsComponent } from './components/event-details/event-details.component';
+import {EditCollectionComponent, EventDetailsComponent} from './components/event-details/event-details.component';
 import { EventsComponent } from './components/events/events.component';
 import { EditEventComponent } from './components/edit-event/edit-event.component';
 import { CreateCollectionComponent } from './components/create-collection/create-collection.component';
@@ -80,7 +80,8 @@ import { CollectionDetailsComponent } from './components/collection-details/coll
     EventsComponent,
     EditEventComponent,
     CreateCollectionComponent,
-    CollectionDetailsComponent,
+    //ShowCollectionComponent,
+    EditCollectionComponent,
   ],
   imports: [
     BrowserModule,

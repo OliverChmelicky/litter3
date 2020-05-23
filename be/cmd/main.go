@@ -129,6 +129,9 @@ func main() {
 	e.POST("/fileupload/trash/:trashId", fileuploadService.UploadTrashImages)
 	e.GET("/fileupload/trash/load/:image", fileuploadService.GetTrashImage)
 	e.DELETE("/fileupload/trash/delete/:trashId/:image", fileuploadService.DeleteTrashImage)
+	e.POST("/fileupload/collections/:collectionId", fileuploadService.UploadCollectionImages)
+	e.GET("/fileupload/collections/load/:image", fileuploadService.GetCollectionImages)
+	e.DELETE("/fileupload/collections/delete/:collectionId/:image", fileuploadService.DeleteCollectionImages)
 
 	e.Logger.Fatal(e.Start(viper.GetString("address")))
 }

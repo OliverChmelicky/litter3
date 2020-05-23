@@ -1,7 +1,6 @@
 package fileupload
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
 	"github.com/labstack/echo"
@@ -43,9 +42,10 @@ func (s *FileuploadService) UploadImage(c echo.Context) (string, error) {
 		return "", fmt.Errorf("Error closing image %w ", err)
 	}
 
-	if err := obj.ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
-		return "", fmt.Errorf("Error updating image attributes %w ", err)
-	}
+	//If images should be accessible from the internet
+	//if err := obj.ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
+	//	return "", fmt.Errorf("Error updating image attributes %w ", err)
+	//}
 
 	return objectName, err
 }
@@ -80,9 +80,10 @@ func (s *FileuploadService) UploadImages(c echo.Context) ([]string,error) {
 			return []string{}, fmt.Errorf("Error closing image %w ", err)
 		}
 
-		if err := obj.ACL().Set(context.Background(), storage.AllUsers, storage.RoleReader); err != nil {
-			return []string{}, fmt.Errorf("Error updating image attributes %w ", err)
-		}
+		//if images should be accesible from the internet
+		//if err := obj.ACL().Set(context.Background(), storage.AllUsers, storage.RoleReader); err != nil {
+		//	return []string{}, fmt.Errorf("Error updating image attributes %w ", err)
+		//}
 
 		fileNames = append(fileNames, objectName)
 	}

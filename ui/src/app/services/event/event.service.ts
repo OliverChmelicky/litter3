@@ -7,7 +7,7 @@ import {
   AttendanceRequestModel, ChangePermisssionRequest,
   EventModel,
   EventPickerModel,
-  EventRequestModel,
+  EventRequestModel, EventWithCollectionsModel,
   EventWithPagingAnsw
 } from "../../models/event.model";
 import {SocietyWithPagingAnsw} from "../../models/society.model";
@@ -62,8 +62,8 @@ export class EventService {
 
   getEvent(eventId: string) {
     const url = `${this.apiUrl}/${ApisModel.event}/${eventId}`;
-    return this.http.get<EventModel>(url).pipe(
-      catchError(err => EventService.handleError<EventModel>(err))
+    return this.http.get<EventWithCollectionsModel>(url).pipe(
+      catchError(err => EventService.handleError<EventWithCollectionsModel>(err))
     );
   }
 

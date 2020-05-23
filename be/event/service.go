@@ -55,13 +55,14 @@ func (s *EventService) CreateEvent(c echo.Context) error {
 func (s *EventService) GetEvent(c echo.Context) error {
 	eventId := c.Param("eventId")
 
-	event, err := s.eventAccess.GetEvent(eventId)
+	event, err := s.eventAccess.GetEventWithCollection(eventId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetEvent, err))
 	}
 
-	fmt.Println("Vraciam Event: ", event)
-	fmt.Println("A ma trash: ", event.Trash)
+	fmt.Println("Vraciam event: ",event)
+	fmt.Println("Collections are: ", event.Collections)
+	fmt.Println("images in col: ", event.Collections[0].Images)
 
 	return c.JSON(http.StatusOK, event)
 }

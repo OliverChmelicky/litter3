@@ -1,6 +1,11 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {UserModel} from "../../models/user.model";
-import {EventModel, EventPickerModel, EventSocietyModel, EventUserModel} from "../../models/event.model";
+import {
+  EventPickerModel,
+  EventSocietyModel,
+  EventUserModel,
+  EventWithCollectionsModel
+} from "../../models/event.model";
 import {attendantsTableColumns} from "./table-definitions";
 import {AttendantsModel} from "../../models/shared.models";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -11,10 +16,11 @@ import {SocietyModel} from "../../models/society.model";
 import {MatTableDataSource} from "@angular/material/table";
 import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MarkerModel} from "../google-map/Marker.model";
-import {ApisModel} from "../../api/api-urls";
 import {MapLocationModel} from "../../models/GPSlocation.model";
-import {AuthService} from "../../services/auth/auth.service";
-import {defaultTrashImage} from "../../models/trash.model";
+import {CollectionModel, defaultCollectionModel, defaultTrashImage} from "../../models/trash.model";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {TrashService} from "../../services/trash/trash.service";
+import {FileuploadService} from "../../services/fileupload/fileupload.service";
 
 export const czechPosition: MapLocationModel = {
   lat: 49.81500022397678,
@@ -22,6 +28,12 @@ export const czechPosition: MapLocationModel = {
   zoom: 7,
   minZoom: 3,
 };
+
+export interface DialogData {
+  collection: CollectionModel;
+  deleteImages: string[];
+  uploadImages: FormData;
+}
 
 @Component({
   selector: 'app-event-details',
@@ -41,7 +53,7 @@ export class EventDetailsComponent implements OnInit {
     CreatedAt: new Date(),
   };
   map: GoogleMap;
-  event: EventModel = {
+  event: EventWithCollectionsModel = {
     Date: new Date,
     Description: '',
   };
@@ -68,6 +80,10 @@ export class EventDetailsComponent implements OnInit {
     private userService: UserService,
     private societyService: SocietyService,
     private eventService: EventService,
+    private trashService: TrashService,
+    private fileuploadService: FileuploadService,
+    public showCollectionDialog: MatDialog,
+    public editCollectionDialog: MatDialog,
   ) {
   }
 
@@ -93,9 +109,7 @@ export class EventDetailsComponent implements OnInit {
           const societyIds = event.SocietiesIds.map(s => s.SocietyId)
           this.fetchSocietiesWhichAttend(societyIds, event.SocietiesIds)
         }
-
-        //looks at permission of actual user
-        this.getEventAttendanceOnUser()
+        console.log('collections: ', event.Collections)
       },
       () => {},
         () => {
@@ -107,6 +121,7 @@ export class EventDetailsComponent implements OnInit {
                 Id: me.Id,
                 AsSociety: false
               })
+              this.getEventAttendanceOnUser()
               this.isLoggedIn = true;
               this.userService.getMyEditableSocieties().subscribe(
                 societies => {
@@ -160,7 +175,7 @@ export class EventDetailsComponent implements OnInit {
         user => {
           if (user.UserId == this.me.Id) {
             this.statusAttend = true
-            if (user.Permission === 'creator') {
+            if (user.Permission === 'creator' || user.Permission === 'viewer') {
               this.isAdmin = true
             }
           }
@@ -175,7 +190,7 @@ export class EventDetailsComponent implements OnInit {
         society => {
           if (society.SocietyId == this.availableDecisionsAs[this.selectedCreator].Id) {
             this.statusAttend = true
-            if (society.Permission === 'creator') {
+            if (society.Permission === 'creator' || society.Permission === 'viewer') {
               this.isAdmin = true
             }
           }
@@ -187,9 +202,8 @@ export class EventDetailsComponent implements OnInit {
   onAttend() {
     this.eventService.attendEvent(this.event.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
       () => {
-        console.log('attendants before: ', this.attendants)
+        this.statusAttend = true;
         this.pushAttendant(this.availableDecisionsAs[this.selectedCreator])
-        console.log('attendant is pushed: ', this.attendants)
 
         const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
         this.attendants = []
@@ -202,13 +216,18 @@ export class EventDetailsComponent implements OnInit {
 
   onNotAttend() {
     this.eventService.notAttendEvent(this.event.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
-      res => {
-        console.log('RES', res)
+      () => {
+        this.statusAttend = false
 
-        this.router.navigateByUrl('events')
-      },
-      error => console.log(error),
-      () => console.log('end')
+        const index = this.attendants.findIndex(a => a.id === this.me.Id)
+        this.attendants.splice(index, 1)
+
+        const newData = new MatTableDataSource<AttendantsModel>(this.attendants);
+        this.attendants = []
+        for (let i = 0; i < newData.data.length; i++) {
+          this.attendants.push(newData.data[i])
+        }
+      }
     )
   }
 
@@ -366,4 +385,138 @@ export class EventDetailsComponent implements OnInit {
     }
     this.router.navigate(['collection'], { queryParams: { trashIds: trashIds, 'eventId': this.event.Id }})
   }
+
+  onEditCollection(collectionId: string) {
+    let collection: CollectionModel = defaultCollectionModel
+    this.event.Collections.map( c => {
+      if (c.Id === collectionId) {
+        collection = c
+      }
+    })
+
+    if (!collection.Images) {
+      collection.Images = [];
+    }
+
+    const dialogRef = this.editCollectionDialog.open(EditCollectionComponent, {
+      width: '800px',
+      data: {
+        collection: collection,
+        deleteImages: [],
+        uploadImages: new FormData()
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result)
+      if (result) {
+        console.log('FD: ', result.uploadImages.getAll('files'))
+        if (result.collection !== collection){
+          console.log('update colection')
+        }
+
+        console.log(result.uploadImages.has('files'))
+        if (result.uploadImages.has('files')){
+          this.fileuploadService.uploadCollectionImages(result.uploadImages, collectionId).subscribe()
+        }
+        if (result.deleteImages) {
+          result.deleteImages.map( i => this.trashService.deleteCollectionImage(i, collectionId).subscribe(
+            () => {},
+            error => console.log(error)
+          ))
+        }
+      }
+    });
+  }
+
+  // onShowCollection(collectionId: string) {
+  //   const collection = this.event.Collections.map( c => c.Id === collectionId)
+  //
+  //   const dialogRef = this.showCollectionDialog.open(ShowCollectionComponent, {
+  //     width: '800px',
+  //     data: {
+  //       collection: collection,
+  //     }
+  //   });
+  //
+  //   dialogRef.afterClosed().subscribe(() => {});
+  // }
+
+  onApproveCollectionChanges() {
+  }
 }
+
+
+
+//DIALOG INFO
+
+
+@Component({
+  selector: 'app-edit-collection',
+  templateUrl: './dialog-edit-collection/edit-collection-dialog.component.html',
+  //styleUrls: ['./dialog-edit-collection/edit-collection-dialog.component.css]
+})
+export class EditCollectionComponent {
+  images = []
+  show: boolean = true;
+
+  constructor( public dialogRef: MatDialogRef<EditCollectionComponent>,
+               @Inject(MAT_DIALOG_DATA) public data: DialogData)
+  {
+    data.collection.Images.map(i => this.images.push({
+      Url: i.Url,
+      CollectionId: i.CollectionId,
+      InList: false,
+    }))
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+  onDelete(url: string) {
+    this.data.deleteImages.push(url)
+
+    const index = this.images.findIndex(i => i.Url === url)
+    this.images[index] = true
+    this.reload()
+  }
+
+  onRemoveFromList(url: string){
+    let index = this.data.deleteImages.findIndex(i => i === url)
+    this.data.deleteImages = this.data.deleteImages.splice(index, 1)
+
+    index = this.images.findIndex(i => i.Url === url)
+    this.images[index] = false
+    this.reload()
+  }
+
+  reload() {
+    this.show = false;
+    setTimeout(() => this.show = true);
+  }
+
+  onUpload(event) {
+    this.data.uploadImages.delete('files')
+    for (let i = 0; i < event.target.files.length; i++) {
+      this.data.uploadImages.append("files", event.target.files[i], event.target.files[i].name);
+    }
+  }
+}
+
+// @Component({
+//   selector: 'app-show-collection',
+//   templateUrl: './dialog-collection-detail/detail-dialog.component.html',
+//   //styleUrls: ['./dialog-collection-detail/detail-dialog.component.css]
+// })
+// export class ShowCollectionComponent {
+//
+//   constructor( public dialogRef: MatDialogRef<ShowCollectionComponent>,
+//                @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+//   }
+//
+//   onNoClick(): void {
+//     this.dialogRef.close();
+//   }
+//
+// }

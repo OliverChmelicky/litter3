@@ -1,4 +1,4 @@
-import {TrashModel} from "./trash.model";
+import {CollectionModel, TrashModel} from "./trash.model";
 import {PagingModel} from "./shared.models";
 
 export const permissionEventCreator = 'creator'
@@ -33,6 +33,17 @@ export interface EventModel {
   Trash?: TrashModel[],
   UsersIds?: EventUserModel[],
   SocietiesIds?: EventSocietyModel[],
+}
+
+export interface EventWithCollectionsModel {
+  Id?: string,
+  Date: Date,
+  Description: string,
+  CreatedAt?: Date,
+  Trash?: TrashModel[],
+  UsersIds?: EventUserModel[],
+  SocietiesIds?: EventSocietyModel[],
+  Collections?: CollectionModel[],
 }
 
 export interface EventModelTable {

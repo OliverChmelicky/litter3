@@ -79,6 +79,45 @@ func (s *eventAccess) GetEvent(eventId string) (*models.Event, error) {
 	return event, nil
 }
 
+func (s *eventAccess) GetEventWithCollection(eventId string) (*models.EventWithCollections, error) {
+	event := new(models.Event)
+
+	err := s.db.Model(event).Where("id = ?", eventId).Column("event.*").
+		Relation("Trash").Relation("SocietiesIds").Relation("UsersIds").First()
+	if err != nil {
+		return &models.EventWithCollections{}, err
+	}
+
+	var collections []models.Collection
+	err = s.db.Model(&collections).Where("event_id = ?", event.Id).Select()
+	if err != nil {
+		return &models.EventWithCollections{}, err
+	}
+
+	eventWithCollections := new(models.EventWithCollections)
+	eventWithCollections.Id = event.Id
+	eventWithCollections.CreatedAt = event.CreatedAt
+	eventWithCollections.Description = event.Description
+	eventWithCollections.Date = event.Date
+	eventWithCollections.Trash = event.Trash
+	eventWithCollections.SocietiesIds = event.SocietiesIds
+	eventWithCollections.UsersIds = event.UsersIds
+	eventWithCollections.Collections = collections
+
+	for i, c := range eventWithCollections.Collections {
+		var images []models.CollectionImage
+
+		err = s.db.Model(&images).Where("collection_id = ?", c.Id).Select()
+		if err != nil {
+			logrus.Error(err)
+			eventWithCollections.Collections[i].Images = []models.CollectionImage{}
+		}
+		eventWithCollections.Collections[i].Images = images
+	}
+
+	return eventWithCollections, nil
+}
+
 func (s *eventAccess) AttendEvent(request *models.EventPickerRequest) (*models.EventPickerRequest, error) {
 	if request.AsSociety {
 		attendee := &models.EventSociety{

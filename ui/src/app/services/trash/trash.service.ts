@@ -129,6 +129,13 @@ export class TrashService {
     );
   }
 
+  deleteCollectionImage(image: string, collectionId: string) {
+    const url = `${this.apiUrl}/${ApisModel.fileupload}/${ApisModel.collection}/delete/${collectionId}/${image}`;
+    return this.http.delete(url).pipe(
+      catchError(err => TrashService.handleError(err))
+    );
+  }
+
   getCollectionById(collectionId: string): Observable<CollectionModel> {
     const url = `${this.apiUrl}/${ApisModel.collection}/${collectionId}`;
     return this.http.get<CollectionModel>(url).pipe(

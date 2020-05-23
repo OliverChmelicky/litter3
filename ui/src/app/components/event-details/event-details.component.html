@@ -66,6 +66,13 @@
     </agm-map>
   </div>
 
+  <div *ngFor="let collection of event.Collections" class="collections">
+    <app-image [image]="collection.Images[0].Url" [service]="'collections'"></app-image>
+    <p>{{collection.Weight}}</p>
+<!--    <button mat-button (click)="onShowCollection(collection.Id)">Show</button>-->
+    <button mat-button (click)="onEditCollection(collection.Id)">Edit collection</button>
+  </div>
+
   <div>
       <table mat-table [dataSource]="attendants" class="mat-elevation-z8">
         <ng-container matColumnDef="image">

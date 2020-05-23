@@ -36,6 +36,8 @@ export class LazyLoadImgComponent implements OnInit {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.trash + '/load/' + this.image
       this.defaultImage = this.exampleBinUrl
     }
+
+    console.log('URL: ', this.url)
   }
 
   //setting downloaded image does not work

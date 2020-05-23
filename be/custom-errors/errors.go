@@ -79,4 +79,5 @@ var (
 	ErrUploadImage = "ERROR UPLOAD IMAGE"
 	ErrLoadImage   = "ERROR LOAD IMAGE"
 	ErrDeleteImage = "ERROR DELETE IMAGE"
+	ErrDeleteCollectionImage = "ERROR DELETE COLLECTION IMAGE"
 )

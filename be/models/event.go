@@ -59,9 +59,21 @@ type Event struct {
 	Date         time.Time
 	Description  string
 	CreatedAt    time.Time `pg:"default:now()"`
-	Trash        []*Trash  `pg:"many2many:events_trash"`
-	UsersIds     []*EventUser
-	SocietiesIds []*EventSociety
+	Trash        []Trash  `pg:"many2many:events_trash"`
+	UsersIds     []EventUser
+	SocietiesIds []EventSociety
+}
+
+//answer of GetEvent
+type EventWithCollections struct {
+	Id           string
+	Date         time.Time
+	Description  string
+	CreatedAt    time.Time
+	Trash        []Trash
+	UsersIds     []EventUser
+	SocietiesIds []EventSociety
+	Collections  []Collection
 }
 
 type EventPermission string

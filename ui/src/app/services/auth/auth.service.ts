@@ -80,7 +80,7 @@ export class AuthService {
           Id: '',
           FirstName: '',
           LastName: '',
-          Email: value.email,
+          Email: res.user.email,
           Uid: firebaseUser.uid,
           Avatar: '',
           CreatedAt: new Date()
@@ -124,7 +124,36 @@ export class AuthService {
   }
 
   async loginWithGoogle() {
-    await this.afAuth.signInWithPopup(new auth.GoogleAuthProvider())
+    await this.afAuth.signInWithPopup(new auth.GoogleAuthProvider()).then(res => {
+      const firebaseUser = res.user;
+      localStorage.setItem('firebaseUser', JSON.stringify(res.user));
+      if (res.additionalUserInfo.isNewUser) {
+        this.userService.createUser({
+          Id: '',
+          FirstName: '',
+          LastName: '',
+          Email: res.user.email,
+          Uid: firebaseUser.uid,
+          Avatar: '',
+          CreatedAt: new Date()
+        }).subscribe(
+          () => {
+            this.renewTokenAfterRegister();
+            this.loggedIn.next(true);
+            this.router.navigate(['/me']);
+          },
+          err => throwError(err)
+        );
+      } else {
+        this.router.navigateByUrl('map')
+      }
+    })
+      .catch(err => {
+          localStorage.removeItem('firebaseUser');
+          localStorage.removeItem('token');
+          throw err;
+        }
+      )
   }
 
   getToken(): string {

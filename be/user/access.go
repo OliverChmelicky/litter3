@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-pg/pg/v9"
-	middlewareService "github.com/olo/litter3/middleware"
 	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
 )
@@ -271,11 +270,13 @@ func (s *UserAccess) GetEditableSocieties(userId string) ([]models.Society, erro
 		societiesIds = append(societiesIds, m.SocietyId)
 	}
 
-	//next time when it won`t work use db middleware to log information
+
 	var societies []models.Society
-	err = s.Db.Model(&societies).Where("id IN (?)", pg.Strings(societiesIds)).Select()
-	if err != nil {
-		return []models.Society{}, err
+	if len(societiesIds) > 0 {
+		err = s.Db.Model(&societies).Where("id IN (?)", pg.In(societiesIds)).Select()
+		if err != nil {
+			return []models.Society{}, err
+		}
 	}
 
 	return societies, nil
@@ -378,9 +379,8 @@ func (s *UserAccess) ChangeUserRights(requests []models.Member, societyId string
 func (s *UserAccess) RemoveMember(userId, societyId string) error {
 	member := new(models.Member)
 
-	s.Db.AddQueryHook(middlewareService.DbMiddleware{})
-	res, err := s.Db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Delete()
-	fmt.Println(res)
+	_, err := s.Db.Model(member).Where("user_id = ? and society_id = ?", userId, societyId).Delete()
+
 	return err
 }
 
