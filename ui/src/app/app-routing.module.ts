@@ -32,7 +32,7 @@ const routes: Routes = [
   {path: 'events/create', component: CreateEventComponent},
   {path: 'events/details/:eventId', component: EventDetailsComponent},
   {path: 'events/edit/:eventId', component: EditEventComponent},
-  {path: 'collection/:eventId/:trashId', component: CreateCollectionComponent},
+  {path: 'collection', component: CreateCollectionComponent},
   {path: 'collection/details/:id', component: CollectionDetailsComponent},
   { path: 'me', component: MyProfileComponent},
   { path: 'users/profile/:userId', component: UserDetailComponent },

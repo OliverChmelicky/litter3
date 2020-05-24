@@ -1,32 +1,14 @@
-.container {
-  display: flex;
-  /*margin-top: 12%;*/
-}
-
-.report-list{
-  border: solid 1px #bfbfbf;
-  display: flex;
-  margin-right: 20px;
-}
-
-.report-items {
-  display: flex;
-  margin-left: 5%;
-  justify-content: center;
-  margin-bottom: 20px;
-  /*align-items: baseline;*/
-  /*align-content: flex-start;*/
-}
-
-.collection-form {
-
+:host{
+  width: 100%;
 }
 
 .map-class{
-  width: 100px;
-  height: 100px;
+  width: 500px;
+  height: 500px;
 }
 
 agm-map{
   width: 100%;
+  display: block;
+  height: 100%;
 }

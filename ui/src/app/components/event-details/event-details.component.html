@@ -1,84 +1,72 @@
 <div class="view-container">
 
-  <h1>EVENT DETAILS</h1>
+  <div class="status">
+    <h1 class="title">EVENT DETAILS</h1>
+    <button *ngIf="isAdmin || isEditor" mat-button (click)="onEdit()">EDIT</button>
+    <button *ngIf="(!statusAttend && !isAdmin)" mat-button (click)="onAttend()"> Attend</button>
+    <button *ngIf="statusAttend && !isAdmin" mat-button (click)="onNotAttend()"> Cannot attend</button>
+  </div>
 
-  <div *ngIf="isLoggedIn">
-    <div *ngIf="editableSocietiesIds.length">
+  <div class="event-details">
+    <div *ngIf="isLoggedIn && editableSocietiesIds.length">
       <mat-form-field>
         <mat-label>Decision as</mat-label>
         <mat-select (selectionChange)="onDesideAsChange()" [(value)]="selectedCreator">
-          <mat-option *ngFor="let choice of availableDecisionsAs;let i = index" [value]="i">{{availableDecisionsAs[i].VisibleName}}</mat-option>
+          <mat-option *ngFor="let choice of availableDecisionsAs;let i = index"
+                      [value]="i">{{availableDecisionsAs[i].VisibleName}}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
+  </div>
 
-    <!--    not attend and is not admin (basic user)  or   not attend and is editor-->
-    <div *ngIf="(!statusAttend && !isAdmin)">
-      <button mat-button (click)="onAttend()" > Attend </button>
+<div class="info-wrapper">
+  <div class="left-part">
+    <div>
+      <label>Date:</label>
+      <p>{{event.Date | date: 'dd/MM/yyyy HH:mm'}}</p>
     </div>
 
-    <!--    attend and is not admin (basic user)  or   attend and is editor but then losts editor rights-->
-    <div *ngIf="statusAttend && !isAdmin">
-      <button mat-button (click)="onNotAttend()" > Cannot attend </button>
+    <div>
+      <textarea [value]="event.Description"></textarea>
     </div>
 
-    <div *ngIf="isAdmin || isEditor">
-      <button mat-button (click)="onEdit()" > EDIT </button>
+    <div *ngIf="isAdmin && event.Trash">
+      <button mat-button (click)="onCreateCollections()"> Create collection</button>
     </div>
   </div>
 
-<div>
-  <div>
-    <label>Date:</label>
-    <p>{{event.Date | date: 'dd/MM/yyyy HH:mm'}}</p>
-  </div>
 
-  <div>
-    <label>Description:</label>
-    <textarea [value]="event.Description">
-    </textarea>
-  </div>
+  <div class="right-part">
+    <div class="map-class">
+      <agm-map
+        [latitude]="initLat"
+        [longitude]="initLng"
+        [zoom]="5"
+        (mapReady)="onMapReady($event)"
+        disableDoubleClickZoom="true">
 
-  <div *ngIf="isAdmin && event.Trash">
-    <button mat-button (click)="onCreateCollections()" > Create collection </button>
-  </div>
-</div>
-
-  <div class="map-class">
-    <agm-map
-      [latitude]="initLat"
-      [longitude]="initLng"
-      [zoom]="5"
-      (mapReady)="onMapReady($event)"
-      disableDoubleClickZoom="true">
-
-      <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
-        <agm-info-window [disableAutoPan]="true">
-          <div class="show-trash-on-map">
-            <app-image [service]="'trash'" [image]="marker.images[0]"></app-image>
+        <agm-marker *ngFor="let marker of markers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
+          <agm-info-window [disableAutoPan]="true">
+            <div class="show-trash-on-map">
+              <app-image [service]="'trash'" [image]="marker.images[0]"></app-image>
               <div>
                 <p>Collections made: {{marker.numOfCollections}}</p>
                 <p>Cleaned: {{marker.cleaned ? "yes" : "no"}}</p>
                 <button (click)="navigateToTrash(marker.id)">Details</button>
               </div>
-          </div>
-        </agm-info-window>
-      </agm-marker>
-    </agm-map>
-  </div>
+            </div>
+          </agm-info-window>
+        </agm-marker>
+      </agm-map>
+    </div>
 
-  <div *ngFor="let collection of event.Collections" class="collections">
-    <app-image [image]="collection.Images[0].Url" [service]="'collections'"></app-image>
-    <p>{{collection.Weight}}</p>
-<!--    <button mat-button (click)="onShowCollection(collection.Id)">Show</button>-->
-    <button mat-button (click)="onEditCollection(collection.Id)">Edit collection</button>
-  </div>
-
-  <div>
+    <div>
       <table mat-table [dataSource]="attendants" class="mat-elevation-z8">
         <ng-container matColumnDef="image">
           <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let element"> <app-image [image]="element.avatar"></app-image> </td>
+          <td mat-cell *matCellDef="let element">
+            <app-image [image]="element.avatar"></app-image>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="name">
@@ -94,6 +82,43 @@
         <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: tableColumns;"></tr>
       </table>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!--  <div *ngFor="let collection of event.Collections" class="collections">-->
+<!--    <app-image [image]="collection.Images[0].Url" [service]="'collections'"></app-image>-->
+<!--    <p>{{collection.Weight}}</p>-->
+<!--    &lt;!&ndash;    <button mat-button (click)="onShowCollection(collection.Id)">Show</button>&ndash;&gt;-->
+<!--    <button mat-button (click)="onEditCollection(collection.Id)">Edit collection</button>-->
+<!--  </div>-->
+<!--For testing only now-->
+  <div class="bottom">
+    <table mat-table [dataSource]="attendants" class="mat-elevation-z8">
+      <ng-container matColumnDef="image">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <app-image [image]="element.avatar"></app-image>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> Email/Name</th>
+        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef> Role</th>
+        <td mat-cell *matCellDef="let element"> {{element.role}} </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: tableColumns;"></tr>
+    </table>
   </div>
 
 </div>

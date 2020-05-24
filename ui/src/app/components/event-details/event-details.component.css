@@ -1,24 +1,55 @@
-
-view-container {
+:host {
   width: 100%;
-  height: 100%;
 }
 
-.show-trash-on-map {
+.view-container {
+  width: 100%;
+}
+
+.status {
   display: flex;
 }
 
-.show-trash-on-map img {
-  width: 50px;
-  height: 50px;
+.event-details {
+  padding: 0 24px;
 }
 
-map-class {
-  width: 100px;
-  height: 100px;
+.title {
+  margin: 24px;
+}
+
+.info-wrapper {
+  display: flex;
+}
+
+.left-part {
+  width: 500px;
+  padding: 16px 24px;
+}
+
+.right-part {
+  flex-grow: 1;
+}
+
+.map-class {
+  width: 100%;
+  height: 500px;
 }
 
 agm-map {
   width: 100%;
   height: 100%;
+}
+
+textarea {
+  resize: vertical;
+  width: 100%;
+  height: 300px;
+}
+
+.bottom {
+  padding: 0 24px;
+  margin-top: 24px;
+  display: flex;
+  width: 100%;
 }

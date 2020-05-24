@@ -1,9 +1,37 @@
+:host{
+  width: 100%;
+}
+
 agm-map {
   height: 100%;
   width: 100%;
 }
 
 .mymap {
-  height: 550px;
-  width: 900px;
+  height: 700px;
+  width: 100%;
+}
+
+.create-event-container {
+  display: flex;
+  padding-top: 56px;
+}
+
+.event-details-container {
+  width: 500px;
+  padding: 0 24px;
+}
+
+.map-table {
+  flex-grow: 1;
+}
+
+textarea {
+  width: 100%;
+  height: 300px;
+  resize: vertical;
+}
+
+.margin-bottom {
+  margin-bottom: 16px;
 }

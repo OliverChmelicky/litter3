@@ -1,0 +1,15 @@
+.edit-event {
+  display: flex;
+  justify-content: space-between;
+  padding: 32px;
+}
+
+.society-details {
+  margin-right: 40px;
+}
+
+.events {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}

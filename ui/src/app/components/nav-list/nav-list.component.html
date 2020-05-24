@@ -1,15 +1,20 @@
-<mat-nav-list>
-  <mat-list-item class="sidenav-text" *ngFor="let link of loggedInItems">
-    <div *ngIf="isLoggedIn$ | async">
-      <mat-icon mat-list-icon>{{link.icon}}</mat-icon>
-      <a [routerLink]=[link.url]>{{ link.name }}</a>
-    </div>
-  </mat-list-item>
-  <mat-list-item class="sidenav-text" *ngFor="let link of everyoneItems">
-    <div *ngIf="!(isLoggedIn$ | async)">
-      <mat-icon mat-list-icon>{{link.icon}}</mat-icon>
-      <a [routerLink]=[link.url]>{{ link.name }}</a>
-    </div>
-  </mat-list-item>
+<mat-nav-list class="nav-list-wrapper">
+  <div *ngIf="isLoggedIn$ | async">
+    <a [routerLink]=[link.url] *ngFor="let link of loggedInItems">
+      <mat-list-item class="sidenav-text">
+        <mat-icon mat-list-icon>{{link.icon}}</mat-icon>
+        {{ link.name }}
+      </mat-list-item>
+    </a>
+  </div>
+
+  <div *ngIf="!(isLoggedIn$ | async)" class="logged-out-now">
+    <a [routerLink]=[link.url] *ngFor="let link of everyoneItems">
+      <mat-list-item class="sidenav-text">
+          <mat-icon mat-list-icon>{{link.icon}}</mat-icon>
+          {{ link.name }}
+      </mat-list-item>
+    </a>
+  </div>
 
 </mat-nav-list>
