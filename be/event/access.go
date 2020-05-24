@@ -111,7 +111,7 @@ func (s *eventAccess) GetEventWithCollection(eventId string) (*models.EventWithC
 
 		err = s.db.Model(&images).Where("collection_id = ?", c.Id).Select()
 		if err != nil {
-			logrus.Error("Tretie: ",err)
+			logrus.Error("Tretie: ", err)
 			eventWithCollections.Collections[i].Images = []models.CollectionImage{}
 		}
 		eventWithCollections.Collections[i].Images = images
@@ -266,7 +266,6 @@ func (s *eventAccess) EditEventRights(request *models.EventPermissionRequest, us
 			return &models.EventPermissionRequest{}, fmt.Errorf("You are creator and cannot change rights to yourself ")
 		}
 	}
-
 
 	if request.ChangingToSociety {
 		updating := new(models.EventSociety)
@@ -526,17 +525,23 @@ func (s *eventAccess) DeleteCollectionOrganized(organizerId, collectionId, event
 		return fmt.Errorf("Collection does not belong to event: %w ", err)
 	}
 
-	if oldCollection.CleanedTrash {
-		updateTrash := new(models.Trash)
-		updateTrash.Id = oldCollection.TrashId
-		updateTrash.Cleaned = false
-		_, err = tx.Model(updateTrash).Column("cleaned").Where("id = ?", oldCollection.TrashId).Update()
-		if err != nil {
-			return fmt.Errorf("Error updating trash before deleting collection: %w ", err)
+	var laterCollections []models.Collection
+	err = tx.Model(&laterCollections).Where("trash_id = ? and created_at > ?", oldCollection.TrashId, oldCollection.CreatedAt).Select()
+	if err != nil {
+		return fmt.Errorf("Error checking if no later collections: %w ", err)
+	}
+	if len(laterCollections) == 0 {
+		if oldCollection.CleanedTrash {
+			trash := new(models.Trash)
+			trash.Cleaned = false
+			_, err = tx.Model(trash).Column("cleaned").Where("id = ?", oldCollection.TrashId).Update()
+			if err != nil {
+				return fmt.Errorf("Error updating trash before deleting collection: %w ", err)
+			}
 		}
 	}
 
-	err = s.db.Delete(oldCollection)
+	err = tx.Delete(oldCollection)
 	if err != nil {
 		return fmt.Errorf("Error deleting collection: %w ", err)
 	}
