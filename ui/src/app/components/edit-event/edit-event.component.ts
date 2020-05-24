@@ -414,6 +414,5 @@ export class EditEventComponent implements OnInit {
         }
       })
     })
-    console.log('After filter: ', this.allMarkers.length)
   }
 }

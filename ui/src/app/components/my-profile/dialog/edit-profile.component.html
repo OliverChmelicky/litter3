@@ -9,12 +9,9 @@
     <mat-label>Last name</mat-label>
     <input matInput [(ngModel)]="data.lastName">
   </mat-form-field>
-  <mat-form-field>
-    <mat-label>Email</mat-label>
-    <input matInput [(ngModel)]="data.email">
-  </mat-form-field>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
   <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Save</button>
+  <button mat-button color="warn" cdkFocusInitial>Delete account</button>
 </div>

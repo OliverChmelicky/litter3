@@ -1,5 +1,6 @@
 ui/src/environments/environment.private.ts
 be/secrets/
+be/srv
 # Binaries for programs and plugins
 *.exe
 *.exe~

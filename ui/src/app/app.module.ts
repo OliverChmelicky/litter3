@@ -15,7 +15,11 @@ import {LoginComponent} from './components/login/login.component';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import { TopBarComponent } from './components/top-bar/top-bar.component';
 import { AppRoutingModule } from './app-routing.module';
-import { MyProfileComponent, EditProfileComponent } from './components/my-profile/my-profile.component';
+import {
+  MyProfileComponent,
+  EditProfileComponent,
+  ShowCollectionRandomDetails
+} from './components/my-profile/my-profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import {TokenHeadders} from "./interceptors/token-headders";
 import { SocietiesComponent, CreateSocietyComponent } from './components/societies/societies.component';
@@ -81,6 +85,7 @@ import { CollectionDetailsComponent } from './components/collection-details/coll
     EditEventComponent,
     CreateCollectionComponent,
     //ShowCollectionComponent,
+    ShowCollectionRandomDetails,
     EditCollectionComponent,
   ],
   imports: [

@@ -22,6 +22,7 @@ export class AuthService {
   ) {
     this.afAuth.authState.subscribe(user => {
       if (user) {
+        console.log(user.providerId)
         this.loggedIn.next(true);
         localStorage.setItem('firebaseUser', JSON.stringify(user));
 
@@ -45,8 +46,10 @@ export class AuthService {
           this.loggedIn.next(true);
           this.router.navigate(['/me']);
         })
-          .catch(() =>
-            localStorage.removeItem('token')
+          .catch(() => {
+              localStorage.removeItem('firebaseUser')
+              localStorage.removeItem('token');
+          }
           );
       }).catch(() => {
         localStorage.removeItem('firebaseUser');
@@ -125,28 +128,7 @@ export class AuthService {
 
   async loginWithGoogle() {
     await this.afAuth.signInWithPopup(new auth.GoogleAuthProvider()).then(res => {
-      const firebaseUser = res.user;
-      localStorage.setItem('firebaseUser', JSON.stringify(res.user));
-      if (res.additionalUserInfo.isNewUser) {
-        this.userService.createUser({
-          Id: '',
-          FirstName: '',
-          LastName: '',
-          Email: res.user.email,
-          Uid: firebaseUser.uid,
-          Avatar: '',
-          CreatedAt: new Date()
-        }).subscribe(
-          () => {
-            this.renewTokenAfterRegister();
-            this.loggedIn.next(true);
-            this.router.navigate(['/me']);
-          },
-          err => throwError(err)
-        );
-      } else {
-        this.router.navigateByUrl('map')
-      }
+      this.thirdPartyLogin(res)
     })
       .catch(err => {
           localStorage.removeItem('firebaseUser');
@@ -154,6 +136,52 @@ export class AuthService {
           throw err;
         }
       )
+  }
+
+  async loginWithFacebook() {
+    await this.afAuth.signInWithPopup(new auth.FacebookAuthProvider()).then(res => {
+      this.thirdPartyLogin(res)
+    })
+      .catch(err => {
+          localStorage.removeItem('firebaseUser');
+          localStorage.removeItem('token');
+          throw err;
+        }
+      )
+  }
+
+  thirdPartyLogin(res: auth.UserCredential) {
+    const firebaseUser = res.user;
+    localStorage.setItem('firebaseUser', JSON.stringify(res.user));
+    if (res.additionalUserInfo.isNewUser) {
+      this.userService.createUser({
+        Id: '',
+        FirstName: '',
+        LastName: '',
+        Email: res.user.email,
+        Uid: firebaseUser.uid,
+        Avatar: '',
+        CreatedAt: new Date()
+      }).subscribe(
+        () => {
+          this.renewTokenAfterRegister();
+          this.loggedIn.next(true);
+          this.router.navigate(['/map']);
+        },
+        err => throwError(err)
+      );
+    } else {  //is already in system
+      res.user.getIdToken().then(token => {
+        localStorage.setItem('token', token)
+        this.loggedIn.next(true);
+        this.router.navigate(['/me']);
+      })
+        .catch(() => {
+            localStorage.removeItem('firebaseUser')
+            localStorage.removeItem('token');
+          }
+        );
+    }
   }
 
   getToken(): string {

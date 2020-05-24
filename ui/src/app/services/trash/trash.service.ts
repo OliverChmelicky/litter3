@@ -174,4 +174,21 @@ export class TrashService {
     filteredMarkers.filter( m => !m.cleaned)
     return filteredMarkers
   }
+
+  deleteCollectionFromUser(collectionId: string) {
+    const url = `${this.apiUrl}/${ApisModel.collection}/delete/${collectionId}`;
+    return this.http.delete(url).pipe(
+      catchError(err => TrashService.handleError(err))
+    );
+  }
+
+  updateCollection() {
+    const request = {
+
+    }
+    const url = `${this.apiUrl}/${ApisModel.collection}/update/col-random`;
+    return this.http.put(url, request).pipe(
+      catchError(err => TrashService.handleError(err))
+    );
+  }
 }

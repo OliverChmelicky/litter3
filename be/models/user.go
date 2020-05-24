@@ -8,15 +8,17 @@ import (
 )
 
 type User struct {
-	tableName struct{} `pg:"users"json:"-"`
-	Id        string   `pg:",pk"`
-	FirstName string
-	LastName  string
-	Email     string
-	Uid       string
-	Avatar    string
-	Societies []Society `pg:"many2many:societies_members"`
-	CreatedAt time.Time `pg:"default:now()"`
+	tableName   struct{} `pg:"users"json:"-"`
+	Id          string   `pg:",pk"`
+	FirstName   string
+	LastName    string
+	Email       string
+	Uid         string
+	Avatar      string
+	Societies   []Society    `pg:"many2many:societies_members"`
+	Collections []Collection `pg:"many2many:users_collections"`
+	Events      []EventUser  `pg:"many2many:events_users"`
+	CreatedAt   time.Time    `pg:"default:now()"`
 }
 
 var _ pg.BeforeInsertHook = (*User)(nil)

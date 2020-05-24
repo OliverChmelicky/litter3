@@ -1,4 +1,6 @@
-export const environment = {
+import {EnvironmentModel} from "../app/models/environment.model";
+
+export const environment: EnvironmentModel = {
   production: true,
   firebaseConfig: {
     apiKey: "AIzaSyCYuRi7Do9aGD73WpMHkK1y1rj7yqUcNko",
@@ -10,5 +12,6 @@ export const environment = {
     appId: "1:286781001462:web:ac39a8878c054c7401a6d7",
     measurementId: "G-7JHP4L1HCY"
   },
+  beUrl: 'https://litter3-olo-gcp.appspot.com',
   googleMapsApiKey: 'AIzaSyCYuRi7Do9aGD73WpMHkK1y1rj7yqUcNko',
 };

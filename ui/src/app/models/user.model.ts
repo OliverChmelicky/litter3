@@ -1,4 +1,6 @@
 import {MemberModel, SocietyModel} from "./society.model";
+import {CollectionModel} from "./trash.model";
+import {EventModel} from "./event.model";
 
 export interface UserModel {
   Id: string;
@@ -7,8 +9,9 @@ export interface UserModel {
   Email: string;
   Uid: string;
   Avatar: string;
-  Admins?:    MemberModel[];
   Societies?: SocietyModel[];
+  Collections?: CollectionModel[];
+  Events?: EventModel[];
   CreatedAt: Date;
 }
 
@@ -34,8 +37,8 @@ export interface FriendsModel {
 }
 
 export interface FriendRequestModel {
-  User1Id:   string;
-  User2Id:   string;
+  User1Id: string;
+  User2Id: string;
   CreatedAt: Date;
 }
 

@@ -1,28 +1,22 @@
-<script src="../edit-profile/edit-profile.component.ts"></script>
-<script src="table-definitions.ts"></script>
-
 <div class="user-container">
-
-  <div class="user-item">
-    <img src="{{me.Avatar ? me.Avatar : 'https://storage.cloud.google.com/litter3-olo-gcp.appspot.com/7e9079ef-1ed7-4e9e-b6b3-2fef03188955.png?authuser=3&organizationId=668090606092'}}">
-  </div>
   <div class="user-item" *ngIf="me">
+    <div class="user-item">
+      <app-image [image]="me.Avatar" [service]="'users'"></app-image>
+    </div>
+    <label>
+      First name:
+      <p>{{me.FirstName}}</p>
+    </label>
+    <label>
+      Last name:
+      <p>{{me.LastName}}</p>
+    </label>
+    <label>
+      Email:
+      <p>{{me.Email}}</p>
+    </label>
 
-      <label>
-        First name:
-        <p>{{me.FirstName}}</p>
-      </label>
-      <label>
-        Last name:
-        <p>{{me.LastName}}</p>
-      </label>
-      <label>
-        Email:
-        <p>{{me.Email}}</p>
-      </label>
-
-    <button mat-raised-button (click)="openDialog()">Edit</button>
-
+    <button mat-raised-button color="primary" (click)="openDialog()">Edit</button>
   </div>
 
   <div class="user-item">
@@ -132,6 +126,57 @@
     </table>
   </div>
 
+  <div class="user-item">
+    <h3>Participated at collections</h3>
+    <table mat-table [dataSource]="myCollections" class="mat-elevation-z8">
+
+      <ng-container matColumnDef="image">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let element"> <app-image [image]="element.Images[0].Url"></app-image> </td>
+      </ng-container>
+
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let element"> {{element.Date}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="weight">
+        <th mat-header-cell *matHeaderCellDef>Kilograms</th>
+        <td mat-cell *matCellDef="let element"> {{element.Weight}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="show-button">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-button (click)="showCollectionDetails(element.Id)">Details</button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="myCollectionsColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: myCollectionsColumns;"></tr>
+    </table>
+  </div>
+
+  <div class="user-item">
+    <h3>Participated at events</h3>
+    <table mat-table [dataSource]="myEvents" class="mat-elevation-z8">
+
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let element"> {{element.Date | date: 'dd/MM/yyyy HH:mm'}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="navigate-button">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-button (click)="onGoToEvent(element.Id)">Go to event</button>
+        </td>
+      </ng-container>
+
+
+      <tr mat-header-row *matHeaderRowDef="myEventsColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: myEventsColumns;"></tr>
+    </table>
+  </div>
 
 </div>
-

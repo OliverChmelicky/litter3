@@ -119,12 +119,9 @@ export class SocietiesComponent implements OnInit {
   }
 
   showSocietyDetails(Id: string) {
-    this.router.navigateByUrl('societies/'+Id)
+    this.router.navigate(['societies', Id])
   }
 
-  createSociety() {
-
-  }
 }
 
 

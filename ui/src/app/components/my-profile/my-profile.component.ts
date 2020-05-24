@@ -2,16 +2,35 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {UserModel, FriendRequestModel, FriendsModel} from "../../models/user.model";
 import {UserService} from "../../services/user/user.service";
 import {UserViewModel} from "./friendRequestView";
-import {friendsColumnsDefinition, requestsSendColumnsDefinition, societiesColumnsDefinition, requestsReceivedColumnsDefinition} from "./table-definitions";
+import {
+  friendsColumnsDefinition,
+  requestsSendColumnsDefinition,
+  societiesColumnsDefinition,
+  requestsReceivedColumnsDefinition,
+  myCollectionsColumns, myEventsColumns
+} from "./table-definitions";
 import {SocietyModel} from "../../models/society.model";
 import {SocietyService} from "../../services/society/society.service";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {CollectionModel} from "../../models/trash.model";
+import {EventModel} from "../../models/event.model";
+import {Router} from "@angular/router";
+import {TrashService} from "../../services/trash/trash.service";
+import {FileuploadService} from "../../services/fileupload/fileupload.service";
 
-export interface DialogData {
+export interface ProfileDialogData {
   viewName?: string;
   firstName: string;
   lastName: string;
   email: string;
+}
+
+export interface CollectionDialogData {
+  collection: CollectionModel;
+  update: boolean;
+  deleteFromUser: boolean;
+  deletedImages: string[],
+  newImages: FormData,
 }
 
 @Component({
@@ -27,16 +46,24 @@ export class MyProfileComponent implements OnInit {
   myFriendsView: UserViewModel[] = [];
   mySocietiesView: SocietyModel[];
   newFriendEmail: string;
+  myCollections: CollectionModel[] = [];
+  myEvents: EventModel[] = [];
 
   friendsColumns = friendsColumnsDefinition;
   societiesColumns = societiesColumnsDefinition;
   requestsSendColumns = requestsSendColumnsDefinition;
   requestsReceivedColumns = requestsReceivedColumnsDefinition;
+  myCollectionsColumns = myCollectionsColumns;
+  myEventsColumns = myEventsColumns;
 
   constructor(
+    private router: Router,
     private userService: UserService,
     private societyService: SocietyService,
+    private trashService: TrashService,
+    private fileuploadService: FileuploadService,
     public editProfileDialog: MatDialog,
+    public showCollectionDialog: MatDialog,
   ) {
   }
 
@@ -45,6 +72,8 @@ export class MyProfileComponent implements OnInit {
       user => {
         this.me = user;
         this.mySocietiesView = user.Societies
+        this.myCollections = user.Collections
+        this.myEvents = user.Events
         this.userService.getMyFriendRequests().subscribe(
           requests => {
             if (requests != null) {
@@ -80,13 +109,15 @@ export class MyProfileComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result.email != this.me.Email || result.firstName != this.me.FirstName || result.lastName != this.me.LastName) {
-        this.me.Email = result.email
-        this.me.FirstName = result.firstName;
-        this.me.LastName = result.lastName;
-        this.userService.updateUser(this.me).subscribe(
-          usr => console.log(usr)
-        )
+      if (result){
+        if (result.email != this.me.Email || result.firstName != this.me.FirstName || result.lastName != this.me.LastName) {
+          this.me.Email = result.email
+          this.me.FirstName = result.firstName;
+          this.me.LastName = result.lastName;
+          this.userService.updateUser(this.me).subscribe(
+            usr => console.log(usr)
+          )
+        }
       }
     });
   }
@@ -245,20 +276,43 @@ export class MyProfileComponent implements OnInit {
     )
   }
 
-  //if will be needed somewhere else
-  // private fetchSocietyDetails(relationship: MemberModel[]) {
-  //   const societiesIds = relationship.map(rel => {
-  //       return rel.SocietyId;
-  //   });
-  //   if (societiesIds.length !== 0) {
-  //     this.societyService.getSocietiesByIds(societiesIds).subscribe(
-  //       societies => {
-  //         this.mySocietiesView = societies
-  //       },
-  //       err => console.log('Error fetching user details ', err)
-  //     );
-  //   }
-  // }
+  onGoToEvent(eventId: string) {
+    this.router.navigate(['events/details/', eventId])
+  }
+
+  showCollectionDetails(collectionId: string) {
+    let index = this.myCollections.findIndex( c => c.Id === collectionId)
+    let data: CollectionDialogData = {
+      collection: this.myCollections[index],
+      update: false,
+      deleteFromUser: false,
+      deletedImages: [],
+      newImages: new FormData()
+    }
+
+    const dialogRef = this.showCollectionDialog.open(ShowCollectionRandomDetails, {
+      width: '800px',
+      data: data,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result.deleteFromUser) {
+        this.trashService.deleteCollectionFromUser(collectionId).subscribe()
+        //TODO update table
+      } else {
+        if (result.update) {
+          this.trashService.updateCollection().subscribe()
+        }
+        if (result.deletedImages.length > 0) {
+          //TODO delete images of col rand
+        }
+        if (result.newImages.has('files')) {
+          this.fileuploadService.uploadCollectionImages(result.uploadImages, collectionId).subscribe()
+        }
+      }
+    });
+  }
+
 }
 
 @Component({
@@ -269,8 +323,30 @@ export class MyProfileComponent implements OnInit {
 export class EditProfileComponent {
 
   constructor( public dialogRef: MatDialogRef<EditProfileComponent>,
-               @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+               @Inject(MAT_DIALOG_DATA) public data: ProfileDialogData) {
     this.data.viewName = this.data.firstName + ' ' + this.data.lastName
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+}
+
+@Component({
+  selector: 'app-collection-detail',
+  templateUrl: './dialog/collection-details.component.html',
+  //styleUrls: ['./dialog/collection-details.component.css']
+})
+export class ShowCollectionRandomDetails {
+
+  //in this wnidow user can switch to edit mode and edit collection
+  //Inputs will be enabeled and update button will be shown
+  //images can be deleted and new files loaded
+  editMode: boolean = false
+
+  constructor( public dialogRef: MatDialogRef<ShowCollectionRandomDetails>,
+               @Inject(MAT_DIALOG_DATA) public data: CollectionDialogData) {
   }
 
   onNoClick(): void {

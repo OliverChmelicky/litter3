@@ -36,4 +36,8 @@ export class LoginComponent implements OnInit {
     this.authService.loginWithGoogle()
   }
 
+  loginInWithFacebook() {
+    this.authService.loginWithFacebook()
+  }
+
 }

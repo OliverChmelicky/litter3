@@ -20,3 +20,15 @@ export const requestsReceivedColumnsDefinition: string[] = [
   'accept-button',
   'deny-button',
 ]
+
+export const myCollectionsColumns: string[] = [
+  'image',
+  'date',
+  'weight',
+  'show-button',
+]
+
+export const myEventsColumns: string[] = [
+  'date',
+  'navigate-button',
+]
