@@ -2,6 +2,6 @@ DB_USR: goo
 DB_PASS: goo
 DB_NAME: goo
 DB_ADDR: localhost:5432
-FIREBASE_CREDENTIALS: ./srv/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json
+FIREBASE_CREDENTIALS: ../srv/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json
 GCP_BUCKET_NAME: litter3-olo-gcp.appspot.com
 address: :8081

@@ -1,0 +1,22 @@
+:host{
+  padding: 24px;
+}
+.trash-types {
+  display: flex;
+}
+
+.trash-type-column {
+  display: flex;
+  margin-right: 16px;
+  flex-direction: column;
+}
+
+.final-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.total-delete{
+  background-color: red;
+  color: black;
+}

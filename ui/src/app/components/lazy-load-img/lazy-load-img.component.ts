@@ -5,48 +5,45 @@ import {LoadImageProps, SetLoadedImageProps,} from 'ng-lazyload-image';
 @Component({
   selector: 'app-image',
   template: `
-    <img id="test" #element [defaultImage]="defaultImage" [lazyLoad]="url">
+    <img id="test" [ngClass]="{'small': size === 'small', 'medium': size === 'medium', 'large': size === 'large'}"
+         #element [defaultImage]="defaultImage" [lazyLoad]="url">
   `,
   styleUrls: ['./lazy-load-img.component.css']
 })
 export class LazyLoadImgComponent implements OnInit {
   @ViewChild('element') el: HTMLImageElement;
-
   url: string;
 
+  @Input() size: 'small' | 'medium' | 'large' = 'small';
   @Input() image: string;
   @Input() service: string;
 
   exampleBinUrl: string = 'https://static.independent.co.uk/s3fs-public/thumbnails/image/2019/04/15/17/alto-habitat-bin.jpg?w660';
   defaultImage: string = 'https://cdn.onlinewebfonts.com/svg/img_258083.png';
 
-  constructor(
-  ) {
+  constructor() {
   }
 
   ngOnInit() {
     if (this.service === ApisModel.user) {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.user + '/load/' + this.image
       this.checkEmpty(this.defaultImage)
-    }
-    else if (this.service === ApisModel.society){
+    } else if (this.service === ApisModel.society) {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.society + '/load/' + this.image
       this.checkEmpty(this.defaultImage)
-    }
-    else if (this.service === ApisModel.collection){
+    } else if (this.service === ApisModel.collection) {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.collection + '/load/' + this.image
       this.defaultImage = this.exampleBinUrl
       this.checkEmpty(this.defaultImage)
-    }
-    else if (this.service === ApisModel.trash){
+    } else if (this.service === ApisModel.trash) {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.trash + '/load/' + this.image
       this.defaultImage = this.exampleBinUrl
       this.checkEmpty(this.defaultImage)
     }
   }
 
-  checkEmpty(exampleUrl: string){
-    if (this.image === ''){
+  checkEmpty(exampleUrl: string) {
+    if (this.image === '') {
       this.url = exampleUrl
     }
   }

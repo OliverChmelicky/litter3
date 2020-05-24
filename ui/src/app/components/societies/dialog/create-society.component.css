@@ -1,8 +1,8 @@
-.description{
-  width: 500px;
-  height: 100px;
+.name-field {
+  margin-right: 30px;
 }
 
-.margin {
- margin: 30px;
+.description{
+  width: 100%;
+  resize: none;
 }

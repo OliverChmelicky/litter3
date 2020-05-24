@@ -21,8 +21,8 @@ export class TrashDetailsComponent implements OnInit {
   trashTypeBool: TrashTypeBooleanValues;
   tableColumnsTrashCollections = CollectionTableDisplayedColumns;
   finder: UserModel = null;
-  comments: CommentViewModel[];
-  message: string;
+  comments: CommentViewModel[] =[];
+  message: string = '';
   me: UserModel;
 
   constructor(
@@ -115,7 +115,9 @@ export class TrashDetailsComponent implements OnInit {
   }
 
   commentOnTrash() {
+    console.log('msg: ', this.message)
     if (this.message.length > 0) {
+      console.log('msg: ', this.message)
       this.trashService.commentTrash(this.message, this.trash.Id).subscribe(
         rec => {
           this.comments.push({

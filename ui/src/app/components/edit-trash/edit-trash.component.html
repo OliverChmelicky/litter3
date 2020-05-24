@@ -3,7 +3,7 @@
   <div class="report-items">
     <form [formGroup]="trashForm">
 
-      <div class="border-merger form-item">
+      <div class="border-merger ">
         <label>
           Size:
         </label>
@@ -21,30 +21,34 @@
       </div>
 
       <label></label>
-      <div class="trash-types form-item">
+      <div class="trash-types">
         <mat-checkbox [checked]="trash.Cleaned" formControlName="cleaned">Cleaned</mat-checkbox>
       </div>
 
-      <label>Trash types:</label>
-      <div class="trash-types form-item">
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeHousehold" formControlName="trashTypeHousehold">Household</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeAutomotive" formControlName="trashTypeAutomotive">Automotive</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeConstruction" formControlName="trashTypeConstruction">Construction</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypePlastics" formControlName="trashTypePlastics">Plastics</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeElectronic" formControlName="trashTypeElectronic">Electronic</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeGlass" formControlName="trashTypeGlass">Glass</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeMetal" formControlName="trashTypeMetal">Metal</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeDangerous" formControlName="trashTypeDangerous">Dangerous</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeCarcass" formControlName="trashTypeCarcass">Carcass</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeOrganic" formControlName="trashTypeOrganic">Organic</mat-checkbox>
-        <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeOther" formControlName="trashTypeOther">Other</mat-checkbox>
+
+      <div class="trash-types">
+        <div class="trash-type-column">
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeHousehold" formControlName="trashTypeHousehold">Household</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeAutomotive" formControlName="trashTypeAutomotive">Automotive</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeConstruction" formControlName="trashTypeConstruction">Construction</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypePlastics" formControlName="trashTypePlastics">Plastics</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeElectronic" formControlName="trashTypeElectronic">Electronic</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeGlass" formControlName="trashTypeGlass">Glass</mat-checkbox>
+        </div>
+        <div class="trash-type-column">
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeMetal" formControlName="trashTypeMetal">Metal</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeDangerous" formControlName="trashTypeDangerous">Dangerous</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeCarcass" formControlName="trashTypeCarcass">Carcass</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeOrganic" formControlName="trashTypeOrganic">Organic</mat-checkbox>
+          <mat-checkbox [(ngModel)]="trashTypeBool.TrashTypeOther" formControlName="trashTypeOther">Other</mat-checkbox>
+        </div>
       </div>
 
       <label>Description</label><br>
       <textarea placeholder="Write your description here"
                 class="description form-item" type="text" [(ngModel)]="trash.Description" formControlName="description"> </textarea><br>
 
-      <div class="form-item">
+      <div>
         <mat-form-field>
           <mat-label>Accessibility</mat-label>
           <mat-select [(ngModel)]="trash.Accessibility" formControlName="accessibility">
@@ -63,8 +67,10 @@
         <input type="file" (change)="onFileSelected($event)" multiple>
       </div>
 
-      <button mat-button (click)="onSave()">Save</button>
-      <button mat-button (click)="onDelete()">Delete trash</button>
+      <div class="final-buttons">
+        <button mat-button (click)="onSave()">Save</button>
+        <button class="total-delete" mat-button color="warn" (click)="onDelete()">Delete trash</button>
+      </div>
 
     </form>
 

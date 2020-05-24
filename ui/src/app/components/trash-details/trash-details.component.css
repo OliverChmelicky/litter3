@@ -1,7 +1,64 @@
 .upper-map {
   width: 100%;
-  height: 100px;
+  height: 200px;
 }
 :host {
   width: 100%;
+}
+
+agm-map {
+  width: 100%;
+  height: 100%;
+}
+
+.position {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+.latitude {
+  margin-right: 30px;
+}
+
+.finder {
+  margin: 16px 0;
+}
+
+.trash-detail-content {
+  padding: 0 24px;
+  display: flex;
+}
+
+.events-container {
+  display: flex;
+  padding-left: 100px;
+  margin-bottom: 16px;
+}
+
+.trash-types {
+  display: flex;
+}
+
+.trash-type-column {
+  display: flex;
+  margin-right: 16px;
+  flex-direction: column;
+}
+
+.trash-detail-label {
+  font-size: 1.5em;
+  margin-bottom: 8px;
+}
+
+.left-part {
+  width: 50%;
+}
+
+.right-part {
+  width: 50%;
+}
+
+.comments {
+  width: 100%;
+padding: 24px;
 }

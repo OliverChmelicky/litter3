@@ -21,11 +21,13 @@ agm-map {
   height: 50px;
 }
 
-marker-filter {
+.marker-filter {
+  box-shadow: 3px 3px 3px #323232;
   position: absolute;
-  right: 40px;
-  top: 100px;
-  opacity: 0.5;
+  left: 40px;
+  top: 40px;
+  z-index: 5;
+  background-color: #fff;
 }
 
 marker-menu {

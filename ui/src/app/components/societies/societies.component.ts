@@ -128,7 +128,7 @@ export class SocietiesComponent implements OnInit {
   @Component({
     selector: 'app-edit-profile',
     templateUrl: './dialog/create-society.component.html',
-    //styleUrls: ['./dialog/edit-create-society.component.css]
+    styleUrls: ['./dialog/create-society.component.css'],
   })
   export class CreateSocietyComponent {
 

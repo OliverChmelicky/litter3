@@ -1,5 +1,5 @@
 export const ApisModel = {
-  apiUrl: 'https://litter3-olo-gcp.appspot.com',
+  apiUrl: 'http://localhost:8081',
   user: 'users',
   society: 'societies',
   trash: 'trash',

@@ -1,14 +1,15 @@
 
-<button class="marker-filter" mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
-  <mat-icon>more_vert</mat-icon>
-</button>
-<mat-menu class="marker-menu" #menu="matMenu">
-  <mat-checkbox [(ngModel)] = "showNotCleaned" (change)="onNotCleanedOption($event)">Show not cleaned</mat-checkbox>
-  <mat-checkbox [(ngModel)] = "showCleaned" (change)="onCleanedOption($event)">Show Cleaned</mat-checkbox>
-</mat-menu>
-
 
 <div class="mymap">
+
+  <button class="marker-filter" mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu class="marker-menu" #menu="matMenu">
+    <mat-checkbox [(ngModel)] = "showNotCleaned" (change)="onNotCleanedOption($event)">Show not cleaned</mat-checkbox>
+    <mat-checkbox [(ngModel)] = "showCleaned" (change)="onCleanedOption($event)">Show Cleaned</mat-checkbox>
+  </mat-menu>
+
   <agm-map #agmMap
     [latitude]="location.lat"
     [longitude]="location.lng"
