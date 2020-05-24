@@ -4,6 +4,7 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
+	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -39,9 +40,16 @@ func main() {
 		log.Errorf("Fatal error config file: %s \n", err)
 	}
 
+	fmt.Println(os.Getenv("DB_USR"))
+	fmt.Println(os.Getenv("DB_PASS"))
+	fmt.Println(os.Getenv("DB_NAME"))
+	fmt.Println(os.Getenv("DB_ADDR"))
+	fmt.Println(os.Getenv("FIREBASE_CREDENTIALS"))
+	fmt.Println(os.Getenv("GCP_BUCKET_NAME"))
+	fmt.Println(os.Getenv("ADDRESS"))
+
 	prod := os.Getenv("PROD")
 	var db *pg.DB
-
 	if prod == "" {
 		db = pg.Connect(&pg.Options{
 			User:     viper.GetString("DB_USR"),
@@ -51,13 +59,13 @@ func main() {
 		})
 	} else {
 		db = newDBAppEngine()
-		defer db.Close()
 	}
 	_, err = db.Exec("SELECT 1")
 	if err != nil {
 		log.Errorf("PostgreSQL is down: %s \n", err.Error())
 		return
 	}
+	defer db.Close()
 
 	opt := option.WithCredentialsFile(viper.GetString("FIREBASE_CREDENTIALS"))
 	firebaseAuth, err := getFirebaseAuth(opt)
@@ -178,10 +186,10 @@ func newDBAppEngine() *pg.DB {
 	// Environment variables can be set via app.yaml
 	return pg.Connect(&pg.Options{
 		Dialer: func(context context.Context, network, addr string) (net.Conn, error) {
-			return cloudsql.Dial(os.Getenv("CLOUDSQL_HOST")) // project-name:region:instance-name
+			return cloudsql.Dial(os.Getenv("DB_ADDR")) // project-name:region:instance-name
 		},
-		User:     os.Getenv("CLOUDSQL_USER"),
-		Password: os.Getenv("CLOUDSQL_PASS"),
-		Database: os.Getenv("CLOUDSQL_NAME"),
+		User:     os.Getenv("DB_USR"),
+		Password: os.Getenv("DB_PASS"),
+		Database: os.Getenv("DB_NAME"),
 	})
 }

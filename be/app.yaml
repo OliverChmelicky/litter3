@@ -5,7 +5,7 @@ env_variables:
   DB_PASS: budetojizda
   DB_NAME: postgres
   DB_ADDR: litter3-olo-gcp:europe-west1:postgis
-  FIREBASE_CREDENTIALS: ../secrets/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json
+  FIREBASE_CREDENTIALS: ./srv/litter3-olo-gcp-firebase-adminsdk-6ar5p-9f1130c1cc.json
   GCP_BUCKET_NAME: litter3-olo-gcp.appspot.com
   ADDRESS: :80
   PROD: yes
