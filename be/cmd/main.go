@@ -16,9 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/api/option"
-	"google.golang.org/appengine/cloudsql"
-	"net"
-	"net/http"
 	"os"
 )
 
@@ -32,35 +29,34 @@ func main() {
 	viper.SetDefault("ADDRESS", os.Getenv("ADDRESS"))
 	viper.AutomaticEnv()
 
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Errorf("Fatal error config file: %s \n", err)
+	prod := os.Getenv("PROD")
+	var production bool
+	if len(prod) == 0 {
+		production = false
+	} else {
+		production = true
 	}
 
-	fmt.Println(os.Getenv("DB_USR"))
-	fmt.Println(os.Getenv("DB_PASS"))
-	fmt.Println(os.Getenv("DB_NAME"))
-	fmt.Println(os.Getenv("DB_ADDR"))
-	fmt.Println(os.Getenv("FIREBASE_CREDENTIALS"))
-	fmt.Println(os.Getenv("GCP_BUCKET_NAME"))
-	fmt.Println(os.Getenv("ADDRESS"))
-
-	prod := os.Getenv("PROD")
 	var db *pg.DB
-	if prod == "" {
+	if production {
+		db = newDBAppEngine()
+	} else {
+		viper.SetConfigName("config")
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath(".")
+		err := viper.ReadInConfig()
+		if err != nil {
+			log.Errorf("Fatal error config file: %s \n", err)
+		}
+
 		db = pg.Connect(&pg.Options{
 			User:     viper.GetString("DB_USR"),
 			Password: viper.GetString("DB_PASS"),
 			Database: viper.GetString("DB_NAME"),
 			Addr:     viper.GetString("DB_ADDR"),
 		})
-	} else {
-		db = newDBAppEngine()
 	}
-	_, err = db.Exec("SELECT 1")
+	_, err := db.Exec("SELECT 1")
 	if err != nil {
 		log.Errorf("PostgreSQL is down: %s \n", err.Error())
 		return
@@ -83,12 +79,13 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(tokenMiddleware.CorsHeadder)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowMethods: []string{http.MethodOptions, http.MethodDelete, http.MethodPut},
+		Skipper:      middleware.DefaultSkipper,
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
 	}))
 
-	userService := user.CreateService(db, firebaseAuth, fileuploadService)
+	userService := user.CreateService(db, firebaseAuth)
 	e.POST("/users/new", userService.CreateUser)
 	e.GET("/users/:id", userService.GetUser)
 	e.GET("/users/email/:email", userService.GetUserByEmail)
@@ -146,9 +143,9 @@ func main() {
 	e.POST("/trash/comment", trashService.CreateTrashComment, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/trash/comment/:commentId", trashService.DeleteTrashComment, tokenMiddleware.AuthorizeUser)
 
-	e.POST("collections/organized", eventService.CreateCollectionsOrganized, tokenMiddleware.AuthorizeUser)
-	e.POST("collections/random", trashService.CreateCollection, tokenMiddleware.AuthorizeUser)
-	e.GET("collections/:collectionId", trashService.GetCollection)
+	e.POST("/collections/organized", eventService.CreateCollectionsOrganized, tokenMiddleware.AuthorizeUser)
+	e.POST("/collections/random", trashService.CreateCollection, tokenMiddleware.AuthorizeUser)
+	e.GET("/collections/:collectionId", trashService.GetCollection)
 	e.PUT("/collections/update/col-organized", eventService.UpdateCollectionOrganized, tokenMiddleware.AuthorizeUser)
 	e.PUT("/collections/update/col-random", trashService.UpdateCollectionRandom, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/collections/delete/:collectionId", trashService.DeleteCollectionFromUser, tokenMiddleware.AuthorizeUser)
@@ -163,7 +160,13 @@ func main() {
 	e.GET("/fileupload/collections/load/:image", fileuploadService.GetCollectionImages)
 	e.DELETE("/fileupload/collections/delete/:collectionId/:image", fileuploadService.DeleteCollectionImages)
 
-	e.Logger.Fatal(e.Start(viper.GetString("ADDRESS")))
+	if production {
+		listenOn := fmt.Sprintf(":%s", os.Getenv("PORT"))
+		e.Logger.Fatal(e.Start(listenOn))
+	} else {
+		e.Logger.Fatal(e.Start(viper.GetString("ADDRESS")))
+	}
+
 }
 
 func getFirebaseAuth(opt option.ClientOption) (*auth.Client, error) {
@@ -182,14 +185,11 @@ func getFirebaseAuth(opt option.ClientOption) (*auth.Client, error) {
 }
 
 func newDBAppEngine() *pg.DB {
-	// Connect to Cloud SQL in production
-	// Environment variables can be set via app.yaml
 	return pg.Connect(&pg.Options{
-		Dialer: func(context context.Context, network, addr string) (net.Conn, error) {
-			return cloudsql.Dial(os.Getenv("DB_ADDR")) // project-name:region:instance-name
-		},
 		User:     os.Getenv("DB_USR"),
 		Password: os.Getenv("DB_PASS"),
+		Addr:     viper.GetString("DB_ADDR"),
 		Database: os.Getenv("DB_NAME"),
+		Network:  "unix",
 	})
 }

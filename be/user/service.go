@@ -8,7 +8,6 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
-	"github.com/olo/litter3/fileupload"
 	"github.com/olo/litter3/models"
 	"net/http"
 	"strconv"
@@ -19,12 +18,11 @@ import (
 type userService struct {
 	UserAccess *UserAccess
 	Firebase   *auth.Client
-	fileupload *fileupload.FileuploadService
 }
 
-func CreateService(db *pg.DB, firebase *auth.Client, fileupload *fileupload.FileuploadService) *userService {
+func CreateService(db *pg.DB, firebase *auth.Client) *userService {
 	access := &UserAccess{Db: db}
-	return &userService{access, firebase, fileupload}
+	return &userService{access, firebase}
 }
 
 func (s *userService) CreateUser(c echo.Context) error {
@@ -480,7 +478,7 @@ func (s *userService) AcceptApplicant(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	isAdmin, _, err := s.UserAccess.IsUserSocietyAdmin(userId, request.SocietyId)
+	isAdmin, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.SocietyId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrAcceptApplicant, err))
 	}
@@ -616,38 +614,6 @@ func (s *userService) DeleteSociety(c echo.Context) error {
 	err = s.UserAccess.DeleteSociety(societyId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteSociety, err))
-	}
-
-	return c.NoContent(http.StatusOK)
-}
-
-//
-//
-//
-//	FILEUPLOAD
-//
-//
-
-func (s *userService) GetUserImage(c echo.Context) error {
-	contentType, object, err := s.fileupload.LoadImage(c.Param("name"))
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrLoadImage, err))
-	}
-
-	return c.Stream(http.StatusOK, contentType, object)
-}
-
-func (s *userService) DeleteUserImage(c echo.Context) error {
-	userId := c.Get("userId").(string)
-
-	user, err := s.UserAccess.GetUserById(userId)
-	if err != nil {
-		return c.JSON(http.StatusNotFound, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
-	}
-
-	err = s.fileupload.DeleteImage(user.Avatar)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
 	}
 
 	return c.NoContent(http.StatusOK)

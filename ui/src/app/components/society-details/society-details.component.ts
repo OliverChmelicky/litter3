@@ -38,7 +38,7 @@ export class SocietyDetailsComponent implements OnInit {
   isAdmin: boolean = false;
   askedForMembership: boolean = false;
   isMember: boolean = false
-  private isLoggedIn: boolean = false;
+  isLoggedIn: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -58,10 +58,10 @@ export class SocietyDetailsComponent implements OnInit {
           this.society = society
           this.members = this.society.Users
           this.applicants = this.society.Applicants
-          console.log(society)
 
           if (this.society.MemberRights) {
             this.adminIds = society.MemberRights.filter(m => m.Permission === 'admin').map(m => m.UserId)
+            this.editorIds = society.MemberRights.filter(m => m.Permission === 'editor').map(m => m.UserId)
           }
 
           this.userService.getMe().subscribe(
@@ -70,6 +70,12 @@ export class SocietyDetailsComponent implements OnInit {
               this.adminIds.map(adminId => {
                 if (adminId === this.me.Id) {
                   this.isAdmin = true
+                  this.isEditor = true
+                }
+              })
+              this.editorIds.map(adminId => {
+                if (adminId === this.me.Id) {
+                  this.isEditor = true
                 }
               })
             },

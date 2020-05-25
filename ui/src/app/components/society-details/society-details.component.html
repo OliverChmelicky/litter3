@@ -23,7 +23,7 @@
 
 
 <!--  FOR admin only -->
-    <div *ngIf="isAdmin">
+    <div *ngIf="isEditor">
       <table mat-table [dataSource]="applicants" class="mat-elevation-z8">
 
         <ng-container matColumnDef="first-name">

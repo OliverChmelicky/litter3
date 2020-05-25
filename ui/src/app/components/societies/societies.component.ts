@@ -19,20 +19,13 @@ export interface DialogData {
   selector: 'app-societies',
   templateUrl: './societies.component.html',
   styleUrls: ['./societies.component.css'],
-  animations: [
-    trigger('detailExpand', [
-      state('collapsed', style({height: '0px', minHeight: '0'})),
-      state('expanded', style({height: '*'})),
-      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-    ]),
-  ],
 })
 export class SocietiesComponent implements OnInit {
   actualPaging: PagingModel;
   pageEvent: PageEvent;
   displayedColumns: string[] = ['position', 'avatar','name', 'members', 'createdAt', 'showMore'];
   dataSource: SocietiesTableElementModel[] = [];
-  private isLoggedIn: boolean = false;
+  isLoggedIn: boolean = false;
 
   constructor(
     private societyService: SocietyService,
