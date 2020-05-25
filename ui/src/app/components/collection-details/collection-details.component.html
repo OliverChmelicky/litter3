@@ -5,7 +5,7 @@
   <button *ngIf="collection.EventId" mat-button color="primary" (click)="onGoToEvent()">Go to event of collection</button>
 
   <div class="image-list" *ngFor="let collection of collection.Images">
-    <app-image [service]="'collections'" image="{{collection.Url}}"></app-image>
+    <app-image [service]="'collections'" [image]="collection.Url"></app-image>
   </div>
 
   <button *ngIf="isInCollection" mat-button color="primary" (click)="onEdit()">Edit</button>

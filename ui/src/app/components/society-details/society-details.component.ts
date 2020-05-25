@@ -61,7 +61,6 @@ export class SocietyDetailsComponent implements OnInit {
 
           if (this.society.MemberRights) {
             this.adminIds = society.MemberRights.filter(m => m.Permission === 'admin').map(m => m.UserId)
-            this.editorIds = society.MemberRights.filter(m => m.Permission === 'editor').map(m => m.UserId)
           }
 
           this.userService.getMe().subscribe(
@@ -70,12 +69,6 @@ export class SocietyDetailsComponent implements OnInit {
               this.adminIds.map(adminId => {
                 if (adminId === this.me.Id) {
                   this.isAdmin = true
-                  this.isEditor = true
-                }
-              })
-              this.editorIds.map(adminId => {
-                if (adminId === this.me.Id) {
-                  this.isEditor = true
                 }
               })
             },

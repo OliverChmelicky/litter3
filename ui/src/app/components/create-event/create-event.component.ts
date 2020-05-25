@@ -28,7 +28,6 @@ export class CreateEventComponent implements OnInit {
   allMarkers: MarkerModel[] = [];
   selectedTrash: MarkerModel[] = [];
   tableColumns = createTrashkColumnsDefinition
-  exampleBinUrl: string = ApisModel.exampleBinUrl;
   borderTop: number;
   borderBottom: number;
   borderLeft: number;

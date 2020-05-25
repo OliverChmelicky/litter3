@@ -85,6 +85,7 @@ import { CollectionDetailsComponent } from './components/collection-details/coll
     EditEventComponent,
     CreateCollectionComponent,
     //ShowCollectionComponent,
+    CollectionDetailsComponent,
     ShowCollectionRandomDetails,
     EditCollectionComponent,
   ],

@@ -3,3 +3,6 @@ all:
 
 dev:
 	docker-compose -f docker-compose-dev.yml up
+
+deploy:
+	cd be &&gcloud app deploy --quiet
