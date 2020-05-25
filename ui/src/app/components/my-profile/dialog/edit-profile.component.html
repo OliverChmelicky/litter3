@@ -13,5 +13,5 @@
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
   <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Save</button>
-  <button mat-button color="warn" cdkFocusInitial>Delete account</button>
+  <button mat-button color="warn" (click)="onDeleteAccount()" cdkFocusInitial>Delete account</button>
 </div>

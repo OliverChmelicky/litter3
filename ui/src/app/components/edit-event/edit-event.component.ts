@@ -227,7 +227,10 @@ export class EditEventComponent implements OnInit {
       Trash: trashIds,
     }
 
-    this.eventService.updateEvent(request).subscribe(ret => console.log('updated event: ', ret),
+    this.eventService.updateEvent(request).subscribe(ret => {
+      console.log('updated event: ', ret)
+        this.router.navigate(['events/details', request.Id]);
+      },
       error => console.log(error)
     )
   }

@@ -23,6 +23,7 @@ export interface ProfileDialogData {
   firstName: string;
   lastName: string;
   email: string;
+  deleteAccount: boolean;
 }
 
 export interface CollectionDialogData {
@@ -104,19 +105,28 @@ export class MyProfileComponent implements OnInit {
       data: {
         firstName: this.me.FirstName,
         lastName: this.me.LastName,
-        email: this.me.Email
+        email: this.me.Email,
+        deleteAccount: false,
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result){
-        if (result.email != this.me.Email || result.firstName != this.me.FirstName || result.lastName != this.me.LastName) {
-          this.me.Email = result.email
-          this.me.FirstName = result.firstName;
-          this.me.LastName = result.lastName;
-          this.userService.updateUser(this.me).subscribe(
-            usr => console.log(usr)
-          )
+      console.log(result.firstName)
+      console.log(result.data)
+      if (result) {
+        console.log(result.deleteAccount)
+        if (result.deleteAccount) {
+          this.userService.deleteAccount().subscribe(res => console.log(res))
+          return
+        }
+        if (result.firstName) {
+          this.me.FirstName = result.FirstName;
+        }
+        if (result.LastName) {
+          this.me.LastName = result.LastName;
+        }
+        if (result.firstName != this.me.FirstName || result.lastName != this.me.LastName) {
+          this.userService.updateUser(this.me).subscribe()
         }
       }
     });
@@ -229,7 +239,7 @@ export class MyProfileComponent implements OnInit {
     })
   }
 
-  private pushUserToFriendRequests(requests: FriendRequestModel[],users: UserModel[]) {
+  private pushUserToFriendRequests(requests: FriendRequestModel[], users: UserModel[]) {
     this.IreceivedFriendRequests = []
     this.IsendFriendRequests = []
 
@@ -262,18 +272,8 @@ export class MyProfileComponent implements OnInit {
     })
   }
 
-  leaveSociety(socId: string) {
-    this.societyService.leaveSociety(socId, this.me.Id).subscribe(
-      () => {
-        let newSocieties = this.mySocietiesView;
-        this.mySocietiesView = [];
-        newSocieties.map( soc => {
-          if (soc.Id !== socId) {
-            this.mySocietiesView.push(soc)
-          }
-        })
-      }
-    )
+  onSocietyDetails(socId: string) {
+    this.router.navigate(['societies/', socId])
   }
 
   onGoToEvent(eventId: string) {
@@ -281,7 +281,7 @@ export class MyProfileComponent implements OnInit {
   }
 
   showCollectionDetails(collectionId: string) {
-    let index = this.myCollections.findIndex( c => c.Id === collectionId)
+    let index = this.myCollections.findIndex(c => c.Id === collectionId)
     let data: CollectionDialogData = {
       collection: this.myCollections[index],
       update: false,
@@ -322,13 +322,18 @@ export class MyProfileComponent implements OnInit {
 })
 export class EditProfileComponent {
 
-  constructor( public dialogRef: MatDialogRef<EditProfileComponent>,
-               @Inject(MAT_DIALOG_DATA) public data: ProfileDialogData) {
+  constructor(public dialogRef: MatDialogRef<EditProfileComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: ProfileDialogData) {
     this.data.viewName = this.data.firstName + ' ' + this.data.lastName
   }
 
   onNoClick(): void {
     this.dialogRef.close();
+  }
+
+  onDeleteAccount() {
+    this.data.deleteAccount = true;
+    this.dialogRef.close({data: this.data});
   }
 
 }
@@ -345,8 +350,8 @@ export class ShowCollectionRandomDetails {
   //images can be deleted and new files loaded
   editMode: boolean = false
 
-  constructor( public dialogRef: MatDialogRef<ShowCollectionRandomDetails>,
-               @Inject(MAT_DIALOG_DATA) public data: CollectionDialogData) {
+  constructor(public dialogRef: MatDialogRef<ShowCollectionRandomDetails>,
+              @Inject(MAT_DIALOG_DATA) public data: CollectionDialogData) {
   }
 
   onNoClick(): void {

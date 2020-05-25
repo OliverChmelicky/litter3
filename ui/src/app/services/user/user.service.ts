@@ -145,4 +145,12 @@ export class UserService {
       )
     );
   }
+
+  deleteAccount() {
+    const url = `${this.apiUrl}/${ApisModel.user}/delete`;
+    return this.http.delete<SocietyModel[]>(url).pipe(
+      catchError(err => UserService.handleError<SocietyModel[]>(err, [])
+      )
+    );
+  }
 }

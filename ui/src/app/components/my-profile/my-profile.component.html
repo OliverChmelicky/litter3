@@ -65,7 +65,7 @@
       <ng-container matColumnDef="button">
         <th mat-header-cell *matHeaderCellDef>Leave</th>
         <td mat-cell *matCellDef="let element">
-          <button (click)="leaveSociety(element.Id)">Leave</button>
+          <button mat-button (click)="onSocietyDetails(element.Id)">Details</button>
         </td>
       </ng-container>
 
@@ -154,28 +154,6 @@
 
       <tr mat-header-row *matHeaderRowDef="myCollectionsColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: myCollectionsColumns;"></tr>
-    </table>
-  </div>
-
-  <div class="user-item">
-    <h3>Participated at events</h3>
-    <table mat-table [dataSource]="myEvents" class="mat-elevation-z8">
-
-      <ng-container matColumnDef="date">
-        <th mat-header-cell *matHeaderCellDef>Date</th>
-        <td mat-cell *matCellDef="let element"> {{element.Date | date: 'dd/MM/yyyy HH:mm'}} </td>
-      </ng-container>
-
-      <ng-container matColumnDef="navigate-button">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let element">
-          <button mat-button (click)="onGoToEvent(element.Id)">Go to event</button>
-        </td>
-      </ng-container>
-
-
-      <tr mat-header-row *matHeaderRowDef="myEventsColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: myEventsColumns;"></tr>
     </table>
   </div>
 

@@ -92,6 +92,7 @@ func main() {
 	e.GET("/users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("/users/update", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/details", userService.GetUsers)
+	e.DELETE("/users/delete", userService.DeleteUser)
 
 	e.GET("/users/societies", userService.GetMySocieties, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/societies/editable", userService.GetEditableSocieties, tokenMiddleware.AuthorizeUser)
