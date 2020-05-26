@@ -38,22 +38,24 @@ export class AuthService {
 
 
   async login(email: string, password: string) {
-    await this.afAuth.signInWithEmailAndPassword(email, password)
+    return  await this.afAuth.signInWithEmailAndPassword(email, password)
       .then(res => {
         localStorage.setItem('firebaseUser', JSON.stringify(res.user));
-        res.user.getIdToken().then(token => {
+        return res.user.getIdToken().then(token => {
           localStorage.setItem('token', token)
           this.loggedIn.next(true);
           this.router.navigate(['/me']);
         })
-          .catch(() => {
+          .catch(err => {
               localStorage.removeItem('firebaseUser')
               localStorage.removeItem('token');
+              return err
           }
           );
-      }).catch(() => {
+      }).catch(err => {
         localStorage.removeItem('firebaseUser');
         localStorage.removeItem('token');
+        return err
       })
   }
 

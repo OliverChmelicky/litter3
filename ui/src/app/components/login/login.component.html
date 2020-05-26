@@ -1,32 +1,26 @@
-<div class="report-container">
 
-  <div class="report-items">
-    <h3>LOGIN</h3>
-  </div>
 
-<div class="report-items">
 
-  <form [formGroup]="checkoutForm" (ngSubmit)="login(checkoutForm.value)">
 
-    <div>
-      <label for="email">
-        Name
-      </label>
-      <input id="email" type="text" formControlName="email">
-    </div>
 
-    <div>
-      <label for="password">
-        Password
-      </label>
-      <input id="password" type="text" formControlName="password">
-    </div>
+<mat-card class="login-form">
+  <mat-card-content [formGroup]="loginForm">
+    <mat-form-field appearance="fill">
+      <mat-label>Email address</mat-label>
+      <input matInput type="email" formControlName="email">
+      <mat-error *ngIf="loginForm.get('email').hasError('required')">You must fill an email address</mat-error>
+      <mat-error *ngIf="loginForm.get('email').hasError('email')">Use an email address</mat-error>
+      <mat-error *ngIf="loginForm.hasError('invalidCredentials')">Invalid credentials</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" formControlName="password">
+      <mat-error *ngIf="loginForm.hasError('invalidCredentials')">Invalid credentials</mat-error>
+    </mat-form-field>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-raised-button color="primary" [disabled]="loginForm.invalid" (click)="login(loginForm.value)">Login</button>
+    <button mat-raised-button color="primary" (click)="loginInWithGoogle()">Login with Google</button>
+  </mat-card-actions>
+</mat-card>
 
-    <button class="button" type="submit">Purchase</button>
-
-  </form>
-  <button (click)="loginInWithGoogle()">Sign in with Google</button>
-<!--  <button (click)="loginInWithFacebook()">Sign in with Facebook</button>-->
-</div>
-
-</div>

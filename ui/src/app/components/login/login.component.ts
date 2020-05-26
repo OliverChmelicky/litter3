@@ -1,7 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {AuthService} from "../../services/auth/auth.service";
-import {FormBuilder} from "@angular/forms";
-import {error} from "util";
+import {FormBuilder, Validators} from "@angular/forms";
+import {Router} from "@angular/router";
+
 
 @Component({
   selector: 'app-login',
@@ -9,35 +10,33 @@ import {error} from "util";
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
-  checkoutForm;
+  loginForm = this.formBuilder.group({
+    email: this.formBuilder.control('', [Validators.required, Validators.email]),
+    password: this.formBuilder.control('', [Validators.required]),
+  });
 
 
   constructor(
     private  authService: AuthService,
     private formBuilder: FormBuilder,
+    private router: Router,
   ) {
-    this.checkoutForm = this.formBuilder.group({
-      email: '',
-      password: ''
-    });
   }
 
   ngOnInit() {
   }
 
   login(customerData) {
-    this.checkoutForm.reset();
     const usr = this.authService.login(customerData.email, customerData.password).
-    then(value => console.log(value)).
-    catch(err => console.log('Error ', err));
+    then(err => {
+      if (err.code === 'auth/wrong-password'){
+        this.loginForm.setErrors({invalidCredentials: true})
+      }
+    });
   }
 
   loginInWithGoogle(){
-    this.authService.loginWithGoogle()
-  }
-
-  loginInWithFacebook() {
-    this.authService.loginWithFacebook()
+    this.authService.loginWithGoogle();
   }
 
 }

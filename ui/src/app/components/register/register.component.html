@@ -11,10 +11,11 @@
       <input matInput type="password" formControlName="password">
       <mat-error *ngIf="registerForm.get('password').hasError('required')">You must fill a password</mat-error>
       <mat-error *ngIf="registerForm.get('password').hasError('minLength')">Password must be at least 6 characters long</mat-error>
+      <mat-error *ngIf="userExists">User exists</mat-error>
     </mat-form-field>
   </mat-card-content>
   <mat-card-actions>
     <button mat-raised-button color="primary" [disabled]="registerForm.invalid" type="submit" (click)="tryRegister(registerForm.value)">Register</button>
-    <button mat-raised-button color="primary" type="submit" (click)="tryRegister(registerForm.value)">Register with google</button>
+    <button mat-raised-button color="primary" type="submit" (click)="registerWithGoogle()">Register with google</button>
   </mat-card-actions>
 </mat-card>

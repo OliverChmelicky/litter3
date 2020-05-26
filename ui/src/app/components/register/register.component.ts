@@ -11,6 +11,7 @@ import {Router} from "@angular/router";
 export class RegisterComponent implements OnInit {
   errorMessage: string;
   registerForm;
+  userExists: boolean;
 
   constructor(
     private authService: AuthService,
@@ -33,7 +34,12 @@ export class RegisterComponent implements OnInit {
         this.router.navigateByUrl('map');
       }, err => {
         this.errorMessage = err.message;
+        this.userExists = true;
       })
+  }
+
+  registerWithGoogle(){
+    this.authService.loginWithGoogle(); //login and register are the same
   }
 
 

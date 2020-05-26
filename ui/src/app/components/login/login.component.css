@@ -1,15 +1,27 @@
-.report-container {
+:host{
   display: flex;
+  width: 100%;
   justify-content: center;
-  margin: 100px;
   align-items: center;
-  /*align-content: flex-start;*/
 }
 
-.report-items {
+.login-form {
+  width: 450px;
+}
+
+.login-form mat-card-content {
   display: flex;
+  flex-direction: column;
+}
+
+.login-form mat-card-actions {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  margin: 100px;
   align-items: center;
-  /*align-content: flex-start;*/
+}
+
+.login-form mat-card-actions button {
+  width: 100%;
+  margin: 8px;
 }
