@@ -56,6 +56,7 @@ import {
   NgxMatTimepickerModule
 } from '@angular-material-components/datetime-picker';
 import { CollectionDetailsComponent } from './components/collection-details/collection-details.component';
+import {MatCardModule} from "@angular/material/card";
 
 
 @NgModule({
@@ -89,39 +90,40 @@ import { CollectionDetailsComponent } from './components/collection-details/coll
     ShowCollectionRandomDetails,
     EditCollectionComponent,
   ],
-  imports: [
-    BrowserModule,
-    RouterModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule,
-    AngularFireAuthModule,
-    HttpClientModule,
-    AgmCoreModule.forRoot({
-      apiKey: environment.googleMapsApiKey,
-      libraries: ['places', 'geometry']
-    }),
-    ReactiveFormsModule,
-    AppRoutingModule,
-    FormsModule,
-    BrowserAnimationsModule,
-    MatPaginatorModule,
-    MatTableModule,
-    MatSliderModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatButtonModule,
-    MatListModule,
-    MatIconModule,
-    MatMenuModule,
-    MatDialogModule,
-    MatInputModule,
-    LazyLoadImageModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    NgxMatTimepickerModule,
-    NgxMatDatetimePickerModule,
-    NgxMatNativeDateModule,
-  ],
+    imports: [
+        BrowserModule,
+        RouterModule,
+        AngularFireModule.initializeApp(environment.firebaseConfig),
+        AngularFirestoreModule,
+        AngularFireAuthModule,
+        HttpClientModule,
+        AgmCoreModule.forRoot({
+            apiKey: environment.googleMapsApiKey,
+            libraries: ['places', 'geometry']
+        }),
+        ReactiveFormsModule,
+        AppRoutingModule,
+        FormsModule,
+        BrowserAnimationsModule,
+        MatPaginatorModule,
+        MatTableModule,
+        MatSliderModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatButtonModule,
+        MatListModule,
+        MatIconModule,
+        MatMenuModule,
+        MatDialogModule,
+        MatInputModule,
+        LazyLoadImageModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        NgxMatTimepickerModule,
+        NgxMatDatetimePickerModule,
+        NgxMatNativeDateModule,
+        MatCardModule,
+    ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenHeadders, multi: true },
     { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, //for material datepicker
