@@ -43,7 +43,7 @@ export interface MarkerCollectionModel {
   collectionWeight: number,
   collectionCleanedTrash: boolean,
   collectionEventId: string,
-  collectionImages: string[],
+  collectionImages: FormData,
 
   isInList: boolean,
 }
@@ -83,6 +83,21 @@ export interface CollectionModel {
   Users: UserModel[],
   Images: CollectionImageModel[],
   CreatedAt?: Date,
+}
+
+export interface CreateCollectionModel {
+  Collections: CollectionModel[],
+  AsSociety: boolean,
+  OrganizerId: string,
+  EventId: string,
+  CreatedAt?: Date,
+}
+
+export interface UpdateCollectionModel {
+  Collection: CollectionModel,
+  AsSociety: boolean,
+  OrganizerId: string,
+  EventId: string,
 }
 
 export const defaultCollectionModel: CollectionModel = {

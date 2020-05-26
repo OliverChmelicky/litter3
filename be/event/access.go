@@ -85,14 +85,12 @@ func (s *eventAccess) GetEventWithCollection(eventId string) (*models.EventWithC
 	err := s.db.Model(event).Where("id = ?", eventId).Column("event.*").
 		Relation("Trash").Relation("SocietiesIds").Relation("UsersIds").First()
 	if err != nil {
-		fmt.Println("error prve: ", err)
 		return &models.EventWithCollections{}, err
 	}
 
 	var collections []models.Collection
 	err = s.db.Model(&collections).Where("event_id = ?", event.Id).Select()
 	if err != nil {
-		fmt.Println("error druhe: ", err)
 		return &models.EventWithCollections{}, err
 	}
 
@@ -111,7 +109,6 @@ func (s *eventAccess) GetEventWithCollection(eventId string) (*models.EventWithC
 
 		err = s.db.Model(&images).Where("collection_id = ?", c.Id).Select()
 		if err != nil {
-			logrus.Error("Tretie: ", err)
 			eventWithCollections.Collections[i].Images = []models.CollectionImage{}
 		}
 		eventWithCollections.Collections[i].Images = images
@@ -415,6 +412,7 @@ func (s *eventAccess) CreateCollectionsOrganized(collectionRequests *models.Crea
 		return nil, errs
 	}
 
+	//newCollections, updateCollections, err = s.filterUpdateColectionAndCreateNew(collectionRequests)
 	collection := &models.Collection{}
 	for _, request := range collectionRequests.Collections {
 		collection.EventId = collectionRequests.EventId
@@ -435,8 +433,9 @@ func (s *eventAccess) CreateCollectionsOrganized(collectionRequests *models.Crea
 		if request.CleanedTrash {
 			updating := new(models.Trash)
 			updating.Id = request.TrashId
-			_, err = s.db.Model(updating).Column("cleaned").Where("id = ?", request.TrashId).Update()
+			_, err := s.db.Model(updating).Set("cleaned = ?", true).Where("id = ?", request.TrashId).Update()
 			if err != nil {
+				logrus.Error("Error update trash to cleaned: ", err)
 				errs = append(errs, err)
 				continue
 			}
@@ -459,7 +458,7 @@ func (s *eventAccess) UpdateCollectionOrganized(request *models.UpdateCollection
 
 	oldCollection := new(models.Collection)
 	oldCollection.Id = request.Collection.Id
-	if err := s.db.Select(oldCollection); err != nil {
+	if err := s.db.Model(oldCollection).Where("id = ?", oldCollection.Id).First(); err != nil {
 		return &models.Collection{}, fmt.Errorf("Couldn`t get old collection: %w ", err)
 	}
 	if oldCollection.TrashId != request.Collection.TrashId {
@@ -518,7 +517,7 @@ func (s *eventAccess) DeleteCollectionOrganized(organizerId, collectionId, event
 
 	oldCollection := new(models.Collection)
 	oldCollection.Id = collectionId
-	if err := tx.Select(oldCollection); err != nil {
+	if err := tx.Model(oldCollection).Where("id = ?", collectionId).First(); err != nil {
 		return fmt.Errorf("Couldn`t get old collection: %w ", err)
 	}
 	if oldCollection.EventId != eventId {
@@ -639,3 +638,14 @@ func (s *eventAccess) GetEventsWithPaging(from int, to int) ([]models.Event, int
 
 	return events[from:to], len(events), nil
 }
+
+//func (s *eventAccess) filterUpdateColectionAndCreateNew(requests *models.CreateCollectionOrganizedRequest) ([]models.CreateCollectionRandomRequest, []models.CreateCollectionRandomRequest, error) {
+//	newRequests := []models.CreateCollectionOrganizedRequest{}
+//	updateRequests := []models.CreateCollectionOrganizedRequest{}
+//	for _, request := range requests.Collections {
+//		err := s.db.Model(&models.Collection{}).Where("event_id = ? and trash_id = ?", requests.EventId, request.TrashId).First()
+//		if err == nil {
+//
+//		}
+//	}
+//}

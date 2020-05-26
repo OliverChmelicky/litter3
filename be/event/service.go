@@ -8,7 +8,6 @@ import (
 	"github.com/olo/litter3/models"
 	"github.com/olo/litter3/trash"
 	"github.com/olo/litter3/user"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 )
@@ -58,11 +57,10 @@ func (s *EventService) GetEvent(c echo.Context) error {
 
 	event, err := s.eventAccess.GetEventWithCollection(eventId)
 	if err != nil {
-		logrus.Error("Co je tu zza err: ", err)
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetEvent, err))
 	}
 
-	fmt.Println("Vraciam event: ",event)
+	fmt.Println("Vraciam event: ", event)
 	fmt.Println("Collections are: ", event.Collections)
 	//fmt.Println("images in col: ", event.Collections[0].Images)
 
@@ -310,7 +308,7 @@ func (s *EventService) UpdateCollectionOrganized(c echo.Context) error {
 	if request.AsSociety {
 		hasRights, _, err := s.UserAccess.HasUserSocietyEditorRights(userId, request.OrganizerId)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
+			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrUpdateCollection, err))
 		}
 		if !hasRights {
 			return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrInsufficientPermission, err))
@@ -321,13 +319,13 @@ func (s *EventService) UpdateCollectionOrganized(c echo.Context) error {
 
 	collections, err := s.eventAccess.UpdateCollectionOrganized(request)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionFromEvent, err))
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateCollection, err))
 	}
 
 	return c.JSON(http.StatusCreated, collections)
 }
 
-func (s *EventService) DeleteCollection(c echo.Context) error {
+func (s *EventService) DeleteCollectionOrganized(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
 	eventId := c.QueryParam("event")

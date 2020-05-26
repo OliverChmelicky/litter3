@@ -30,7 +30,7 @@
       <textarea [value]="event.Description"></textarea>
     </div>
 
-    <div *ngIf="isAdmin && event.Trash">
+    <div *ngIf="(isEditor || isAdmin) && event.Trash">
       <button mat-button (click)="onCreateCollections()"> Create collection</button>
     </div>
   </div>
@@ -86,39 +86,11 @@
   </div>
 </div>
 
-
-
-
-
-<!--  <div *ngFor="let collection of event.Collections" class="collections">-->
-<!--    <app-image [image]="collection.Images[0].Url" [service]="'collections'"></app-image>-->
-<!--    <p>{{collection.Weight}}</p>-->
-<!--    &lt;!&ndash;    <button mat-button (click)="onShowCollection(collection.Id)">Show</button>&ndash;&gt;-->
-<!--    <button mat-button (click)="onEditCollection(collection.Id)">Edit collection</button>-->
-<!--  </div>-->
-<!--For testing only now-->
-  <div class="bottom">
-    <table mat-table [dataSource]="attendants" class="mat-elevation-z8">
-      <ng-container matColumnDef="image">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let element">
-          <app-image [image]="element.avatar"></app-image>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef> Email/Name</th>
-        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
-      </ng-container>
-
-      <ng-container matColumnDef="role">
-        <th mat-header-cell *matHeaderCellDef> Role</th>
-        <td mat-cell *matCellDef="let element"> {{element.role}} </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: tableColumns;"></tr>
-    </table>
+  <div *ngFor="let collection of showCollectionsTable" class="bottom">
+    <app-image [image]="collection.Images[0].Url" [service]="'collections'"></app-image>
+    <p>{{collection.Weight}}</p>
+    <!--    <button mat-button (click)="onShowCollection(collection.Id)">Show</button>-->
+    <button mat-button *ngIf="isAdmin || isEditor" (click)="onEditCollection(collection.Id)">Edit collection</button>
   </div>
 
 </div>

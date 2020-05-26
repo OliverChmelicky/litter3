@@ -34,6 +34,7 @@ export class LazyLoadImgComponent implements OnInit {
     } else if (this.service === ApisModel.collection) {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.collection + '/load/' + this.image
       this.defaultImage = this.exampleBinUrl
+      console.log('url: ', this.url)
       this.checkEmpty(this.defaultImage)
     } else if (this.service === ApisModel.trash) {
       this.url = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.trash + '/load/' + this.image

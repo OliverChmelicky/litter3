@@ -1,12 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {GoogleMap} from "@agm/core/services/google-maps-types";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {TrashService} from "../../services/trash/trash.service";
-import {TrashModel, MarkerCollectionModel, defaultTrashImage} from "../../models/trash.model";
-import {MarkerModel} from "../google-map/Marker.model";
+import {
+  CollectionModel,
+  CreateCollectionModel,
+  defaultTrashImage,
+  MarkerCollectionModel,
+  TrashModel
+} from "../../models/trash.model";
 import {czechPosition} from "../event-details/event-details.component";
 import {MatTableDataSource} from "@angular/material/table";
-import {AuthService} from "../../services/auth/auth.service";
+import {EventService} from "../../services/event/event.service";
+import {EventPickerModel} from "../../models/event.model";
+import {FileuploadService} from "../../services/fileupload/fileupload.service";
 
 export const createCollectionTrashColumns: string[] = [
   'trash-image',
@@ -27,33 +34,36 @@ export class CreateCollectionComponent implements OnInit {
   eventId: string = '';
 
   map: GoogleMap;
-  allMarkers: MarkerCollectionModel[] = [];
+  notSelectedMarkers: MarkerCollectionModel[] = [];
   initLat: number = czechPosition.lat;
   initLng: number = czechPosition.lng;
 
   selectedMarkers: MarkerCollectionModel[] = [];
   tableColumns = createCollectionTrashColumns;
+  organizerId: EventPickerModel;
 
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private trashService: TrashService,
-    ) {
+    private eventService: EventService,
+    private fileuploadService: FileuploadService,
+  ) {
   }
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
       this.eventId = params.get('eventId')
       this.trashIds = params.getAll('trashIds')
-      console.log('param event: ', this.eventId)
-      console.log('param trash: ', this.trashIds)
-      this.trashService.getTrashByIds(this.trashIds).subscribe( trash => {
+      this.trashService.getTrashByIds(this.trashIds).subscribe(trash => {
         this.trash = trash
         this.initLat = trash[0].Location[0]
         this.initLng = trash[0].Location[1]
         this.assignMarkers()
       })
     });
+    this.organizerId = this.eventService.getEventEditor()
   }
 
   onMapReady(map: GoogleMap) {
@@ -67,19 +77,19 @@ export class CreateCollectionComponent implements OnInit {
         collLength = t.Collections.length
       }
       if (!t.Images) {
-        t.Images = [];
+        t.Images = [defaultTrashImage];
       }
-      this.allMarkers.push({
+      this.notSelectedMarkers.push({
         trashId: t.Id,
         lat: t.Location[0],
         lng: t.Location[1],
         cleaned: t.Cleaned,
-        image: t.Images ? t.Images[0] : defaultTrashImage,
+        image: t.Images[0],
         numOfCollections: collLength,
         collectionWeight: 0,
         collectionCleanedTrash: false,
         collectionEventId: this.eventId,
-        collectionImages: [],
+        collectionImages: new FormData(),
         isInList: false,
       })
     })
@@ -88,6 +98,9 @@ export class CreateCollectionComponent implements OnInit {
   addToList(marker: MarkerCollectionModel) {
     marker.isInList = true
     this.selectedMarkers.push(marker)
+
+    const index = this.notSelectedMarkers.findIndex(t => t.trashId === marker.trashId)
+    this.notSelectedMarkers.splice(index, 1)
   }
 
   removeFromList(trashId: string) {
@@ -96,7 +109,7 @@ export class CreateCollectionComponent implements OnInit {
 
     let marker = this.selectedMarkers[index]
     marker.isInList = false
-    this.allMarkers.push(marker)
+    this.notSelectedMarkers.push(marker)
 
     //rerender table
     const newData = new MatTableDataSource<MarkerCollectionModel>(this.selectedMarkers);
@@ -106,4 +119,48 @@ export class CreateCollectionComponent implements OnInit {
     }
 
   }
+
+  onFileSelected(event, i: number) {
+    this.selectedMarkers[i].collectionImages.delete('files')
+    for (let i = 0; i < event.target.files.length; i++) {
+      this.selectedMarkers[i].collectionImages.append("files", event.target.files[i], event.target.files[i].name);
+    }
+  }
+
+  onCreate() {
+    const colections = this.mapFromColMarkersToColections(this.selectedMarkers)
+
+    let collectionsToCreate: CreateCollectionModel = {
+      Collections: colections,
+      AsSociety: this.organizerId.AsSociety,
+      OrganizerId: this.organizerId.Id,
+      EventId: this.eventId,
+    }
+
+    console.log('Collections to create: ', this.selectedMarkers)
+    console.log('images: ' ,this.selectedMarkers[0].collectionImages.has('files'))
+
+    this.eventService.createCollectionsOrganized(collectionsToCreate).subscribe(res => {
+      res.map((c, i) => {
+        console.log('sending fies: ',i)
+        this.fileuploadService.uploadCollectionImages(this.selectedMarkers[i].collectionImages, c.Id).subscribe(() => {},);
+      })
+    })
+    this.router.navigate(['events/details', this.eventId]);
+  }
+
+  mapFromColMarkersToColections(selected: MarkerCollectionModel[]): CollectionModel[] {
+    return selected.map(s => <CollectionModel>{
+      //TODO Weight: s.collectionWeight,
+      Weight: s.collectionWeight,
+      CleanedTrash: s.collectionCleanedTrash,
+      TrashId: s.trashId,
+      EventId: this.eventId,
+    })
+  }
+
+  getImages() {
+
+  }
+
 }

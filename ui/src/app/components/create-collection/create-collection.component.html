@@ -1,19 +1,6 @@
-<script src="create-collection.component.ts"></script>
-<div class="container">
+<div class="create-collection-container">
   <div>
     <h1>Create Collection:</h1>
-  </div>
-
-  <div class="report-list">
-    <div class="report-items">
-      <div class="collection-form" *ngFor="let element of selectedMarkers; let i = index">
-        <app-image [image]="element.image"></app-image>
-        <input ngModel="">
-        <mat-checkbox formControlName="cleaned">Cleaned trash</mat-checkbox>
-<!--        <input type="file" (change)="onFileSelected($event)" multiple>-->
-<!--        <button mat-button (click)="removeFromList(element.TrashId)">Report later</button>-->
-      </div>
-    </div>
   </div>
 
   <div class="map-class">
@@ -24,21 +11,34 @@
       (mapReady)="onMapReady($event)"
       disableDoubleClickZoom="true">
 
-      <agm-marker *ngFor="let marker of allMarkers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
+      <agm-marker *ngFor="let marker of notSelectedMarkers; let i = index" [latitude]="marker.lat" [longitude]="marker.lng">
         <agm-info-window [disableAutoPan]="true">
           <div class="show-trash-on-map">
-            <app-image [service]="'trash'" [image]="marker.image"></app-image>
+            <app-image [service]="'trash'" [image]="marker.image.Url"></app-image>
             <div>
               <p>Collections made: {{marker.numOfCollections}}</p>
               <p>Cleaned: {{marker.cleaned ? "yes" : "no"}}</p>
               <button *ngIf="!marker.isInList" (click)="addToList(marker)">Ad to list</button>
-              <button *ngIf="marker.isInList" (click)="removeFromList(marker.trashId)">Ad to list</button>
+              <button *ngIf="marker.isInList" (click)="removeFromList(marker.trashId)">Remove from list</button>
             </div>
           </div>
         </agm-info-window>
       </agm-marker>
     </agm-map>
   </div>
+
+  <div class="report-list">
+    <div class="collection-form" *ngFor="let element of selectedMarkers; let i = index">
+      <label>Weight in kilograms:</label>
+      <input type="number" [(ngModel)]="selectedMarkers[i].collectionWeight">
+      <mat-checkbox [(ngModel)]="selectedMarkers[i].collectionCleanedTrash">Cleaned trash</mat-checkbox>
+
+      <input type="file" (change)="onFileSelected($event, i)" multiple>
+      <button mat-button (click)="removeFromList(element.trashId)">Report later</button>
+    </div>
+  </div>
+
+  <button mat-button (click)="onCreate()">Create</button>
 
 </div>
 

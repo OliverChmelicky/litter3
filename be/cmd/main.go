@@ -77,8 +77,8 @@ func main() {
 		log.Fatal(err)
 	}
 	// Middleware
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	//e.Use(middleware.Logger())
+	//e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		Skipper:      middleware.DefaultSkipper,
 		AllowOrigins: []string{"*"},
@@ -150,7 +150,7 @@ func main() {
 	e.PUT("/collections/update/col-organized", eventService.UpdateCollectionOrganized, tokenMiddleware.AuthorizeUser)
 	e.PUT("/collections/update/col-random", trashService.UpdateCollectionRandom, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/collections/delete/:collectionId", trashService.DeleteCollectionFromUser, tokenMiddleware.AuthorizeUser)
-	e.DELETE("/collections/delete/organized", eventService.DeleteCollection, tokenMiddleware.AuthorizeUser) //query params
+	e.DELETE("/collections/delete/organized", eventService.DeleteCollectionOrganized, tokenMiddleware.AuthorizeUser) //query params
 
 	e.POST("/fileupload/societies/:societyId", fileuploadService.UploadSocietyImage, tokenMiddleware.AuthorizeUser)
 	e.GET("/fileupload/societies/load/:image", fileuploadService.GetSocietyImage)

@@ -197,7 +197,7 @@ export class EditTrashComponent implements OnInit {
 @Component({
   selector: 'app-image-dialog',
   templateUrl: '../image-dialog/image-dialog.component.html',
-  //styleUrls: ['./dialog/edit-create-society.component.css]
+  styleUrls: ['../image-dialog/image-dialog.component.css']
 })
 export class ImageDialogComponent {
 

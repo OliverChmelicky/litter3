@@ -6,3 +6,8 @@
 .margin {
  margin: 30px;
 }
+
+.bottom-buttons {
+  display: flex;
+  margin-right: 48px;
+}

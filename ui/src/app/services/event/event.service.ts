@@ -12,6 +12,7 @@ import {
 } from "../../models/event.model";
 import {SocietyWithPagingAnsw} from "../../models/society.model";
 import {AttendantsModel, PagingModel} from "../../models/shared.models";
+import {CollectionModel, CreateCollectionModel, UpdateCollectionModel} from "../../models/trash.model";
 
 @Injectable({
   providedIn: 'root'
@@ -101,9 +102,7 @@ export class EventService {
   }
 
   createEvent(request: EventRequestModel) {
-    console.log('date before: ', request.Date)
     request.Date.setSeconds(0)
-    console.log('date after: ', request.Date)
     const url = `${this.apiUrl}/${ApisModel.event}`;
     return this.http.post<EventRequestModel>(url, request).pipe(
       catchError(err => EventService.handleError<EventRequestModel>(err))
@@ -139,6 +138,34 @@ export class EventService {
     const url = `${this.apiUrl}/${ApisModel.event}/update`;
     return this.http.put(url, request).pipe(
       catchError(err => EventService.handleError(err))
+    );
+  }
+
+  createCollectionsOrganized(collectionsToCreate: CreateCollectionModel): Observable<CollectionModel[]> {
+    const url = `${this.apiUrl}/${ApisModel.collection}/organized`;
+    return this.http.post<CollectionModel[]>(url, collectionsToCreate).pipe(
+      catchError(err => EventService.handleError<CollectionModel[]>(err))
+    );
+  }
+
+  deleteCollectionOrganized(eventId: string, collectionId: string, eventPicker: EventPickerModel): Observable<any> {
+    const url = `${this.apiUrl}/${ApisModel.collection}/delete/organized?collectionId=${collectionId}&event=${eventId}&picker=${eventPicker.Id}&asSociety=${eventPicker.AsSociety}`;
+    return this.http.delete(url).pipe(
+      catchError(err => EventService.handleError(err))
+    );
+  }
+
+  updateCollectionOrganized(collection: CollectionModel, eventId: string, eventPicker: EventPickerModel): Observable<CollectionModel> {
+    const request: UpdateCollectionModel = {
+      EventId: eventId,
+      AsSociety: eventPicker.AsSociety,
+      Collection: collection,
+      OrganizerId: eventPicker.Id,
+    }
+    console.log('updating with values: ', request)
+    const url = `${this.apiUrl}/${ApisModel.collection}/update/col-organized`;
+    return this.http.put<CollectionModel>(url, request).pipe(
+      catchError(err => EventService.handleError<CollectionModel>(err))
     );
   }
 }

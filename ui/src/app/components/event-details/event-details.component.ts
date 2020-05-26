@@ -17,7 +17,12 @@ import {MatTableDataSource} from "@angular/material/table";
 import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MarkerModel} from "../google-map/Marker.model";
 import {MapLocationModel} from "../../models/GPSlocation.model";
-import {CollectionModel, defaultCollectionModel, defaultTrashImage} from "../../models/trash.model";
+import {
+  CollectionImageModel,
+  CollectionModel,
+  defaultCollectionModel,
+  defaultTrashImage
+} from "../../models/trash.model";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {TrashService} from "../../services/trash/trash.service";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
@@ -33,6 +38,7 @@ export interface DialogData {
   collection: CollectionModel;
   deleteImages: string[];
   uploadImages: FormData;
+  deleteCollection: boolean
 }
 
 @Component({
@@ -73,6 +79,7 @@ export class EventDetailsComponent implements OnInit {
 
   societies: SocietyModel[] = [];
   users: UserModel[] = [];
+  showCollectionsTable: CollectionModel[] = [];
 
 
   constructor(
@@ -93,6 +100,10 @@ export class EventDetailsComponent implements OnInit {
       this.eventService.getEvent(params.get('eventId')).subscribe(event => {
           this.convertToLocalTime()
           this.event = event
+        console.log(event.Collections)
+          if (event.Collections) {
+            this.mapCollectionsToTable(event.Collections)
+          }
           if (event.Trash) {
             this.initLat = event.Trash[0].Location[0]
             this.initLng = event.Trash[0].Location[1]
@@ -184,6 +195,7 @@ export class EventDetailsComponent implements OnInit {
               this.isEditor = true
             } else if (user.Permission === 'creator') {
               this.isAdmin = true
+              this.isEditor = true
             }
           }
         }
@@ -403,6 +415,7 @@ export class EventDetailsComponent implements OnInit {
     if (this.event.Trash) {
       trashIds = this.event.Trash.map(t => t.Id)
     }
+    this.eventService.setEventEditor(this.availableDecisionsAs[this.selectedCreator])
     this.router.navigate(['collection'], {queryParams: {trashIds: trashIds, 'eventId': this.event.Id}})
   }
 
@@ -418,19 +431,26 @@ export class EventDetailsComponent implements OnInit {
       collection.Images = [];
     }
 
+    const weightBefore = collection.Weight
+
     const dialogRef = this.editCollectionDialog.open(EditCollectionComponent, {
       width: '800px',
       data: {
         collection: collection,
         deleteImages: [],
-        uploadImages: new FormData()
+        uploadImages: new FormData(),
+        deleteCollection: false
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        if (result.uploadImages.has('files')) {
-          this.fileuploadService.uploadCollectionImages(result.uploadImages, collectionId).subscribe()
+        if (result.deleteCollection) {
+          this.eventService.deleteCollectionOrganized(this.event.Id, result.collection.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
+            res => console.log(res),
+            error => console.log(error)
+          )
+          return
         }
         if (result.deleteImages) {
           result.deleteImages.map(i => this.trashService.deleteCollectionImage(i, collectionId).subscribe(
@@ -438,6 +458,21 @@ export class EventDetailsComponent implements OnInit {
             },
             error => console.log(error)
           ))
+        }
+        if (result.uploadImages) {
+          if (result.uploadImages.has('files')) {
+            this.fileuploadService.uploadCollectionImages(result.uploadImages, collectionId).subscribe()
+          }
+          if (result.uploadImages.has('files') && !result.deleteCollection) {
+            this.fileuploadService.uploadCollectionImages(result.uploadImages,result.collection.Id)
+          }
+        }
+        console.log('new: ', result.collection.Weight)
+        console.log('old: ', weightBefore)
+        if (result.collection.Weight !== weightBefore) {
+          this.eventService.updateCollectionOrganized(result.collection, this.event.Id ,this.availableDecisionsAs[this.selectedCreator]).subscribe( res => {},
+            error => {console.log(error)}
+            )
         }
       }
     });
@@ -458,6 +493,29 @@ export class EventDetailsComponent implements OnInit {
 
   onApproveCollectionChanges() {
   }
+
+  private mapCollectionsToTable(collections: CollectionModel[]) {
+    collections.map( c => {
+      let images;
+      if (!c.Images) {
+        images = [defaultTrashImage]
+      } else {
+        images = c.Images
+      }
+      this.showCollectionsTable.push(
+        {
+          Id: c.Id,
+          Weight: c.Weight,
+          CleanedTrash: c.CleanedTrash,
+          TrashId: c.TrashId,
+          EventId: c.EventId,
+          Images: images,
+          Users: [],
+          CreatedAt: c.CreatedAt,
+        }
+      )
+    })
+  }
 }
 
 
@@ -467,7 +525,7 @@ export class EventDetailsComponent implements OnInit {
 @Component({
   selector: 'app-edit-collection',
   templateUrl: './dialog-edit-collection/edit-collection-dialog.component.html',
-  //styleUrls: ['./dialog-edit-collection/edit-collection-dialog.component.css]
+  styleUrls: ['./dialog-edit-collection/edit-collection-dialog.component.css'],
 })
 export class EditCollectionComponent {
   images = []
@@ -475,11 +533,12 @@ export class EditCollectionComponent {
 
   constructor(public dialogRef: MatDialogRef<EditCollectionComponent>,
               @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+    console.log('images in: ', this.data.collection.Images)
     data.collection.Images.map(i => this.images.push({
       Url: i.Url,
       CollectionId: i.CollectionId,
-      InList: false,
     }))
+    console.log('images in dialog: ', this.images)
   }
 
   onNoClick(): void {
@@ -488,7 +547,6 @@ export class EditCollectionComponent {
 
   onDelete(url: string) {
     this.data.deleteImages.push(url)
-
     const index = this.images.findIndex(i => i.Url === url)
     this.images[index] = true
     this.reload()
@@ -513,6 +571,15 @@ export class EditCollectionComponent {
     for (let i = 0; i < event.target.files.length; i++) {
       this.data.uploadImages.append("files", event.target.files[i], event.target.files[i].name);
     }
+  }
+
+  onSetDelete() {
+    this.data.deleteCollection = true
+    this.data.uploadImages = new FormData()
+    this.dialogRef.close({
+      deleteCollection: true,
+      collection: this.data.collection
+    });
   }
 }
 

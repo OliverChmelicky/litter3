@@ -118,6 +118,7 @@ func (s *FileuploadService) UploadCollectionImages(c echo.Context) error {
 
 	objectNames, err := s.UploadImages(c)
 	if err != nil {
+		fmt.Println("ERROR1: ", err)
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
 	}
 
@@ -127,10 +128,13 @@ func (s *FileuploadService) UploadCollectionImages(c echo.Context) error {
 		trashImage.Url = objectName
 		_, err = s.db.Model(trashImage).Insert(trashImage)
 		if err != nil {
+			fmt.Println("ERROR: ", err)
 			_ = s.DeleteImage(objectName)
 			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
 		}
 	}
+
+	fmt.Println("ALL DONE")
 
 	return c.NoContent(http.StatusCreated)
 }
@@ -167,8 +171,6 @@ func (s *FileuploadService) GetSocietyImage(c echo.Context) error {
 
 	return c.Blob(http.StatusOK, attr.ContentType, data)
 }
-
-
 
 func (s *FileuploadService) GetTrashImage(c echo.Context) error {
 	imageName := c.Param("image")
@@ -276,7 +278,7 @@ func (s *FileuploadService) DeleteTrashImage(c echo.Context) error {
 }
 func (s *FileuploadService) DeleteCollectionImages(c echo.Context) error {
 	imageName := c.Param("image")
-	trashId := c.Param("collectionId")
+	collectionId := c.Param("collectionId")
 
 	tx, err := s.db.Begin()
 	if err != nil {
@@ -284,8 +286,8 @@ func (s *FileuploadService) DeleteCollectionImages(c echo.Context) error {
 	}
 	defer tx.Rollback()
 
-	imageDb := new(models.TrashImage)
-	_, err = tx.Model(imageDb).Where("url = ? and collection_id = ?", imageName, trashId).Delete()
+	imageDb := new(models.CollectionImage)
+	_, err = tx.Model(imageDb).Where("url = ? and collection_id = ?", imageName, collectionId).Delete()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
 	}

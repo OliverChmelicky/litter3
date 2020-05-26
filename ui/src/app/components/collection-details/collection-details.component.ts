@@ -28,8 +28,6 @@ export class CollectionDetailsComponent implements OnInit {
       this.trashService.getCollectionById(collectionId).subscribe(
         collection => {
           this.collection = collection;
-          console.log(collection)
-
           this.userService.getMe().subscribe(
             me => {
               this.me = me
