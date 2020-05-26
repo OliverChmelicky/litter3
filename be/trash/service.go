@@ -232,21 +232,21 @@ func (s *trashService) GetCollection(c echo.Context) error {
 
 	collection, err := s.TrashAccess.GetCollection(collectionId)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetCollectionRaw, err))
 	}
 
 	return c.JSON(http.StatusOK, collection)
 }
 
 func (s *trashService) GetCollectionIdsOfUser(c echo.Context) error {
-	userId := c.Param("userId")
+	userId := c.Get("userId").(string)
 
-	collection, err := s.TrashAccess.GetCollectionIdsOfUser(userId)
+	collections, err := s.TrashAccess.GetCollectionIdsOfUser(userId)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetCollectionRaw, err))
 	}
 
-	return c.JSON(http.StatusOK, collection)
+	return c.JSON(http.StatusOK, collections)
 }
 
 func (s *trashService) UpdateCollectionRandom(c echo.Context) error {

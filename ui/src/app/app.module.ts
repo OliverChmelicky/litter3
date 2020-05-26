@@ -36,7 +36,8 @@ import { NavListComponent } from './components/nav-list/nav-list.component';
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
 import {
-  CreateCollectionRandomFromTrashComponent,
+  EditCollectionRandomFromTrashComponent,
+  ShowCollectionFromTrashComponent,
   TrashDetailsComponent
 } from './components/trash-details/trash-details.component';
 import {MatMenuModule} from "@angular/material/menu";
@@ -52,7 +53,7 @@ import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
 import {EditCollectionComponent, ShowCollectionComponent ,EventDetailsComponent} from './components/event-details/event-details.component';
 import { EventsComponent } from './components/events/events.component';
 import { EditEventComponent } from './components/edit-event/edit-event.component';
-import { CreateCollectionComponent } from './components/create-collection/create-collection.component';
+import { CreateCollectionComponent } from './components/create-collection-organized/create-collection.component';
 import {
   NgxMatDatetimePickerModule,
   NgxMatNativeDateModule,
@@ -60,6 +61,7 @@ import {
 } from '@angular-material-components/datetime-picker';
 import { CollectionDetailsComponent } from './components/collection-details/collection-details.component';
 import {MatCardModule} from "@angular/material/card";
+import { CreateCollectionRandomComponent } from './components/create-collection-random/create-collection-random.component';
 
 
 @NgModule({
@@ -92,7 +94,9 @@ import {MatCardModule} from "@angular/material/card";
     CollectionDetailsComponent,
     ShowCollectionRandomDetails,
     EditCollectionComponent,
-    CreateCollectionRandomFromTrashComponent,
+    ShowCollectionFromTrashComponent,
+    CreateCollectionRandomComponent,
+    EditCollectionRandomFromTrashComponent
   ],
     imports: [
         BrowserModule,

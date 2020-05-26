@@ -20,6 +20,11 @@ export interface UserGroupModel {
   SocietyId: string,
 }
 
+export interface ShowUsersInMatSelect {
+  email: string;
+  id: string;
+}
+
 export const loggoutUser = {
   Id: '',
   FirstName: '',

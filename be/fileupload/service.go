@@ -134,8 +134,6 @@ func (s *FileuploadService) UploadCollectionImages(c echo.Context) error {
 		}
 	}
 
-	fmt.Println("ALL DONE")
-
 	return c.NoContent(http.StatusCreated)
 }
 

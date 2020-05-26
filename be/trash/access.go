@@ -173,13 +173,13 @@ func (s *TrashAccess) GetCollection(id string) (*models.Collection, error) {
 	return collection, nil
 }
 
-func (s *TrashAccess) GetCollectionIdsOfUser(userId string) (*models.UserCollection, error) {
-	userCollection := new(models.UserCollection)
-	err := s.Db.Model(userCollection).Where("user_id = ?", userId).Select()
+func (s *TrashAccess) GetCollectionIdsOfUser(userId string) ([]models.UserCollection, error) {
+	var usersCollection []models.UserCollection
+	err := s.Db.Model(&usersCollection).Where("user_id = ?", userId).Select()
 	if err != nil {
-		return &models.UserCollection{}, err
+		return []models.UserCollection{}, err
 	}
-	return userCollection, nil
+	return usersCollection, nil
 }
 
 func (s *TrashAccess) UpdateCollectionRandom(request *models.Collection, userId string) (*models.Collection, error) {
@@ -308,8 +308,9 @@ func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId strin
 
 func (s *TrashAccess) isUserInCollection(collectionId string, userId string) (bool, error) {
 	userCollection := new(models.UserCollection)
-	err := s.Db.Model(userCollection).Where("collection_id = ? and user_id = ?", collectionId, userId).
-		Select()
+	fmt.Println(collectionId)
+	fmt.Println(userId)
+	err := s.Db.Model(userCollection).Where("collection_id = ? and user_id = ?", collectionId, userId).Select()
 	if err == pg.ErrNoRows {
 		return false, fmt.Errorf("You are not a member of collection")
 	}

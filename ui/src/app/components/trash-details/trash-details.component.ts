@@ -15,6 +15,7 @@ import {UserModel} from "../../models/user.model";
 import {UserService} from "../../services/user/user.service";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {FormControl} from "@angular/forms";
+import {FileuploadService} from "../../services/fileupload/fileupload.service";
 
 
 export interface DialogDataCreateCollection {
@@ -26,9 +27,11 @@ export interface DialogDataCreateCollection {
 
 export interface DialogDataEditCollection {
   collection: CollectionModel,
-  user: UserModel,
+  leaveCollection: boolean
+  deleteImages: string[],
+  uploadImages: FormData,
   friends: UserModel[],
-  collectedWithFriends: UserModel[],
+  newFriends: UserModel[],
 }
 
 export interface DialogDataShowCollection {
@@ -73,6 +76,7 @@ export class TrashDetailsComponent implements OnInit {
     private trashService: TrashService,
     private authService: AuthService,
     private userService: UserService,
+    private fileuploadService: FileuploadService,
     private createCollectionRandomDialog: MatDialog,
     private editCollectionRandomDialog: MatDialog,
     private showCollectionRandomDialog: MatDialog,
@@ -84,8 +88,6 @@ export class TrashDetailsComponent implements OnInit {
       this.trashId = params.get('id');
       this.trashService.getTrashById(this.trashId).subscribe(
         trash => {
-          console.log(trash)
-          console.log('Collections: ', trash.Collections)
           trash.Collections.map(c => {
             this.shownCollections.push({
               collection: c,
@@ -120,16 +122,26 @@ export class TrashDetailsComponent implements OnInit {
           }
           this.authService.isLoggedIn.subscribe(isLogged => {
             this.isLoggedIn = isLogged
+            if (!isLogged) {
+              return
+            }
             this.userService.getMe().subscribe(me => {
+              this.me = me
               this.getMyFriends();
+
               this.trashService.getIdsOfTrashOfUsers().subscribe(ids => {
+                console.log('moje collections: ', ids)
+                console.log('existing cols: ',this.trash.Collections )
                 ids.map(u => {
                   this.shownCollections.map(c => {
-                    if (u.CollectionId && c.collection.Id) {
+                    if (u.CollectionId === c.collection.Id) {
                       c.canEdit = true
                     }
                   })
                 })
+                console.log('na konci mapovania:')
+                const vals = this.shownCollections.map(a => a.canEdit)
+                console.log(vals)
               })
             })
           })
@@ -145,9 +157,9 @@ export class TrashDetailsComponent implements OnInit {
     this.router.navigateByUrl('trash/edit/' + this.trash.Id)
   }
 
-  showCollectionDetails(Id: string) {
-    this.router.navigateByUrl('collection/details/' + this.trash.Id)
-  }
+  // showCollectionDetails(Id: string) {
+  //   this.router.navigateByUrl('collection/details/' + this.trash.Id)
+  // }
 
   onCreateEvent() {
     this.router.navigateByUrl('events/create')
@@ -191,44 +203,97 @@ export class TrashDetailsComponent implements OnInit {
   }
 
   onCreateCollection() {
-    const dialogRef = this.createCollectionRandomDialog.open(CreateCollectionRandomFromTrashComponent, {
+    this.router.navigate(['collection/create',this.trashId ])
+    //badly shows window
+    // const dialogRef = this.createCollectionRandomDialog.open(CreateCollectionRandomFromTrashComponent, {
+    //   width: '800px',
+    //   data: {
+    //     collection: defaultCollectionModel,
+    //     friends: this,
+    //     collectedWithFriends: [],
+    //   }
+    // });
+    //
+    // dialogRef.afterClosed().subscribe(() => {
+    // });
+  }
+
+  onShowCollection(collectionId: string) {
+      let collection: CollectionModel = defaultCollectionModel
+      this.trash.Collections.map(c => {
+        if (c.Id === collectionId) {
+          collection = c
+        }
+      })
+
+      if (!collection.Images) {
+        collection.Images = [];
+      }
+
+      const dialogRef = this.showCollectionRandomDialog.open(ShowCollectionFromTrashComponent, {
+        width: '800px',
+        data: {
+          collection: collection,
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(() => {});
+  }
+
+  onEditCollection(collectionId: string) {
+    let collection: CollectionModel = defaultCollectionModel
+    this.trash.Collections.map(c => {
+      if (c.Id === collectionId) {
+        collection = c
+      }
+    })
+
+    if (!collection.Images) {
+      collection.Images = [];
+    }
+
+    const oldCollection: CollectionModel = {
+      Weight: collection.Weight,
+      CleanedTrash: collection.CleanedTrash,
+      Id: collection.Id,
+      EventId: collection.TrashId,
+      TrashId: collection.TrashId,
+      Users: collection.Users,
+      Images: collection.Images,
+      CreatedAt: collection.CreatedAt
+    }
+
+    const dialogRef = this.editCollectionRandomDialog.open(EditCollectionRandomFromTrashComponent, {
       width: '800px',
       data: {
-        collection: defaultCollectionModel,
-        friends: this,
-        collectedWithFriends: [],
+        collection: collection,
+        leaveCollection: false,
+        deleteImages: [],
+        uploadImages: new FormData(),
+        friends: this.friends,
+        newFriends: [],
       }
     });
 
-    dialogRef.afterClosed().subscribe(() => {
+    dialogRef.afterClosed().subscribe(res => {
+      console.log('upravil som to tak, ze:', res)
+      if (res.leaveCollection) {
+
+      } else {
+        console.log(oldCollection.Weight != res.collection.Weight ||
+          oldCollection.CleanedTrash != res.collection.CleanedTrash)
+        if (oldCollection.Weight != res.collection.Weight ||
+          oldCollection.CleanedTrash != res.collection.CleanedTrash) {
+          console.log('updatujem')
+          this.trashService.updateCollection(res.collection).subscribe()
+        }
+        //TODO new friends
+        if (res.uploadImages.has('files')) {
+          this.fileuploadService.uploadCollectionImages(res.uploadImages, collectionId).subscribe()
+        }
+      }
     });
   }
-
-  onEditCollection(id: string) {
-
-  }
-
-  // onShowCollection(collectionId: string) {
-  //   let collection: CollectionModel = defaultCollectionModel
-  //   this.event.Collections.map(c => {
-  //     if (c.Id === collectionId) {
-  //       collection = c
-  //     }
-  //   })
-  //
-  //   if (!collection.Images) {
-  //     collection.Images = [];
-  //   }
-  //
-  //   const dialogRef = this.showCollectionDialog.open(ShowCollectionComponent, {
-  //     width: '800px',
-  //     data: {
-  //       collection: collection,
-  //     }
-  //   });
-  //
-  //   dialogRef.afterClosed().subscribe(() => {});
-  // }
 
 
   private getMyFriends() {
@@ -259,127 +324,125 @@ export class TrashDetailsComponent implements OnInit {
 
 //DIALOG INFO
 
-
 @Component({
-  selector: 'app-create-collection-random',
-  templateUrl: './dialog-create-collection-random/create-collection-dialog.component.html',
-  styleUrls: ['./dialog-create-collection-random/create-collection-dialog.component.css'],
+  selector: 'app-show-collection',
+  templateUrl: './dialog-collection-detail/detail-dialog.component.html',
+  styleUrls: ['./dialog-collection-detail/detail-dialog.component.css']
 })
-export class CreateCollectionRandomFromTrashComponent {
-  showUsers: ShowUsersInModal[];
-  selectedFriends: FormControl;
+export class ShowCollectionFromTrashComponent {
 
-  constructor(public dialogRef: MatDialogRef<CreateCollectionRandomFromTrashComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: DialogDataCreateCollection) {
-    if (data.friends) {
-      this.showUsers = this.data.friends.map(f => {
-        return {
-          email: f.Email,
-          id: f.Id,
-        }
-      })
-    }
-    this.selectedFriends = new FormControl()
+  constructor( public dialogRef: MatDialogRef<ShowCollectionFromTrashComponent>,
+               @Inject(MAT_DIALOG_DATA) public data: DialogDataShowCollection) {
+    console.log(data)
   }
 
   onNoClick(): void {
     this.dialogRef.close();
   }
 
+}
+
+
+@Component({
+  selector: 'app-edit-collection',
+  templateUrl: './dialog-edit-collection/edit-collection-dialog.component.html',
+  styleUrls: ['./dialog-edit-collection/edit-collection-dialog.component.css'],
+})
+export class EditCollectionRandomFromTrashComponent {
+  images = []
+  show: boolean = true;
+
+  constructor(public dialogRef: MatDialogRef<EditCollectionRandomFromTrashComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: DialogDataEditCollection) {
+    console.log('images in: ', this.data.collection.Images)
+    data.collection.Images.map(i => this.images.push({
+      Url: i.Url,
+      CollectionId: i.CollectionId,
+    }))
+    console.log('images in dialog: ', this.images)
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+  onDelete(url: string) {
+    this.data.deleteImages.push(url)
+    const index = this.images.findIndex(i => i.Url === url)
+    this.images[index] = true
+    this.reload()
+  }
+
+  reload() {
+    this.show = false;
+    setTimeout(() => this.show = true);
+  }
 
   onUpload(event) {
-    this.data.collectionImages.delete('files')
+    this.data.uploadImages.delete('files')
     for (let i = 0; i < event.target.files.length; i++) {
-      this.data.collectionImages.append("files", event.target.files[i], event.target.files[i].name);
+      this.data.uploadImages.append("files", event.target.files[i], event.target.files[i].name);
     }
   }
 
-  onCreate() {
-    console.log('From form controll: ', this.selectedFriends)
+  onSetDelete() {
+    this.data.leaveCollection = true
+    this.data.uploadImages = new FormData()
     this.dialogRef.close({
-      collection: this.data.collection,
-      collectionImages: this.data.collectionImages,
-      collectionWithFriends:  this.selectedFriends
+      leaveCollection: true,
+      collection: this.data.collection
     });
   }
 }
 
-// @Component({
-//   selector: 'app-edit-collection',
-//   templateUrl: './dialog-edit-collection/edit-collection-dialog.component.html',
-//   styleUrls: ['./dialog-edit-collection/edit-collection-dialog.component.css'],
-// })
-// export class EditCollectionRandomFromTrashComponent {
-//   images = []
-//   show: boolean = true;
+
 //
-//   constructor(public dialogRef: MatDialogRef<EditCollectionRandomFromTrashComponent>,
-//               @Inject(MAT_DIALOG_DATA) public data: DialogDataEditCollection) {
-//     console.log('images in: ', this.data.collection.Images)
-//     data.collection.Images.map(i => this.images.push({
-//       Url: i.Url,
-//       CollectionId: i.CollectionId,
-//     }))
-//     console.log('images in dialog: ', this.images)
+// @Component({
+//   selector: 'app-create-collection-random',
+//   templateUrl: './dialog-create-collection-random/create-collection-dialog.component.html',
+//   styleUrls: ['./dialog-create-collection-random/create-collection-dialog.component.css'],
+// })
+// export class CreateCollectionRandomFromTrashComponent {
+//   showUsers: ShowUsersInModal[];
+//   selectedFriends: FormControl;
+//
+//   constructor(public dialogRef: MatDialogRef<CreateCollectionRandomFromTrashComponent>,
+//               @Inject(MAT_DIALOG_DATA) public data: DialogDataCreateCollection) {
+//     if (data.friends) {
+//       this.showUsers = this.data.friends.map(f => {
+//         return {
+//           email: f.Email,
+//           id: f.Id,
+//         }
+//       })
+//     }
+//     this.selectedFriends = new FormControl()
 //   }
 //
 //   onNoClick(): void {
 //     this.dialogRef.close();
 //   }
 //
-//   onDelete(url: string) {
-//     this.data.deleteImages.push(url)
-//     const index = this.images.findIndex(i => i.Url === url)
-//     this.images[index] = true
-//     this.reload()
-//   }
-//
-//   onRemoveFromList(url: string) {
-//     let index = this.data.deleteImages.findIndex(i => i === url)
-//     this.data.deleteImages = this.data.deleteImages.splice(index, 1)
-//
-//     index = this.images.findIndex(i => i.Url === url)
-//     this.images[index] = false
-//     this.reload()
-//   }
-//
-//   reload() {
-//     this.show = false;
-//     setTimeout(() => this.show = true);
-//   }
 //
 //   onUpload(event) {
-//     this.data.uploadImages.delete('files')
+//     this.data.collectionImages.delete('files')
 //     for (let i = 0; i < event.target.files.length; i++) {
-//       this.data.uploadImages.append("files", event.target.files[i], event.target.files[i].name);
+//       this.data.collectionImages.append("files", event.target.files[i], event.target.files[i].name);
 //     }
 //   }
 //
-//   onSetDelete() {
-//     this.data.deleteCollection = true
-//     this.data.uploadImages = new FormData()
+//   onCreate() {
+//     console.log('From form controll: ', this.selectedFriends)
 //     this.dialogRef.close({
-//       deleteCollection: true,
-//       collection: this.data.collection
+//       collection: this.data.collection,
+//       collectionImages: this.data.collectionImages,
+//       collectionWithFriends:  this.selectedFriends
 //     });
 //   }
 // }
-//
-// @Component({
-//   selector: 'app-show-collection',
-//   templateUrl: './dialog-collection-detail/detail-dialog.component.html',
-//   styleUrls: ['./dialog-collection-detail/detail-dialog.component.css']
-// })
-// export class ShowCollectionFromTrashComponent {
-//
-//   constructor( public dialogRef: MatDialogRef<ShowCollectionFromTrashComponent>,
-//                @Inject(MAT_DIALOG_DATA) public data: DialogDataShowCollection) {
-//     console.log(data)
-//   }
-//
-//   onNoClick(): void {
-//     this.dialogRef.close();
-//   }
-//
-// }
+
+
+
+
+
 

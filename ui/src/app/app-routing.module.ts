@@ -14,9 +14,10 @@ import {CreateEventComponent} from "./components/create-event/create-event.compo
 import {EventDetailsComponent} from "./components/event-details/event-details.component";
 import {EventsComponent} from "./components/events/events.component";
 import {EditEventComponent} from "./components/edit-event/edit-event.component";
-import {CreateCollectionComponent} from "./components/create-collection/create-collection.component";
+import {CreateCollectionComponent} from "./components/create-collection-organized/create-collection.component";
 import {UserDetailComponent} from "./components/user-detail/user-detail.component";
 import {CollectionDetailsComponent} from "./components/collection-details/collection-details.component";
+import {CreateCollectionRandomComponent} from "./components/create-collection-random/create-collection-random.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'map', pathMatch: 'full'},
@@ -33,6 +34,7 @@ const routes: Routes = [
   {path: 'events/details/:eventId', component: EventDetailsComponent},
   {path: 'events/edit/:eventId', component: EditEventComponent},
   {path: 'collection', component: CreateCollectionComponent},
+  {path: 'collection/create/:trashId', component: CreateCollectionRandomComponent},
   {path: 'collection/details/:id', component: CollectionDetailsComponent},
   { path: 'me', component: MyProfileComponent},
   { path: 'users/profile/:userId', component: UserDetailComponent },

@@ -1,4 +1,4 @@
 import {SocietyModel} from "../../models/society.model";
 
 export const CollectionTableDisplayedColumns =
-  ['weight', 'createdAt', 'showMore']
+  ['weight', 'createdAt', 'showMore', 'edit']

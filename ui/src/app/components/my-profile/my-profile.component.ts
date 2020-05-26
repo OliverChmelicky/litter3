@@ -301,7 +301,7 @@ export class MyProfileComponent implements OnInit {
         //TODO update table
       } else {
         if (result.update) {
-          this.trashService.updateCollection().subscribe()
+          this.trashService.updateCollection(result.data.collection).subscribe()
         }
         if (result.deletedImages.length > 0) {
           //TODO delete images of col rand

@@ -63,6 +63,7 @@ var (
 	ErrDeleteTrash      = "ERROR DELETE TRASH"
 
 	ErrCreateCollectionRaw = "CREATE RAW COLLECTION"
+	ErrGetCollectionRaw = "GET RAW COLLECTION"
 	ErrUpdateCollection    = "UPDATE COLLECTION"
 
 	ErrCreateEvent               = "ERROR CREATE EVENT"
