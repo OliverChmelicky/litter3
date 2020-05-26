@@ -35,7 +35,10 @@ import {MatButtonModule} from "@angular/material/button";
 import { NavListComponent } from './components/nav-list/nav-list.component';
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
-import { TrashDetailsComponent } from './components/trash-details/trash-details.component';
+import {
+  CreateCollectionRandomFromTrashComponent,
+  TrashDetailsComponent
+} from './components/trash-details/trash-details.component';
 import {MatMenuModule} from "@angular/material/menu";
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatInputModule} from "@angular/material/input";
@@ -46,7 +49,7 @@ import {LazyLoadImageModule} from "ng-lazyload-image";
 import { CreateEventComponent } from './components/create-event/create-event.component';
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MAT_DATE_LOCALE, MatNativeDateModule} from "@angular/material/core";
-import {EditCollectionComponent, EventDetailsComponent} from './components/event-details/event-details.component';
+import {EditCollectionComponent, ShowCollectionComponent ,EventDetailsComponent} from './components/event-details/event-details.component';
 import { EventsComponent } from './components/events/events.component';
 import { EditEventComponent } from './components/edit-event/edit-event.component';
 import { CreateCollectionComponent } from './components/create-collection/create-collection.component';
@@ -85,10 +88,11 @@ import {MatCardModule} from "@angular/material/card";
     EventsComponent,
     EditEventComponent,
     CreateCollectionComponent,
-    //ShowCollectionComponent,
+    ShowCollectionComponent,
     CollectionDetailsComponent,
     ShowCollectionRandomDetails,
     EditCollectionComponent,
+    CreateCollectionRandomFromTrashComponent,
   ],
     imports: [
         BrowserModule,

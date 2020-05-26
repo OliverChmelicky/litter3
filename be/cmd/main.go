@@ -144,6 +144,7 @@ func main() {
 	e.POST("/trash/comment", trashService.CreateTrashComment, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/trash/comment/:commentId", trashService.DeleteTrashComment, tokenMiddleware.AuthorizeUser)
 
+	e.GET("/collections/personal", trashService.GetCollectionIdsOfUser, tokenMiddleware.AuthorizeUser)
 	e.POST("/collections/organized", eventService.CreateCollectionsOrganized, tokenMiddleware.AuthorizeUser)
 	e.POST("/collections/random", trashService.CreateCollection, tokenMiddleware.AuthorizeUser)
 	e.GET("/collections/:collectionId", trashService.GetCollection)

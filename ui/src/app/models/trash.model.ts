@@ -85,6 +85,11 @@ export interface CollectionModel {
   CreatedAt?: Date,
 }
 
+export interface CollectionUserModel {
+  UserId: string,
+  CollectionId: string,
+}
+
 export interface CreateCollectionModel {
   Collections: CollectionModel[],
   AsSociety: boolean,

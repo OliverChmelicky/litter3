@@ -89,7 +89,7 @@
   <div *ngFor="let collection of showCollectionsTable" class="bottom">
     <app-image [image]="collection.Images[0].Url" [service]="'collections'"></app-image>
     <p>{{collection.Weight}}</p>
-    <!--    <button mat-button (click)="onShowCollection(collection.Id)">Show</button>-->
+        <button mat-button (click)="onShowCollection(collection.Id)">Show</button>
     <button mat-button *ngIf="isAdmin || isEditor" (click)="onEditCollection(collection.Id)">Edit collection</button>
   </div>
 

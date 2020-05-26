@@ -22,7 +22,6 @@ export class AuthService {
   ) {
     this.afAuth.authState.subscribe(user => {
       if (user) {
-        console.log(user.providerId)
         this.loggedIn.next(true);
         localStorage.setItem('firebaseUser', JSON.stringify(user));
 

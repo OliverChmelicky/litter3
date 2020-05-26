@@ -5,7 +5,7 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {ApisModel} from "../../api/api-urls";
 import {UserModel} from "../../models/user.model";
 import {
-  CollectionModel, CommentModel,
+  CollectionModel, CollectionUserModel, CommentModel,
   TrashModel,
   TrashTypeAutomotive,
   TrashTypeBooleanValues, TrashTypeCarcass,
@@ -189,6 +189,13 @@ export class TrashService {
     const url = `${this.apiUrl}/${ApisModel.collection}/update/col-random`;
     return this.http.put(url, request).pipe(
       catchError(err => TrashService.handleError(err))
+    );
+  }
+
+  getIdsOfTrashOfUsers(): Observable<CollectionUserModel[]> {
+    const url = `${this.apiUrl}/${ApisModel.collection}/personal`;
+    return this.http.get<CollectionUserModel[]>(url).pipe(
+      catchError(err => TrashService.handleError<CollectionUserModel[]>(err, []))
     );
   }
 }

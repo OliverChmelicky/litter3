@@ -34,7 +34,14 @@ export const czechPosition: MapLocationModel = {
   minZoom: 3,
 };
 
-export interface DialogData {
+export interface DialogDataEditCollection {
+  collection: CollectionModel;
+  deleteImages: string[];
+  uploadImages: FormData;
+  deleteCollection: boolean
+}
+
+export interface DialogDataShowCollection {
   collection: CollectionModel;
   deleteImages: string[];
   uploadImages: FormData;
@@ -467,8 +474,6 @@ export class EventDetailsComponent implements OnInit {
             this.fileuploadService.uploadCollectionImages(result.uploadImages,result.collection.Id)
           }
         }
-        console.log('new: ', result.collection.Weight)
-        console.log('old: ', weightBefore)
         if (result.collection.Weight !== weightBefore) {
           this.eventService.updateCollectionOrganized(result.collection, this.event.Id ,this.availableDecisionsAs[this.selectedCreator]).subscribe( res => {},
             error => {console.log(error)}
@@ -478,20 +483,26 @@ export class EventDetailsComponent implements OnInit {
     });
   }
 
-  // onShowCollection(collectionId: string) {
-  //   const collection = this.event.Collections.map( c => c.Id === collectionId)
-  //
-  //   const dialogRef = this.showCollectionDialog.open(ShowCollectionComponent, {
-  //     width: '800px',
-  //     data: {
-  //       collection: collection,
-  //     }
-  //   });
-  //
-  //   dialogRef.afterClosed().subscribe(() => {});
-  // }
+  onShowCollection(collectionId: string) {
+    let collection: CollectionModel = defaultCollectionModel
+    this.event.Collections.map(c => {
+      if (c.Id === collectionId) {
+        collection = c
+      }
+    })
 
-  onApproveCollectionChanges() {
+    if (!collection.Images) {
+      collection.Images = [];
+    }
+
+    const dialogRef = this.showCollectionDialog.open(ShowCollectionComponent, {
+      width: '800px',
+      data: {
+        collection: collection,
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {});
   }
 
   private mapCollectionsToTable(collections: CollectionModel[]) {
@@ -532,7 +543,7 @@ export class EditCollectionComponent {
   show: boolean = true;
 
   constructor(public dialogRef: MatDialogRef<EditCollectionComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+              @Inject(MAT_DIALOG_DATA) public data: DialogDataEditCollection) {
     console.log('images in: ', this.data.collection.Images)
     data.collection.Images.map(i => this.images.push({
       Url: i.Url,
@@ -583,19 +594,20 @@ export class EditCollectionComponent {
   }
 }
 
-// @Component({
-//   selector: 'app-show-collection',
-//   templateUrl: './dialog-collection-detail/detail-dialog.component.html',
-//   //styleUrls: ['./dialog-collection-detail/detail-dialog.component.css]
-// })
-// export class ShowCollectionComponent {
-//
-//   constructor( public dialogRef: MatDialogRef<ShowCollectionComponent>,
-//                @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-//   }
-//
-//   onNoClick(): void {
-//     this.dialogRef.close();
-//   }
-//
-// }
+@Component({
+  selector: 'app-show-collection',
+  templateUrl: './dialog-collection-detail/detail-dialog.component.html',
+  styleUrls: ['./dialog-collection-detail/detail-dialog.component.css']
+})
+export class ShowCollectionComponent {
+
+  constructor( public dialogRef: MatDialogRef<ShowCollectionComponent>,
+               @Inject(MAT_DIALOG_DATA) public data: DialogDataShowCollection) {
+    console.log(data)
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+}

@@ -254,7 +254,6 @@ func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Vo fnc getSocAdmins: ", admins)
 	if len(admins) == 0 {
 		return nil, pg.ErrNoRows
 	}

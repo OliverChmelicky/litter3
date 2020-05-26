@@ -18,7 +18,7 @@ export class NavListComponent implements OnInit {
     {
       name: 'Societies',
       url: 'societies',
-      icon:'delete',
+      icon:'account_circle',
     },
     {
       name: 'Map',
