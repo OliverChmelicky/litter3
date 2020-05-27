@@ -65,6 +65,7 @@ var (
 	ErrCreateCollectionRaw = "CREATE RAW COLLECTION"
 	ErrGetCollectionRaw = "GET RAW COLLECTION"
 	ErrUpdateCollection    = "UPDATE COLLECTION"
+	ErrAddPickerToCollection = "ERROR ADD PICKER TO COLLECTION"
 
 	ErrCreateEvent               = "ERROR CREATE EVENT"
 	ErrCreateCollectionFromEvent = "CREATE COLLECTION FROM EVENT"

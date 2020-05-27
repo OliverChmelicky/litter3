@@ -1,13 +1,15 @@
-<div class="center">
+<div class="edit-collection-random">
+  <div class="edit-collection-form">
     <mat-form-field>
       <mat-label>Your friends not in collection:</mat-label>
       <mat-select [formControl]="addFriends" multiple>
         <mat-option *ngFor="let user of friendsNotInCollection" [value]="user.Id">{{user.Email}}</mat-option>
       </mat-select>
     </mat-form-field>
+    <input type="number" [(ngModel)]="newWeight">
+    <mat-checkbox [(ngModel)]="newCleanedTrash">Cleaned trash</mat-checkbox>
+  </div>
 
-  <input type="number" [(ngModel)]="newWeight">
-  <mat-checkbox [(ngModel)]="newCleanedTrash">Cleaned trash</mat-checkbox>
   <div *ngFor="let person of peopleInCollection" class="people-list">
     <p>{{person.Email}}</p>
   </div>
@@ -18,7 +20,9 @@
     <button *ngIf="img.inDeleteList" mat-button (click)="onRemoveFromDeleteList(img.Url)">Undo deletion</button>
   </div>
 
-  <label>Upload new images from collecting:</label>
+
+
+  <label>Upload new images:</label>
   <input type="file" (change)="onUpload($event)" multiple>
 
   <button mat-button color="primary" (click)="onUpdate()">Update Collection</button>

@@ -5,6 +5,7 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {ApisModel} from "../../api/api-urls";
 import {UserModel} from "../../models/user.model";
 import {
+  AddPickersToCollectionRequest,
   CollectionImageModel,
   CollectionModel,
   CollectionUserModel,
@@ -213,6 +214,17 @@ export class TrashService {
 
   createCollection(request: CreateCollectionRandomRequest): Observable<CollectionModel> {
     const url = `${this.apiUrl}/${ApisModel.collection}/random`;
+    return this.http.post<CollectionModel>(url, request).pipe(
+      catchError(err => TrashService.handleError<CollectionModel>(err))
+    );
+  }
+
+  addFriendsToCollection(friends: string[], collectionId: string) {
+    const request: AddPickersToCollectionRequest = {
+      CollectionId: collectionId,
+      UserId: friends,
+    }
+    const url = `${this.apiUrl}/${ApisModel.collection}/add-picker`;
     return this.http.post<CollectionModel>(url, request).pipe(
       catchError(err => TrashService.handleError<CollectionModel>(err))
     );

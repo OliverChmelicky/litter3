@@ -196,7 +196,6 @@ export class EditEventComponent implements OnInit {
     this.borderRight = c.lng() + 8.82
     this.borderLeft = c.lng() - 8.82
 
-    console.log('map is ready')
 
     this.trashService.getTrashInRange(this.map.getCenter().lat(), this.map.getCenter().lng(), this.initialDistance).subscribe(
       trash => {
@@ -227,8 +226,8 @@ export class EditEventComponent implements OnInit {
       Trash: trashIds,
     }
 
-    this.eventService.updateEvent(request).subscribe(ret => {
-        this.router.navigate(['events/details', request.Id]);
+    this.eventService.updateEvent(request).subscribe(() => {
+        this.router.navigate(['events/details', request.Id])
       },
       error => console.log(error)
     )
@@ -344,7 +343,6 @@ export class EditEventComponent implements OnInit {
   }
 
   loadNewMarkers() {
-    console.log('loading new markers')
     const p1 = this.map.getBounds().getNorthEast()
     const p2 = this.map.getBounds().getSouthWest()
 
@@ -408,13 +406,31 @@ export class EditEventComponent implements OnInit {
   }
 
   private filterSelected() {
-    console.log('Before filter: ', this.allMarkers.length)
-    this.selectedMarkers.map((selected, i) => {
-      this.allMarkers.map( m => {
+    console.log('Before filter: ', this.allMarkers)
+    console.log('Selected: ', this.selectedMarkers)
+
+    this.selectedMarkers.map(selected => {
+      this.allMarkers.map( (m, i) => {
+        if (m.id === '92d9cdd1-7991-431e-ba2e-33719ac98b3d'){
+          console.log('vyhadzujem:')
+        }
         if (m.id === selected.id) {
-          this.allMarkers.splice(i, 1)
+          let a =this.allMarkers.splice(i, 1)
+          console.log('Removed: ', a)
         }
       })
     })
   }
+
+  filterFutureMarkers(futureMarkers: MarkerModel[]): MarkerModel[] {
+    this.selectedMarkers.map((selected, i) => {
+      futureMarkers.map( m => {
+        if (m.id === selected.id) {
+          futureMarkers.splice(i, 1)
+        }
+      })
+    })
+    return futureMarkers
+  }
+
 }

@@ -13,6 +13,7 @@ import (
 	"google.golang.org/api/option"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -48,7 +49,7 @@ func CreateService(db *pg.DB, opt option.ClientOption, bucketName string) *Fileu
 	}
 }
 
-func (s *FileuploadService) UploadUserImages(c echo.Context) error {
+func (s *FileuploadService) UploadUserImage(c echo.Context) error {
 	userId := c.Param("userId")
 
 	objectName, err := s.UploadImage(c)
@@ -275,8 +276,17 @@ func (s *FileuploadService) DeleteTrashImage(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 func (s *FileuploadService) DeleteCollectionImages(c echo.Context) error {
-	imageName := c.Param("image")
+	userId := c.Get("userId").(string)
 	collectionId := c.Param("collectionId")
+	idsString := c.QueryParam("ids")
+	ids := strings.Split(idsString, ",")
+
+	err := s.db.Model(&models.UserCollection{}).Where("user_id = ? and collection_id = ?", userId, collectionId).First()
+	if err == pg.ErrNoRows {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+	} else if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+	}
 
 	tx, err := s.db.Begin()
 	if err != nil {
@@ -284,20 +294,22 @@ func (s *FileuploadService) DeleteCollectionImages(c echo.Context) error {
 	}
 	defer tx.Rollback()
 
-	imageDb := new(models.CollectionImage)
-	_, err = tx.Model(imageDb).Where("url = ? and collection_id = ?", imageName, collectionId).Delete()
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
-	}
+	for _, imageName := range ids {
+		imageDb := new(models.CollectionImage)
+		_, err = tx.Model(imageDb).Where("url = ? and collection_id = ?", imageName, collectionId).Delete()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		}
 
-	err = s.DeleteImage(imageName)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
-	}
+		err = s.DeleteImage(imageName)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		}
 
-	err = tx.Commit()
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		err = tx.Commit()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		}
 	}
 
 	return c.NoContent(http.StatusOK)

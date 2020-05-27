@@ -1,15 +1,12 @@
-.edit-event {
+:host{
+  width: 100%;
+}
+
+.edit-society {
   display: flex;
-  justify-content: space-between;
-  padding: 32px;
+  margin: 60px 40px;
 }
 
 .society-details {
-  margin-right: 40px;
-}
-
-.events {
-  display: flex;
-  width: 100%;
-  justify-content: center;
+  margin-right: 60px;
 }

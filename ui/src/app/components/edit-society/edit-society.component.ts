@@ -12,7 +12,7 @@ import {ApisModel} from "../../api/api-urls";
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {MatTableDataSource} from "@angular/material/table";
-import {MarkerModel} from "../google-map/Marker.model";
+import {Location} from '@angular/common';
 
 export interface DialogData {
   header: string,
@@ -38,7 +38,7 @@ export class EditSocietyComponent implements OnInit {
   origMembers: UserInSocietyModel[] = [];
 
   roles = roles;
-  society: SocietyModel = DefaultSociety;
+  society: SocietyModel// = DefaultSociety;
   fd: FormData = new FormData();
 
   adminsMembers: MemberModel[];
@@ -56,6 +56,7 @@ export class EditSocietyComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private location: Location,
     private societyService: SocietyService,
     private userService: UserService,
     private formBuilder: FormBuilder,
@@ -167,7 +168,9 @@ export class EditSocietyComponent implements OnInit {
     if (this.societyForm.value['description'] !== '' ) {
       this.society.Description = this.societyForm.value['description']
     }
-    this.societyService.updateSociety(this.society).subscribe()
+    this.societyService.updateSociety(this.society).subscribe(
+      () => this.location.back()
+    )
     if (this.fd.getAll('file').length !== 0) {
       this.fileuploadService.uploadSocietyImage(this.fd, this.society.Id).subscribe(
         () => this.fd.delete('file')

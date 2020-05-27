@@ -1,20 +1,39 @@
-:host{
+:host {
   width: 100%;
 }
 
-.map-class{
+.map-class {
   width: 500px;
   height: 500px;
+  margin: 16px;
 }
 
-agm-map{
+agm-map {
   width: 100%;
   display: block;
   height: 100%;
 }
 
+.title {
+  position: relative;
+  bottom: 16px;
+}
+
 .create-collection-container {
   display: flex;
-flex-direction: column;
-  justify-content: center;
+  padding: 32px 24px;
+}
+
+.collection-form{
+  margin-bottom: 8px;
+  border-bottom: 1px solid;
+}
+
+.marginer {
+  margin-right: 4px;
+}
+
+.second-detail-input {
+  margin-right: 32px;
+  display: inline-block;
 }

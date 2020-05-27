@@ -229,19 +229,27 @@ func (s *TrashAccess) UpdateCollectionRandom(request *models.Collection, userId 
 	return request, tx.Commit()
 }
 
-func (s *TrashAccess) AddPickerToCollection(request *models.UserCollection, givesAnother string) (*models.UserCollection, error) {
+func (s *TrashAccess) AddPickersToCollection(request *models.AddPickersToCollectionRequest, givesAnother string) (*models.AddPickersToCollectionRequest, error) {
 	attended, err := s.isUserInCollection(request.CollectionId, givesAnother)
 	if err != nil {
-		return &models.UserCollection{}, fmt.Errorf("Error verifying if user is in collection: %w ", err)
+		return &models.AddPickersToCollectionRequest{}, fmt.Errorf("Error verifying if user is in collection: %w ", err)
 	}
 	if !attended {
-		return &models.UserCollection{}, fmt.Errorf("You cannot update this collection: %w ", err)
+		return &models.AddPickersToCollectionRequest{}, fmt.Errorf("You cannot update this collection: %w ", err)
 	}
 
-	err = s.Db.Insert(request)
-	if err != nil {
-		return &models.UserCollection{}, fmt.Errorf("Error adding picker to collection: %w ", err)
+	for _, picker := range request.UserId {
+		fmt.Println("pridavam")
+		record := new(models.UserCollection)
+		record.UserId = picker
+		record.CollectionId = request.CollectionId
+		err = s.Db.Insert(record)
+		if err != nil {
+			return &models.AddPickersToCollectionRequest{}, fmt.Errorf("Error adding picker to collection: %w ", err)
+		}
 	}
+
+	fmt.Println("Pridal som: ", len(request.UserId))
 
 	return request, nil
 }

@@ -107,7 +107,6 @@ export class EventDetailsComponent implements OnInit {
       this.eventService.getEvent(params.get('eventId')).subscribe(event => {
           this.convertToLocalTime()
           this.event = event
-        console.log(event.Collections)
           if (event.Collections) {
             this.mapCollectionsToTable(event.Collections)
           }

@@ -45,24 +45,40 @@ export class EditCollectionRandomComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const collectionId = params.get('collectionId');
-
-      this.authService.isLoggedIn.subscribe(loggedId => {
-        if (loggedId) {
-          this.userService.getMe().subscribe(me => {
-            this.me = me;
-            this.getMyFriends();
+      this.userService.getMe().subscribe(me => {
+        this.me = me;
+        this.userService.getMyFriendsIds().subscribe(relationship => {
+          console.log('Those are my friends: ',relationship)
+            if (relationship != null) {
+              const userIds = relationship.map(friend => {
+                if (friend.User1Id !== this.me.Id)
+                  return friend.User1Id;
+                if (friend.User2Id !== this.me.Id)
+                  return friend.User2Id;
+              });
+              if (userIds.length !== 0) {
+                this.userService.getUsersDetails(userIds).subscribe(
+                  users => {
+                    this.allFriends = users
+                    this.fillUsersForMatSelect(users)
+                  },
+                  err => console.log('Error fetching user details ', err)
+                );
+              }
+            } else {
+              this.allFriends = []
+            }
 
             this.trashService.getCollectionById(collectionId).subscribe(c => {
               this.collection = c
               if (c.Images) {
-                c.Images.map( col => {
+                c.Images.map(col => {
                   this.collectionImages.push({
                     Url: col.Url,
                     CollectionId: col.CollectionId,
                     inDeleteList: false,
                   })
                 })
-
               }
               this.newWeight = c.Weight
               this.newCleanedTrash = c.CleanedTrash
@@ -71,9 +87,14 @@ export class EditCollectionRandomComponent implements OnInit {
                 this.filterFirendsAlreadyInCollection()
               }
             })
-          })
-        }
+
+
+          },
+          error => console.log('Error GetMyFriends ', error)
+        )
       })
+
+
     });
   }
 
@@ -89,14 +110,17 @@ export class EditCollectionRandomComponent implements OnInit {
       CreatedAt: this.collection.CreatedAt
     }
 
+
     if (this.collection.Weight != this.newWeight ||
       this.collection.CleanedTrash != this.newCleanedTrash) {
-      this.trashService.updateCollection(newCollection).subscribe( )
+      this.trashService.updateCollection(newCollection).subscribe()
     }
-    console.log('mam tychto friendsL ', this.addFriends)
-    // if (this.addFriends) {
-    //   this.trashService.addFriendsToCollection().subscribe()
-    // }
+    if (this.deleteImages.length > 0) {
+      this.fileuploadService.deleteCollectionImagesFromRandom(this.deleteImages, this.collection.Id).subscribe()
+    }
+    if (this.addFriends) {
+      this.trashService.addFriendsToCollection(this.addFriends.value, this.collection.Id).subscribe()
+    }
     if (this.newImages.has('files')) {
       this.fileuploadService.uploadCollectionImages(this.newImages, this.collection.Id).subscribe()
     }
@@ -116,31 +140,6 @@ export class EditCollectionRandomComponent implements OnInit {
     }
   }
 
-  private getMyFriends() {
-    this.userService.getMyFriendsIds().subscribe(relationship => {
-        if (relationship != null) {
-          const userIds = relationship.map(friend => {
-            if (friend.User1Id !== this.me.Id)
-              return friend.User1Id;
-            if (friend.User2Id !== this.me.Id)
-              return friend.User2Id;
-          });
-          if (userIds.length !== 0) {
-            this.userService.getUsersDetails(userIds).subscribe(
-              users => {
-                this.allFriends = users
-                this.fillUsersForMatSelect(users)
-              },
-              err => console.log('Error fetching user details ', err)
-            );
-          }
-        } else {
-          this.allFriends = []
-        }
-      },
-      error => console.log('Error GetMyFriends ', error)
-    )
-  }
 
   private fillUsersForMatSelect(users: UserModel[]) {
     this.showUsers = users.map(u => {
@@ -159,11 +158,14 @@ export class EditCollectionRandomComponent implements OnInit {
           found = true;
         }
       }
+      console.log(found)
 
       if (!found) {
         this.friendsNotInCollection.push(this.allFriends[i])
       }
     }
+
+    console.log('friends not in col: ',this.friendsNotInCollection)
 
   }
 

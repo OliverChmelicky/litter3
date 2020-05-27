@@ -1,3 +1,24 @@
+:host {
+  width: 100%;
+}
+
 .society-container {
   display: flex;
+  flex-direction: column;
+}
+
+.information-container {
+  margin: 24px 26px;
+}
+
+.tables {
+  padding: 0 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.tables table {
+  margin: 8px;
+  max-width: 350px;
+  flex-grow: 1;
 }

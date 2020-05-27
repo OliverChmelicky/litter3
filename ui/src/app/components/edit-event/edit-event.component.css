@@ -1,3 +1,28 @@
+:host{
+  width: 100%;
+  padding: 32px 24px ;
+}
+
+.component-container {
+  display: flex;
+}
+
+
+.component-item {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  margin-right: 60px;
+}
+
+.buttons {
+  display: flex;
+}
+
+.buttons button {
+  flex-grow: 1;
+}
+
 agm-map {
   height: 100%;
   width: 100%;
@@ -6,4 +31,13 @@ agm-map {
 .mymap {
   height: 550px;
   width: 900px;
+}
+
+.textarea {
+  height: 400px;
+  resize: vertical;
+}
+
+.trash-list table {
+  width: 500px;
 }

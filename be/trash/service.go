@@ -267,14 +267,17 @@ func (s *trashService) UpdateCollectionRandom(c echo.Context) error {
 
 func (s *trashService) AddPickerToCollection(c echo.Context) error {
 	userId := c.Get("userId").(string)
-	request := new(models.UserCollection)
+
+	request := new(models.AddPickersToCollectionRequest)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
 
-	collection, err := s.TrashAccess.AddPickerToCollection(request, userId)
+	fmt.Println("request: ", request)
+
+	collection, err := s.TrashAccess.AddPickersToCollection(request, userId)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrCreateCollectionRaw, err))
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrAddPickerToCollection, err))
 	}
 
 	return c.JSON(http.StatusOK, collection)

@@ -238,12 +238,15 @@ func (s *UserAccess) GetUserSocieties(id string) ([]models.Society, error) {
 		societiesIds = append(societiesIds, relation.SocietyId)
 	}
 
-	err = s.Db.Model(&societies).Where("id IN (?)", societiesIds).
-		Where("id = ?", id).Select()
-	if err != nil {
-		return []models.Society{}, err
+	if len(societiesIds) > 0 {
+		err = s.Db.Model(&societies).Where("id IN (?)", pg.In(societies)).
+			Where("id = ?", id).Select()
+		if err != nil {
+			return []models.Society{}, err
+		}
 	}
-	return []models.Society{}, nil
+
+	return societies, nil
 }
 
 func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {

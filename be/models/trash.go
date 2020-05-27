@@ -134,6 +134,12 @@ type UserCollection struct {
 	CollectionId string   `pg:",pk"`
 }
 
+type AddPickersToCollectionRequest struct {
+	tableName    struct{} `pg:"users_collections"json:"-"`
+	UserId       []string   `pg:",pk"`
+	CollectionId string   `pg:",pk"`
+}
+
 type TrashComment struct {
 	tableName struct{} `pg:"trash_comments"json:"-"`
 	Id        string   `pg:",pk"`

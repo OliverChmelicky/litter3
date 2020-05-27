@@ -10,7 +10,6 @@ import {
   EventRequestModel, EventWithCollectionsModel,
   EventWithPagingAnsw
 } from "../../models/event.model";
-import {SocietyWithPagingAnsw} from "../../models/society.model";
 import {AttendantsModel, PagingModel} from "../../models/shared.models";
 import {CollectionModel, CreateCollectionModel, UpdateCollectionModel} from "../../models/trash.model";
 

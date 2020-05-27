@@ -4,6 +4,7 @@ import {ApisModel} from "../../api/api-urls";
 import {Observable, of, throwError} from "rxjs";
 import {catchError} from "rxjs/operators";
 import {TrashModel} from "../../models/trash.model";
+import {EventPickerModel} from "../../models/event.model";
 
 @Injectable({
   providedIn: 'root'
@@ -15,22 +16,6 @@ export class FileuploadService {
     private http: HttpClient,
   ) {
     this.apiUrl = ApisModel.apiUrl
-  }
-
-  getUserImage() {
-
-  }
-
-  getSocietyImage() {
-
-  }
-
-  getTrashImages() {
-
-  }
-
-  getCollectionImages() {
-
   }
 
   uploadUserImage(event) {
@@ -75,8 +60,20 @@ export class FileuploadService {
 
   }
 
-  deleteCollectionImages() {
+  deleteCollectionImagesFromEvent(images: string[], eventId: string, eventPickerModel: EventPickerModel) {
+    const imagesQueryParam = images.join();
+    const url = `${this.apiUrl}/${ApisModel.fileupload}/${ApisModel.collection}/delete?ids=${imagesQueryParam}event=${eventId}&picker=${eventPickerModel.Id}&asSociety=${eventPickerModel.AsSociety}`;
+    return this.http.delete(url).pipe(
+      catchError(err => FileuploadService.handleError(err))
+    );
+  }
 
+  deleteCollectionImagesFromRandom(images: string[], collectionId: string) {
+    const imagesQueryParam = images.join();
+    const url = `${this.apiUrl}/${ApisModel.fileupload}/${ApisModel.collection}/delete/${collectionId}?ids=${imagesQueryParam}`;
+    return this.http.delete(url).pipe(
+      catchError(err => FileuploadService.handleError(err))
+    );
   }
 
 

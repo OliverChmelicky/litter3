@@ -16,7 +16,6 @@ export interface SocietyModel {
 export const DefaultSociety: SocietyModel = {
   Name: '',
   Description: '',
-  Avatar: ''
 }
 
 export interface SocietyAnswSimpleModel {

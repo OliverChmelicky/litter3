@@ -146,6 +146,7 @@ func main() {
 
 	e.GET("/collections/personal", trashService.GetCollectionIdsOfUser, tokenMiddleware.AuthorizeUser)
 	e.POST("/collections/organized", eventService.CreateCollectionsOrganized, tokenMiddleware.AuthorizeUser)
+	e.POST("/collections/add-picker", trashService.AddPickerToCollection, tokenMiddleware.AuthorizeUser)
 	e.POST("/collections/random", trashService.CreateCollection, tokenMiddleware.AuthorizeUser)
 	e.GET("/collections/:collectionId", trashService.GetCollection)
 	e.PUT("/collections/update/col-organized", eventService.UpdateCollectionOrganized, tokenMiddleware.AuthorizeUser)
@@ -160,7 +161,12 @@ func main() {
 	e.DELETE("/fileupload/trash/delete/:trashId/:image", fileuploadService.DeleteTrashImage)
 	e.POST("/fileupload/collections/:collectionId", fileuploadService.UploadCollectionImages)
 	e.GET("/fileupload/collections/load/:image", fileuploadService.GetCollectionImages)
-	e.DELETE("/fileupload/collections/delete/:collectionId/:image", fileuploadService.DeleteCollectionImages)
+	e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteCollectionImages, tokenMiddleware.AuthorizeUser)
+
+	//e.POST("/fileupload/societies/:societyId", fileuploadService.UploadUserImage, tokenMiddleware.AuthorizeUser)
+	//e.GET("/fileupload/societies/load/:image", fileuploadService.GetUserImage)
+	//e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteSocietyImage, tokenMiddleware.AuthorizeUser)
+	//e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteUserImage, tokenMiddleware.AuthorizeUser)
 
 	if production {
 		listenOn := fmt.Sprintf(":%s", os.Getenv("PORT"))

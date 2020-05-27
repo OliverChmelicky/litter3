@@ -60,10 +60,6 @@ func (s *EventService) GetEvent(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetEvent, err))
 	}
 
-	fmt.Println("Vraciam event: ", event)
-	fmt.Println("Collections are: ", event.Collections)
-	//fmt.Println("images in col: ", event.Collections[0].Images)
-
 	return c.JSON(http.StatusOK, event)
 }
 
@@ -246,7 +242,7 @@ func (s *EventService) DeleteEvent(c echo.Context) error {
 }
 
 func (s *EventService) GetSocietyEvents(c echo.Context) error {
-	societyId := c.QueryParam("societyId")
+	societyId := c.Param("societyId")
 
 	events, err := s.eventAccess.GetSocietyEvents(societyId)
 	if err != nil {

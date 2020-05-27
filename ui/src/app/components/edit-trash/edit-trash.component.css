@@ -1,5 +1,6 @@
 :host{
   padding: 24px;
+  width: 100%;
 }
 .trash-types {
   display: flex;
@@ -13,10 +14,17 @@
 
 .final-buttons {
   display: flex;
-  justify-content: space-between;
+  margin: 80px;
 }
 
 .total-delete{
   background-color: red;
+  margin-left: 24px;
   color: black;
+}
+
+.edit-trash-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 12%;
 }

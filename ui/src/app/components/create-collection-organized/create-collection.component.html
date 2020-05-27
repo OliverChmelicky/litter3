@@ -1,6 +1,7 @@
 <div class="create-collection-container">
+
   <div>
-    <h1>Create Collection:</h1>
+    <h1 class="title">Create Collection</h1>
   </div>
 
   <div class="map-class">
@@ -29,16 +30,23 @@
 
   <div class="report-list">
     <div class="collection-form" *ngFor="let element of selectedMarkers; let i = index">
-      <label>Weight in kilograms:</label>
-      <input type="number" [(ngModel)]="selectedMarkers[i].collectionWeight">
-      <mat-checkbox [(ngModel)]="selectedMarkers[i].collectionCleanedTrash">Cleaned trash</mat-checkbox>
+      <div>
+        <label class="marginer">Weight in kilograms:</label>
+        <input type="number" [(ngModel)]="selectedMarkers[i].collectionWeight">
+      </div>
+      <div>
+        <div class="second-detail">
+          <mat-checkbox [(ngModel)]="selectedMarkers[i].collectionCleanedTrash">Cleaned trash</mat-checkbox>
+        </div>
+        <input class="second-detail" type="file" (change)="onFileSelected($event, i)" multiple>
+        <button mat-button (click)="removeFromList(element.trashId)">Report later</button>
+      </div>
 
-      <input type="file" (change)="onFileSelected($event, i)" multiple>
-      <button mat-button (click)="removeFromList(element.trashId)">Report later</button>
     </div>
+    <button mat-button (click)="onCreate()">Create</button>
   </div>
 
-  <button mat-button (click)="onCreate()">Create</button>
+
 
 </div>
 

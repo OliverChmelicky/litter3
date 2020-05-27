@@ -1,4 +1,20 @@
-.center {
+:host {
+  width: 100%;
   display: flex;
-  align-content: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.edit-collection-random {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin: 24px;
+}
+
+.edit-collection-form {
+  display: flex;
+  flex-direction: column;
 }

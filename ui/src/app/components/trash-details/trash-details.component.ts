@@ -18,22 +18,6 @@ import {FormControl} from "@angular/forms";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
 
 
-export interface DialogDataCreateCollection {
-  collection: CollectionModel,
-  collectionImages: FormData,
-  friends: UserModel[],
-  collectedWithFriends: UserModel[],
-}
-
-export interface DialogDataEditCollection {
-  collection: CollectionModel,
-  leaveCollection: boolean
-  deleteImages: string[],
-  uploadImages: FormData,
-  friends: UserModel[],
-  newFriends: UserModel[],
-}
-
 export interface DialogDataShowCollection {
   collection: CollectionModel,
 }
@@ -77,8 +61,6 @@ export class TrashDetailsComponent implements OnInit {
     private authService: AuthService,
     private userService: UserService,
     private fileuploadService: FileuploadService,
-    private createCollectionRandomDialog: MatDialog,
-    private editCollectionRandomDialog: MatDialog,
     private showCollectionRandomDialog: MatDialog,
   ) {
   }

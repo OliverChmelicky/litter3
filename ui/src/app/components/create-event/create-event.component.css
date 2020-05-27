@@ -23,7 +23,8 @@ agm-map {
 }
 
 .map-table {
-  flex-grow: 1;
+  margin-left: 130px;
+  width: 600px;
 }
 
 textarea {
@@ -34,4 +35,12 @@ textarea {
 
 .margin-bottom {
   margin-bottom: 16px;
+}
+
+.trash-list{
+  width: 500px;
+}
+
+.trash-list table {
+  width: 100%;
 }

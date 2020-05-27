@@ -123,10 +123,15 @@ export interface CollectionImageModel {
 }
 
 export interface CreateCollectionRandomRequest {
-  TrashId:      string,
+  TrashId: string,
   CleanedTrash: boolean,
-  Weight:       number,
-  Friends:      string[],
+  Weight: number,
+  Friends: string[],
+}
+
+export interface AddPickersToCollectionRequest {
+  CollectionId: string,
+  UserId: string[],
 }
 
 export const TrashTypeHousehold = 0b00000000001

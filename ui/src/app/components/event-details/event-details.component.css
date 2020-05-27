@@ -25,10 +25,21 @@
 .left-part {
   width: 500px;
   padding: 16px 24px;
+  margin-right: 300px;
 }
 
 .right-part {
-  flex-grow: 1;
+  /*flex-grow: 1;*/
+  width: 600px;
+}
+
+.table-wrapper {
+  margin-top: 24px;
+  width: 100%;
+}
+
+.attendants-table {
+  width: 100%;
 }
 
 .map-class {

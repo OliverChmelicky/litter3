@@ -1,6 +1,6 @@
 <div class="user-container">
   <div class="user-item" *ngIf="me">
-    <div class="user-item">
+    <div>
       <app-image [image]="me.Avatar" [service]="'users'"></app-image>
     </div>
     <label>
@@ -27,8 +27,8 @@
     <button (click)="sendFriendRequest()">Send Request</button>
   </div>
 
-
-  <div class="user-item my-friends-table">
+<div class="tables-wrapper">
+  <div class="user-info-table">
     <h3>My friends</h3>
     <table mat-table [dataSource]="myFriendsView" class="mat-elevation-z8">
       <ng-container matColumnDef="first-name">
@@ -54,7 +54,7 @@
 
   </div>
 
-  <div class="user-item">
+  <div class="user-info-table">
     <h3>My Societies</h3>
     <table mat-table [dataSource]="mySocietiesView" class="mat-elevation-z8">
       <ng-container matColumnDef="name">
@@ -74,7 +74,7 @@
     </table>
   </div>
 
-  <div class="user-item">
+  <div class="user-info-table">
     <h3>Received requests</h3>
     <table mat-table [dataSource]="IreceivedFriendRequests" class="mat-elevation-z8">
       <ng-container matColumnDef="first-name">
@@ -106,7 +106,7 @@
     </table>
   </div>
 
-  <div class="user-item received-requests-table">
+  <div class="user-info-table">
     <h3>Send requests</h3>
     <table mat-table [dataSource]="IsendFriendRequests" class="mat-elevation-z8">
       <ng-container matColumnDef="email">
@@ -126,7 +126,7 @@
     </table>
   </div>
 
-  <div class="user-item">
+  <div class="user-info-table">
     <h3>Participated at collections</h3>
     <table mat-table [dataSource]="myCollections" class="mat-elevation-z8">
 
@@ -156,5 +156,7 @@
       <tr mat-row *matRowDef="let row; columns: myCollectionsColumns;"></tr>
     </table>
   </div>
+</div>
+
 
 </div>

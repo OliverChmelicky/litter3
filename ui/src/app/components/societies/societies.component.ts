@@ -45,7 +45,6 @@ export class SocietiesComponent implements OnInit {
     this.societyService.getSocieties(this.actualPaging)
       .subscribe(resp => {
       this.actualPaging = resp.Paging
-        console.log(resp)
         resp.Societies.map( (soc, i) => {
           this.dataSource.push(
             {

@@ -53,6 +53,7 @@ export class EditTrashComponent implements OnInit {
     description: '',
   });
   accessibilityChoices = accessibilityChoces;
+  errorMessage: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -71,7 +72,6 @@ export class EditTrashComponent implements OnInit {
       this.trashService.getTrashById(trashId).subscribe(
         trash => {
           this.trash = trash
-          console.log(trash.Images)
           this.trashForm.controls['cleaned'].setValue(trash.Cleaned) //needed for correct using of checkbox
           this.convertSizeToNumber(trash.Size)
           this.convertTrashTypeToBools()
@@ -126,7 +126,10 @@ export class EditTrashComponent implements OnInit {
 
   onDelete() {
     this.trashService.deleteTrash(this.trash.Id).subscribe(
-      () => this.router.navigateByUrl('/map')
+      () => this.router.navigateByUrl('/map'),
+      error => {
+        this.errorMessage = 'You cannot delete trash which has collections or events!'
+      }
     )
   }
 

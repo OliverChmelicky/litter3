@@ -1,7 +1,28 @@
+:host{
+  width: 100%;
+}
+
+.user-container{
+  padding: 24px 32px;
+}
+
+.user-item {
+  margin-bottom: 16px;
+}
+
+.user-info-table {
+  flex-grow: 1;
+  margin: 8px;
+}
+
 .my-details {
 
 }
 
 table.mat-table{
   width: 100%;
+}
+
+.tables-wrapper {
+  display: flex;
 }

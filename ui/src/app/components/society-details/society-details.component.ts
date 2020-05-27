@@ -11,6 +11,7 @@ import {EventsColumnsDefinition, membersColumnsDefinition,} from "./table-defini
 import {MatTableDataSource} from "@angular/material/table";
 import {MarkerModel} from "../google-map/Marker.model";
 import {AuthService} from "../../services/auth/auth.service";
+import {MarkerCollectionModel} from "../../models/trash.model";
 
 
 @Component({
@@ -100,9 +101,12 @@ export class SocietyDetailsComponent implements OnInit {
   }
 
   filterEvents(events: EventModel[]) {
-    const now = new Date()
+    const now = new Date().getTime()
     if (events) {
       events.map(e => {
+        console.log(e.Date)
+        console.log(new Date(e.Date))
+        const eventTime = new Date(e.Date).getTime()
           let peopleAttend = 0
           if (e.UsersIds) {
             peopleAttend += e.UsersIds.length
@@ -111,21 +115,41 @@ export class SocietyDetailsComponent implements OnInit {
             peopleAttend += e.SocietiesIds.length
           }
 
-          if (e.Date > now) {
+        // let dateStr = e.Date.toString()
+        //  e.Date = new Date(dateStr)
+        // e.Date = new Date(e.Date.toString()) //this makes it look so same
+        // console.log('stary: ', e.Date)
+        console.log('Dostavam zo serveru: ', e.Date)
+
+          if (eventTime > now) {
             this.futureEvents.push({
               id: e.Id,
-              date: e.Date,
+              date: new Date(),
               attendingPeople: peopleAttend,
             })
+            console.log(this.futureEvents)
           } else {
             this.participatedEvents.push({
               id: e.Id,
-              date: e.Date,
+              date: new Date(e.Date.toString()),
               attendingPeople: peopleAttend,
             })
           }
         }
       )
+      //rerender table
+      let newData2 = new MatTableDataSource<EventModelTable>(this.participatedEvents);
+      this.participatedEvents = []
+      for (let i = 0; i < newData2.data.length; i++) {
+        this.participatedEvents.push(newData2.data[i])
+      }
+
+      //rerender table
+      let newData3 = new MatTableDataSource<EventModelTable>(this.futureEvents);
+      this.futureEvents = []
+      for (let i = 0; i < newData3.data.length; i++) {
+        this.futureEvents.push(newData3.data[i])
+      }
     }
   }
 
