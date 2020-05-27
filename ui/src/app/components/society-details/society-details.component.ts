@@ -131,7 +131,7 @@ export class SocietyDetailsComponent implements OnInit {
           } else {
             this.participatedEvents.push({
               id: e.Id,
-              date: new Date(e.Date.toString()),
+              date: new Date(),
               attendingPeople: peopleAttend,
             })
           }

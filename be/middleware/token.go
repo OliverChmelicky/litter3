@@ -52,7 +52,8 @@ func (s *MiddlewareService) AuthorizeUser(next echo.HandlerFunc) echo.HandlerFun
 func (s *MiddlewareService) FillUserContext(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		authHeader := c.Request().Header.Get("Authorization")
-		if authHeader == "" {
+		if authHeader == "Bearer null" {
+			c.Set("userId", "")
 			return next(c)
 		}
 
