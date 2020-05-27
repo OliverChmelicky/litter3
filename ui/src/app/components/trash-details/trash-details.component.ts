@@ -115,13 +115,13 @@ export class TrashDetailsComponent implements OnInit {
 
           this.trash = trash
           this.trashTypeBool = this.trashService.convertTrashTypeNumToBools(this.trash.TrashType);
-
           if (trash.Comments.length > 0) {
             const usersCommented = trash.Comments.map(c => c.UserId);
             this.userService.getUsersDetails(usersCommented).subscribe(
               users => this.addUsersToComments(users)
             )
           }
+
           this.authService.isLoggedIn.subscribe(isLogged => {
             this.isLoggedIn = isLogged
             if (!isLogged) {
@@ -139,8 +139,6 @@ export class TrashDetailsComponent implements OnInit {
                     }
                   })
                 })
-                const vals = this.shownCollections.map(a => a.canEdit)
-                console.log(vals)
               })
             })
           })

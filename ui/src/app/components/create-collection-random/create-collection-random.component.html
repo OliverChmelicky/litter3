@@ -1,0 +1,17 @@
+<div class="create-collection-random">
+  <div [formGroup]="collectionForm">
+    <mat-form-field>
+      <mat-label>Your friends</mat-label>
+      <mat-select [formControl]="selectedFriends" multiple>
+        <mat-option *ngFor="let user of showUsers" [value]="user.id">{{user.email}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <input type="number" formControlName="weight" [(ngModel)]="weight">
+    <mat-checkbox formControlName="cleanedTrash" [(ngModel)]="cleanedtrash">Cleaned trash</mat-checkbox>
+  </div>
+  <label>Upload images from collecting:</label>
+  <input type="file" (change)="onUpload($event)" multiple>
+
+  <p *ngIf="errorMessage">{{errorMessage}}</p>
+  <button mat-button color="primary" [disabled]="collectionForm.invalid" (click)="onCreate()">Create collection</button>
+</div>
