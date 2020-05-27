@@ -40,6 +40,8 @@
     </div>
 
     <div>
+      <p *ngIf="trash.Cleaned">Trash is cleaned</p>
+
       <div class="detail-container">
         <label class="trash-detail-label">
           Size: {{trash.Size}}
@@ -89,14 +91,14 @@
         <ng-container matColumnDef="showMore">
           <th mat-header-cell *matHeaderCellDef> Show more</th>
           <td mat-cell *matCellDef="let element">
-            <button (click)="onShowCollection(element.collection.Id)">Show details</button>
+            <button mat-button (click)="onShowCollection(element.collection.Id)">Show details</button>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="edit">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let element">
-            <button *ngIf="element.canEdit" (click)="onEditCollection(element.collection.Id)">Edit</button>
+            <button mat-button *ngIf="element.canEdit" (click)="onEditCollection(element.collection.Id)">Edit</button>
           </td>
         </ng-container>
 

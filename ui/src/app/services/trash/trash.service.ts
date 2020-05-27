@@ -169,7 +169,7 @@ export class TrashService {
     );
   }
 
-  //I want not cleaned and if I doscover new places in map I don`t want the one in table
+  //I want not cleaned and if I discover new places in map I don`t want the one in table
   filterCleanedAndSelected(markers: MarkerModel[], selectedTrash: MarkerModel[]): MarkerModel[]{
    let filteredMarkers: MarkerModel[] = []
     for (let i = 0; i < markers.length; i++) {

@@ -36,7 +36,6 @@ import { NavListComponent } from './components/nav-list/nav-list.component';
 import {MatListModule} from "@angular/material/list";
 import {MatIconModule} from "@angular/material/icon";
 import {
-  EditCollectionRandomFromTrashComponent,
   ShowCollectionFromTrashComponent,
   TrashDetailsComponent
 } from './components/trash-details/trash-details.component';
@@ -62,6 +61,7 @@ import {
 import { CollectionDetailsComponent } from './components/collection-details/collection-details.component';
 import {MatCardModule} from "@angular/material/card";
 import { CreateCollectionRandomComponent } from './components/create-collection-random/create-collection-random.component';
+import { EditCollectionRandomComponent } from './components/edit-collection-random/edit-collection-random.component';
 
 
 @NgModule({
@@ -96,7 +96,7 @@ import { CreateCollectionRandomComponent } from './components/create-collection-
     EditCollectionComponent,
     ShowCollectionFromTrashComponent,
     CreateCollectionRandomComponent,
-    EditCollectionRandomFromTrashComponent
+    EditCollectionRandomComponent
   ],
     imports: [
         BrowserModule,

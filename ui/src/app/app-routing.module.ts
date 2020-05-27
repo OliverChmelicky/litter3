@@ -18,6 +18,7 @@ import {CreateCollectionComponent} from "./components/create-collection-organize
 import {UserDetailComponent} from "./components/user-detail/user-detail.component";
 import {CollectionDetailsComponent} from "./components/collection-details/collection-details.component";
 import {CreateCollectionRandomComponent} from "./components/create-collection-random/create-collection-random.component";
+import {EditCollectionRandomComponent} from "./components/edit-collection-random/edit-collection-random.component";
 
 const routes: Routes = [
   { path: '', redirectTo:'map', pathMatch: 'full'},
@@ -34,6 +35,7 @@ const routes: Routes = [
   {path: 'events/details/:eventId', component: EventDetailsComponent},
   {path: 'events/edit/:eventId', component: EditEventComponent},
   {path: 'collection', component: CreateCollectionComponent},
+  {path: 'collection/edit/:collectionId', component: EditCollectionRandomComponent},
   {path: 'collection/create/:trashId', component: CreateCollectionRandomComponent},
   {path: 'collection/details/:id', component: CollectionDetailsComponent},
   { path: 'me', component: MyProfileComponent},

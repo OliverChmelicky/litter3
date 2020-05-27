@@ -545,9 +545,10 @@ export class EditCollectionComponent {
   constructor(public dialogRef: MatDialogRef<EditCollectionComponent>,
               @Inject(MAT_DIALOG_DATA) public data: DialogDataEditCollection) {
     console.log('images in: ', this.data.collection.Images)
-    data.collection.Images.map(i => this.images.push({
+    data.collection.Images.map(i =>
+      this.images.push({
       Url: i.Url,
-      CollectionId: i.CollectionId,
+      inDeleteList: true,
     }))
     console.log('images in dialog: ', this.images)
   }
@@ -559,7 +560,7 @@ export class EditCollectionComponent {
   onDelete(url: string) {
     this.data.deleteImages.push(url)
     const index = this.images.findIndex(i => i.Url === url)
-    this.images[index] = true
+    this.images[index].inDeleteList = true
     this.reload()
   }
 
@@ -568,7 +569,7 @@ export class EditCollectionComponent {
     this.data.deleteImages = this.data.deleteImages.splice(index, 1)
 
     index = this.images.findIndex(i => i.Url === url)
-    this.images[index] = false
+    this.images[index].inDeleteList = false
     this.reload()
   }
 

@@ -119,6 +119,7 @@ export const defaultCollectionModel: CollectionModel = {
 export interface CollectionImageModel {
   Url: string,
   CollectionId: string,
+  inDeleteList?: boolean,//uses edit collection-random
 }
 
 export interface CreateCollectionRandomRequest {
