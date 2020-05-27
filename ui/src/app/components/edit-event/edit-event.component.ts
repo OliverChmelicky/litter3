@@ -281,9 +281,10 @@ export class EditEventComponent implements OnInit {
 
   onDeleteEvent() {
     this.attendants.map(a => {
-      if (a.id === this.eventEditor.Id && a.role === 'admin') {
+      if (a.id === this.eventEditor.Id && a.role === 'creator') {
         this.eventService.deleteEvent(this.eventEditor, this.event.Id).subscribe(
           () => {
+            this.router.navigateByUrl('map')
           },
         )
       } else {

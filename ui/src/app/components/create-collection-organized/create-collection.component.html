@@ -42,7 +42,8 @@
         <button mat-button (click)="removeFromList(element.trashId)">Report later</button>
       </div>
 
-    </div>
+    </div>.
+    <p *ngIf="errorMessage">{{errorMessage}}</p>
     <button mat-button (click)="onCreate()">Create</button>
   </div>
 

@@ -41,6 +41,7 @@ export class CreateCollectionComponent implements OnInit {
   selectedMarkers: MarkerCollectionModel[] = [];
   tableColumns = createCollectionTrashColumns;
   organizerId: EventPickerModel;
+  errorMessage: string;
 
 
   constructor(
@@ -129,6 +130,17 @@ export class CreateCollectionComponent implements OnInit {
 
   onCreate() {
     const colections = this.mapFromColMarkersToColections(this.selectedMarkers)
+    let invalidInput = false
+    this.selectedMarkers.map( m => {
+      if (m.collectionWeight <= 0) {
+        this.errorMessage = 'You must specify a weght greater than 0!'
+        invalidInput = true
+      }
+    })
+
+    if (invalidInput) {
+      return
+    }
 
     let collectionsToCreate: CreateCollectionModel = {
       Collections: colections,
@@ -150,13 +162,13 @@ export class CreateCollectionComponent implements OnInit {
   }
 
   mapFromColMarkersToColections(selected: MarkerCollectionModel[]): CollectionModel[] {
-    return selected.map(s => <CollectionModel>{
-      //TODO Weight: s.collectionWeight,
+    const toCreate = selected.map(s => <CollectionModel>{
       Weight: s.collectionWeight,
       CleanedTrash: s.collectionCleanedTrash,
       TrashId: s.trashId,
       EventId: this.eventId,
     })
+    return toCreate
   }
 
   getImages() {
