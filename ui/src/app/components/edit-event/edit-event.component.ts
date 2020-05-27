@@ -47,6 +47,8 @@ export class EditEventComponent implements OnInit {
   attendantsToUpdate: AttendantsModel[] = [];
   roles = roles;
 
+  errorMessage = '';
+
   map: GoogleMap;
   initMapLat: number = 49;
   initMapLng: number = 19;
@@ -282,8 +284,10 @@ export class EditEventComponent implements OnInit {
       if (a.id === this.eventEditor.Id && a.role === 'admin') {
         this.eventService.deleteEvent(this.eventEditor, this.event.Id).subscribe(
           () => {
-          }
+          },
         )
+      } else {
+        this.errorMessage = 'You have to be an admin'
       }
     })
   }
@@ -411,9 +415,6 @@ export class EditEventComponent implements OnInit {
 
     this.selectedMarkers.map(selected => {
       this.allMarkers.map( (m, i) => {
-        if (m.id === '92d9cdd1-7991-431e-ba2e-33719ac98b3d'){
-          console.log('vyhadzujem:')
-        }
         if (m.id === selected.id) {
           let a =this.allMarkers.splice(i, 1)
           console.log('Removed: ', a)

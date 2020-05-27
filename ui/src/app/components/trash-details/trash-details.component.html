@@ -20,11 +20,9 @@
 <div class="trash-detail-content">
   <div class="left-part">
     <div *ngIf="finder" class="finder">
-      <label>Founder:</label><br>
+      <label>Finder:</label><br>
       <app-image [service]="'users'" [image]="finder.Avatar"></app-image>
-      <a [routerLink]="['/users/profile', finder.Id]">
-        {{finder.FirstName}} {{finder.LastName}}
-      </a>
+      <p>{{finder.FirstName}} {{finder.LastName}}</p>
     </div>
 
     <div class="events-container">
