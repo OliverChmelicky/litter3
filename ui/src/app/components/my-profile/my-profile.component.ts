@@ -122,26 +122,22 @@ export class MyProfileComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log(result)
         if (result.deleteAccount) {
           this.userService.deleteAccount().subscribe(res => console.log(res))
           return
         }
         if (result.updateUser) {
-          if (result.firstName) {
-            this.me.FirstName = result.FirstName;
-          }
-          if (result.LastName) {
-            this.me.LastName = result.LastName;
-          }
           if (result.firstName != this.me.FirstName || result.lastName != this.me.LastName) {
+            this.me.FirstName = result.firstName;
+            this.me.LastName = result.lastName;
             this.userService.updateUser(this.me).subscribe()
           }
           if (result.newPicture.has('file')) {
-            console.log('uploading', result.newPicture)
             this.fileuploadService.uploadUserImage(result.newPicture).subscribe()
           } else if (result.deletePicture) {
-            this.fileuploadService.deleteUserImage().subscribe()
+            this.fileuploadService.deleteUserImage().subscribe(
+              () => this.router.navigateByUrl('map')
+            )
           }
         }
       }

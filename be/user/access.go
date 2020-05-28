@@ -84,7 +84,9 @@ func (s *UserAccess) UpdateUser(in *models.User) (*models.User, error) {
 	usr.FirstName = in.FirstName
 	usr.LastName = in.LastName
 	usr.Email = in.Email
-	return in, s.Db.Update(in)
+	err = s.Db.Update(usr)
+
+	return usr, err
 }
 
 func (s *UserAccess) AddApplicant(in *models.Applicant) (*models.Applicant, error) {
