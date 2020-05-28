@@ -13,6 +13,7 @@ import (
 	"google.golang.org/api/option"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -373,6 +374,77 @@ func (s *FileuploadService) DeleteCollectionImages(c echo.Context) error {
 		}
 
 		err = tx.Commit()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		}
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+func (s *FileuploadService) DeleteEventsCollectionsImages(c echo.Context) error {
+	userId := c.Get("userId").(string)
+	collectionId := c.Param("collectionId")
+
+	eventId := c.QueryParam("eventId")
+	pickerId := c.QueryParam("pickerId")
+	requestAsSociety := c.QueryParam("asSociety")
+	idsString := c.QueryParam("ids")
+	ids := strings.Split(idsString, ",")
+
+	fmt.Println("EventId: ", eventId)
+	fmt.Println("AS soc: ", requestAsSociety)
+	fmt.Println("pickerId: ", pickerId)
+	fmt.Println("idsImages: ", ids)
+	fmt.Println("Collection ID", collectionId)
+
+	asSociety, err := strconv.ParseBool(requestAsSociety)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
+	}
+
+	if asSociety {
+		socMembership := new(models.Member)
+		err := s.db.Model(socMembership).Where("user_id = ? and society_id = ?", userId, pickerId).Select()
+		if err != nil {
+			log.Error(err)
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		}
+		if socMembership.Permission == "member" {
+			return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, fmt.Errorf("You have no rights to act as society editor! ")))
+		}
+
+		permission := new(models.EventSociety)
+		err = s.db.Model(permission).Where("society_id = ? and event_id = ?", pickerId, eventId).Select()
+		if err != nil {
+			fmt.Println("TU")
+			log.Error(err)
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		}
+		if permission.Permission == "viewer" {
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, fmt.Errorf("You have no rights to edit this collection! ")))
+		}
+	} else {
+		permission := new(models.EventUser)
+		err := s.db.Model(permission).Where("user_id = ? and event_id = ?", userId, eventId).Select()
+		if err != nil {
+			log.Error(err)
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		}
+		if permission.Permission == "viewer" {
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, fmt.Errorf("You have no rights to edit this collection! ")))
+		}
+	}
+
+	for _, imageName := range ids {
+		imageDb := new(models.CollectionImage)
+		res, err := s.db.Model(imageDb).Where("url = ? and collection_id = ?", imageName, collectionId).Delete()
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
+		}
+		fmt.Println("In reality I deleted: ", res)
+
+		err = s.DeleteImage(imageName)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
 		}

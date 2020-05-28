@@ -162,6 +162,7 @@ func main() {
 	e.POST("/fileupload/collections/:collectionId", fileuploadService.UploadCollectionImages)
 	e.GET("/fileupload/collections/load/:image", fileuploadService.GetCollectionImages)
 	e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteCollectionImages, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/fileupload/collections/event/delete/:collectionId", fileuploadService.DeleteEventsCollectionsImages, tokenMiddleware.AuthorizeUser)
 
 	//e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteSocietyImage, tokenMiddleware.AuthorizeUser)
 	e.GET("/fileupload/users/load/:image", fileuploadService.GetUserImage)

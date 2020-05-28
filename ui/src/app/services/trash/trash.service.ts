@@ -28,6 +28,7 @@ import {
   UpdateCollectionModel
 } from "../../models/trash.model";
 import {MarkerModel} from "../../components/google-map/Marker.model";
+import {EventPickerModel} from "../../models/event.model";
 
 @Injectable({
   providedIn: 'root'
@@ -145,8 +146,9 @@ export class TrashService {
     );
   }
 
-  deleteCollectionImage(image: string, collectionId: string) {
-    const url = `${this.apiUrl}/${ApisModel.fileupload}/${ApisModel.collection}/delete/${collectionId}/${image}`;
+  deleteCollectionEventImages(collectionId: string, images: string[], eventId: string, eventPicker: EventPickerModel) {
+    const idsQueryParam = images.join();
+    const url = `${this.apiUrl}/${ApisModel.fileupload}/${ApisModel.collection}/event/delete/${collectionId}?ids=${idsQueryParam}&asSociety=${eventPicker.AsSociety}&eventId=${eventId}&pickerId=${eventPicker.Id}`;
     return this.http.delete(url).pipe(
       catchError(err => TrashService.handleError(err))
     );

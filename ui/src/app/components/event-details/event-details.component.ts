@@ -452,24 +452,21 @@ export class EventDetailsComponent implements OnInit {
       if (result) {
         if (result.deleteCollection) {
           this.eventService.deleteCollectionOrganized(this.event.Id, result.collection.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
-            res => console.log(res),
-            error => console.log(error)
+            () => window.location.reload(),
           )
           return
         }
-        if (result.deleteImages) {
-          result.deleteImages.map(i => this.trashService.deleteCollectionImage(i, collectionId).subscribe(
+        if (result.deleteImages.length > 0) {
+          console.log('col id' + collectionId + 'konci')
+          this.trashService.deleteCollectionEventImages(collectionId, result.deleteImages, this.event.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
             () => {
             },
             error => console.log(error)
-          ))
+          )
         }
         if (result.uploadImages) {
           if (result.uploadImages.has('files')) {
             this.fileuploadService.uploadCollectionImages(result.uploadImages, collectionId).subscribe()
-          }
-          if (result.uploadImages.has('files') && !result.deleteCollection) {
-            this.fileuploadService.uploadCollectionImages(result.uploadImages,result.collection.Id)
           }
         }
         if (result.collection.Weight !== weightBefore) {
@@ -542,38 +539,45 @@ export class EditCollectionComponent {
 
   constructor(public dialogRef: MatDialogRef<EditCollectionComponent>,
               @Inject(MAT_DIALOG_DATA) public data: DialogDataEditCollection) {
-    console.log('images in: ', this.data.collection.Images)
     data.collection.Images.map(i =>
       this.images.push({
       Url: i.Url,
-      inDeleteList: true,
+      inDeleteList: false,
     }))
-    console.log('images in dialog: ', this.images)
   }
 
   onNoClick(): void {
     this.dialogRef.close();
   }
 
-  onDelete(url: string) {
-    this.data.deleteImages.push(url)
-    const index = this.images.findIndex(i => i.Url === url)
-    this.images[index].inDeleteList = true
-    this.reload()
-  }
+  // onDelete(url: string) {
+  //   this.data.deleteImages.push(url)
+  //   const index = this.images.findIndex(i => i.Url === url)
+  //   this.images[index].inDeleteList = true
+  //   this.reload()
+  // }
+  //
+  // onRemoveFromList(url: string) {
+  //   let index = this.data.deleteImages.findIndex(i => i === url)
+  //   this.data.deleteImages = this.data.deleteImages.splice(index, 1)
+  //
+  //   index = this.images.findIndex(i => i.Url === url)
+  //   this.images[index].inDeleteList = false
+  //   this.reload()
+  // }
 
-  onRemoveFromList(url: string) {
-    let index = this.data.deleteImages.findIndex(i => i === url)
-    this.data.deleteImages = this.data.deleteImages.splice(index, 1)
+  // reload() {
+  //   this.show = false;
+  //   setTimeout(() => this.show = true);
+  // }
 
-    index = this.images.findIndex(i => i.Url === url)
-    this.images[index].inDeleteList = false
-    this.reload()
-  }
-
-  reload() {
-    this.show = false;
-    setTimeout(() => this.show = true);
+  onSave() {
+    this.data.collection.Images.map(image => {
+      if (image.inDeleteList) {
+        this.data.deleteImages.push(image.Url)
+      }
+    })
+    this.dialogRef.close(this.data);
   }
 
   onUpload(event) {
@@ -586,10 +590,7 @@ export class EditCollectionComponent {
   onSetDelete() {
     this.data.deleteCollection = true
     this.data.uploadImages = new FormData()
-    this.dialogRef.close({
-      deleteCollection: true,
-      collection: this.data.collection
-    });
+    this.dialogRef.close(this.data);
   }
 }
 

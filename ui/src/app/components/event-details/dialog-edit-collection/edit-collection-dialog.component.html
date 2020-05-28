@@ -4,10 +4,11 @@
   <div *ngIf="show">
     <input type="number" [(ngModel)]="data.collection.Weight" >
     <mat-checkbox [(ngModel)] = "data.collection.CleanedTrash">Cleaned trash</mat-checkbox>
-    <div *ngFor="let i of images">
-      <app-image [image]="i.Url" [service]="'collections'"></app-image>
-      <button *ngIf="!i.inDeleteList" mat-button color="warn" (click)="onDelete(i.Url)">Delete</button>
-      <button *ngIf="i.inDeleteList" mat-button (click)="onRemoveFromList(i.Url)">Undo deletion</button>
+    <div *ngFor="let image of images;let i = index">
+      <app-image [image]="image.Url" [service]="'collections'"></app-image>
+<!--      <button *ngIf="!i.inDeleteList" mat-button color="warn" (click)="onDelete(i.Url)">Delete</button>-->
+<!--      <button *ngIf="i.inDeleteList" mat-button (click)="onRemoveFromList(i.Url)">Undo deletion</button>-->
+      <mat-checkbox [(ngModel)]="data.collection.Images[i].inDeleteList">delete picture</mat-checkbox>
     </div>
   </div>
 
@@ -20,6 +21,6 @@
 </div>
 <div mat-dialog-actions>
   <button class="bottom-buttons" mat-button (click)="onNoClick()">Close</button>
-  <button class="bottom-buttons" mat-button color="primary" [mat-dialog-close]="data" cdkFocusInitial>Save changes</button>
-  <button class="bottom-buttons" mat-button color="warn" (click)="onSetDelete()" cdkFocusInitial>DELETE</button>
+  <button class="bottom-buttons" mat-button color="primary" (click)="onSave()">Save changes</button>
+  <button class="bottom-buttons" mat-button color="warn" (click)="onSetDelete()">DELETE</button>
 </div>

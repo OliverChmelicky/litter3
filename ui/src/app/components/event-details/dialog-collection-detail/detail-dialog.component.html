@@ -1,6 +1,6 @@
-<h1 mat-dialog-title>Create society</h1>
+<h1 mat-dialog-title>Collection details</h1>
 <div mat-dialog-content class="margin">
-    <label>Description</label><br>
+    <label>Weight in kilograms</label><br>
     <p>{{data.collection.Weight}}</p>
   <div *ngFor="let collection of data.collection.Images">
     <app-image [image]="collection.Url" [size]="'medium'" [service]="'collections'"></app-image>
