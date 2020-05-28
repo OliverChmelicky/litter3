@@ -114,17 +114,14 @@ export class EditSocietyComponent implements OnInit {
   }
 
   memberPermissionChange(event: MatSelectChange, i: number) {
-    console.log(this.origMembers[i])
     if (event.value === this.origMembers[i].role) {
       //back to the same permission
       const index = this.changeMemberPermission.findIndex(u => u.UserId === this.members[i].user.Id)
       this.changeMemberPermission.splice(index, 1)
-      console.log('Changed permission: ',this.changeMemberPermission)
       return
     } else {
       //find old permission
       const exists = this.changeMemberPermission.filter( mem => mem.UserId === this.members[i].user.Id)
-      console.log('exists? ', exists)
       if (exists.length !== 0) {
         //remove
         const index = this.changeMemberPermission.findIndex(u => u.UserId === this.members[i].user.Id)
@@ -138,12 +135,10 @@ export class EditSocietyComponent implements OnInit {
         Permission: event.value.toString(),
         CreatedAt: new Date(),  //server does not use this property
       })
-      console.log('Changed permission: ',this.changeMemberPermission)
     }
   }
 
   onMemberPermissionAcceptChanges() {
-    console.log(this.changeMemberPermission)
     if (this.changeMemberPermission.length > 0) {
       this.societyService.changePermissions(this.changeMemberPermission).subscribe(
         () => {
@@ -194,7 +189,6 @@ export class EditSocietyComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Idem removnut: ',id)
         this.societyService.removeUser(id, this.society.Id).subscribe(
           () => {
             if (this.me.Id === id) {

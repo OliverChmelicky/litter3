@@ -260,11 +260,7 @@ export class EditEventComponent implements OnInit {
   onAttendantsPermissionAcceptChanges() {
     if (this.attendantsToUpdate) {
       this.attendantsToUpdate.map(a => {
-        this.eventService.updateUserPermission(a, this.eventEditor, this.event.Id).subscribe(
-          res => {
-            console.log(res)
-          }
-        )
+        this.eventService.updateUserPermission(a, this.eventEditor, this.event.Id).subscribe()
       })
       //updates attendant table
       this.attendantsToUpdate.map( newA => {
@@ -411,14 +407,12 @@ export class EditEventComponent implements OnInit {
   }
 
   private filterSelected() {
-    console.log('Before filter: ', this.allMarkers)
-    console.log('Selected: ', this.selectedMarkers)
+
 
     this.selectedMarkers.map(selected => {
       this.allMarkers.map( (m, i) => {
         if (m.id === selected.id) {
           let a =this.allMarkers.splice(i, 1)
-          console.log('Removed: ', a)
         }
       })
     })

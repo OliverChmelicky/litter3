@@ -74,7 +74,6 @@ export class SocietiesComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result)
       if (result) {
         if (result.name != '') {
           this.societyService.createSociety({
@@ -105,7 +104,6 @@ export class SocietiesComponent implements OnInit {
           }
         )
         })
-        console.log(resp.Societies)
       })
     return event;
   }

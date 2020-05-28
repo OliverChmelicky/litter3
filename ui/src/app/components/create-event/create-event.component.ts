@@ -88,7 +88,6 @@ export class CreateEventComponent implements OnInit {
         })
         this.userService.getMyEditableSocieties().subscribe(
           editable => {
-            console.log('Mozem editovat: ', editable)
             if (editable) {
               editable.map(soc => this.availableCreators.push({
                 VisibleName: soc.Name,
@@ -209,7 +208,6 @@ export class CreateEventComponent implements OnInit {
 
         const viewCenter = this.map.getCenter()
         let r = 2 * Math.abs(p1.lat() - viewCenter.lat())
-        console.log('R: ', r)
 
         if (p1.lat() < 0) {
           this.borderTop =  p1.lat() + r
@@ -238,10 +236,7 @@ export class CreateEventComponent implements OnInit {
   }
 
   addToList(marker: MarkerModel) {
-    console.log('pred push: ', this.selectedTrash)
     this.selectedTrash.push(marker)
-    console.log('po push: ', this.selectedTrash)
-
 
     const index = this.allMarkers.findIndex(t => t.id === marker.id)
     this.allMarkers.splice(index, 1)

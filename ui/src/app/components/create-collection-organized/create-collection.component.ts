@@ -149,12 +149,8 @@ export class CreateCollectionComponent implements OnInit {
       EventId: this.eventId,
     }
 
-    console.log('Collections to create: ', this.selectedMarkers)
-    console.log('images: ' ,this.selectedMarkers[0].collectionImages.has('files'))
-
     this.eventService.createCollectionsOrganized(collectionsToCreate).subscribe(res => {
       res.map((c, i) => {
-        console.log('sending fies: ',i)
         this.fileuploadService.uploadCollectionImages(this.selectedMarkers[i].collectionImages, c.Id).subscribe(() => {},);
       })
     })

@@ -193,7 +193,6 @@ export class TrashDetailsComponent implements OnInit {
         }
       })
 
-    console.log(collection.Images)
       if (!collection.Images) {
         collection.Images = [];
       }
@@ -250,7 +249,6 @@ export class ShowCollectionFromTrashComponent {
 
   constructor( public dialogRef: MatDialogRef<ShowCollectionFromTrashComponent>,
                @Inject(MAT_DIALOG_DATA) public data: DialogDataShowCollection) {
-    console.log(data)
   }
 
   onNoClick(): void {

@@ -161,7 +161,6 @@ export class EventService {
       Collection: collection,
       OrganizerId: eventPicker.Id,
     }
-    console.log('updating with values: ', request)
     const url = `${this.apiUrl}/${ApisModel.collection}/update/col-organized`;
     return this.http.put<CollectionModel>(url, request).pipe(
       catchError(err => EventService.handleError<CollectionModel>(err))

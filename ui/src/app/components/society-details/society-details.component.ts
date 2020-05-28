@@ -104,8 +104,6 @@ export class SocietyDetailsComponent implements OnInit {
     const now = new Date().getTime()
     if (events) {
       events.map(e => {
-        console.log(e.Date)
-        console.log(new Date(e.Date))
         const eventTime = new Date(e.Date).getTime()
           let peopleAttend = 0
           if (e.UsersIds) {
@@ -115,19 +113,12 @@ export class SocietyDetailsComponent implements OnInit {
             peopleAttend += e.SocietiesIds.length
           }
 
-        // let dateStr = e.Date.toString()
-        //  e.Date = new Date(dateStr)
-        // e.Date = new Date(e.Date.toString()) //this makes it look so same
-        // console.log('stary: ', e.Date)
-        console.log('Dostavam zo serveru: ', e.Date)
-
           if (eventTime > now) {
             this.futureEvents.push({
               id: e.Id,
               date: new Date(),
               attendingPeople: peopleAttend,
             })
-            console.log(this.futureEvents)
           } else {
             this.participatedEvents.push({
               id: e.Id,
@@ -158,7 +149,6 @@ export class SocietyDetailsComponent implements OnInit {
   }
 
   onAskForMembership() {
-    console.log(this.isLoggedIn)
     this.societyService.askForMembership(this.society.Id).subscribe(
       () => this.askedForMembership = true
     )

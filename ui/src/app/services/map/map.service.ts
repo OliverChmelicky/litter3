@@ -68,7 +68,6 @@ export class MapService {
 
         const viewCenter = map.getCenter()
         let r = 2 * Math.abs(p1.lat() - viewCenter.lat())
-        console.log('R: ', r)
 
         if (p1.lat() < 0) {
           this.borderTop = p1.lat() + r

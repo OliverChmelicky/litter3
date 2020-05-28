@@ -32,7 +32,7 @@
     </mat-paginator>
   </div>
 
-  <button class="create-button" mat-button (click)="onCreateEvent()">Create event</button>
+  <button *ngIf="isLoggedIn" class="create-button" mat-button (click)="onCreateEvent()">Create event</button>
 
 </div>
 

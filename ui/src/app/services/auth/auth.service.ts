@@ -65,7 +65,7 @@ export class AuthService {
           localStorage.setItem('token', token)
         ).catch(
         err => {
-          console.log('error custom renew token inside ' + err);
+          console.log('error custom renew token ' + err);
           throwError(err)
         })
     })

@@ -244,7 +244,6 @@ export class MyProfileComponent implements OnInit {
   private pushUserToMyFriends(users: UserModel[]) {
     this.myFriendsIds.map(friendship => {
       users.map(user => {
-          console.log(user.Id === friendship.User1Id || user.Id === friendship.User2Id)
           if (user.Id === friendship.User1Id || user.Id === friendship.User2Id) {
             this.myFriendsView.push(
               {

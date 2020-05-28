@@ -48,7 +48,6 @@ export class EditCollectionRandomComponent implements OnInit {
       this.userService.getMe().subscribe(me => {
         this.me = me;
         this.userService.getMyFriendsIds().subscribe(relationship => {
-          console.log('Those are my friends: ',relationship)
             if (relationship != null) {
               const userIds = relationship.map(friend => {
                 if (friend.User1Id !== this.me.Id)
@@ -158,14 +157,10 @@ export class EditCollectionRandomComponent implements OnInit {
           found = true;
         }
       }
-      console.log(found)
-
       if (!found) {
         this.friendsNotInCollection.push(this.allFriends[i])
       }
     }
-
-    console.log('friends not in col: ',this.friendsNotInCollection)
 
   }
 

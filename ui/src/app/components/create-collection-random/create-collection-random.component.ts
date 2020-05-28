@@ -105,10 +105,8 @@ export class CreateCollectionRandomComponent implements OnInit {
       Weight: this.weight,
       Friends: friendsIds,
     }
-    console.log('idem vytvorit: ',collectionRequest)
     this.trashService.createCollection(collectionRequest).subscribe(
       res => {
-        console.log('vytvorene')
         if (this.uploadImages.has('files')) {
           this.fileUpload.uploadCollectionImages(this.uploadImages, res.Id).subscribe(
             () => this.router.navigate(['trash/details/', this.trashId])
