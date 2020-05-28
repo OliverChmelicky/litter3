@@ -22,8 +22,8 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit() {
     this.registerForm = this.formBuilder.group({
-      email: this.formBuilder.control('',[Validators.required, Validators.email]),
-      password: this.formBuilder.control('',[Validators.required, Validators.minLength(6)]),
+      email: this.formBuilder.control('', [Validators.required, Validators.email]),
+      password: this.formBuilder.control('', [Validators.required, Validators.minLength(6)]),
     });
   }
 
@@ -38,8 +38,10 @@ export class RegisterComponent implements OnInit {
       })
   }
 
-  registerWithGoogle(){
-    this.authService.loginWithGoogle(); //login and register are the same
+  registerWithGoogle() {
+    this.authService.loginWithGoogle().then(() => {
+      this.router.navigateByUrl('map');
+    })
   }
 
 

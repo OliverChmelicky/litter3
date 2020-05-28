@@ -43,7 +43,7 @@ export class AuthService {
         return res.user.getIdToken().then(token => {
           localStorage.setItem('token', token)
           this.loggedIn.next(true);
-          this.router.navigate(['/me']);
+          this.router.navigate(['/map']);
         })
           .catch(err => {
               localStorage.removeItem('firebaseUser')
@@ -92,7 +92,7 @@ export class AuthService {
           () => {
             this.renewTokenAfterRegister();
             this.loggedIn.next(true);
-            this.router.navigate(['/me']);
+            this.router.navigate(['/map']);
           },
           err => throwError(err)
         );
@@ -113,6 +113,13 @@ export class AuthService {
     await this.afAuth.signOut();
     this.loggedIn.next(false);
     this.router.navigate(['/login']);
+    localStorage.removeItem('firebaseUser');
+    localStorage.removeItem('token');
+  }
+
+  async deleteUser() {
+    await this.afAuth.signOut();
+    this.loggedIn.next(false);
     localStorage.removeItem('firebaseUser');
     localStorage.removeItem('token');
   }
@@ -175,7 +182,7 @@ export class AuthService {
       res.user.getIdToken().then(token => {
         localStorage.setItem('token', token)
         this.loggedIn.next(true);
-        this.router.navigate(['/me']);
+        this.router.navigate(['/map']);
       })
         .catch(() => {
             localStorage.removeItem('firebaseUser')

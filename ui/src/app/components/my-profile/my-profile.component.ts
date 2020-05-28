@@ -20,6 +20,7 @@ import {TrashService} from "../../services/trash/trash.service";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
 import {MatTableDataSource} from "@angular/material/table";
 import {ApisModel} from "../../api/api-urls";
+import {AuthService} from "../../services/auth/auth.service";
 
 export interface ProfileDialogData {
   viewName?: string;
@@ -68,6 +69,7 @@ export class MyProfileComponent implements OnInit {
     private userService: UserService,
     private societyService: SocietyService,
     private trashService: TrashService,
+    private authService: AuthService,
     private fileuploadService: FileuploadService,
     public editProfileDialog: MatDialog,
     public showCollectionDialog: MatDialog,
@@ -123,7 +125,10 @@ export class MyProfileComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         if (result.deleteAccount) {
-          this.userService.deleteAccount().subscribe(res => console.log(res))
+          this.userService.deleteAccount().subscribe(res => {
+            this.router.navigateByUrl('register')
+            this.authService.deleteUser()
+          })
           return
         }
         if (result.updateUser) {
@@ -133,10 +138,10 @@ export class MyProfileComponent implements OnInit {
             this.userService.updateUser(this.me).subscribe()
           }
           if (result.newPicture.has('file')) {
-            this.fileuploadService.uploadUserImage(result.newPicture).subscribe()
+            this.fileuploadService.uploadUserImage(result.newPicture).subscribe( () => window.location.reload())
           } else if (result.deletePicture) {
             this.fileuploadService.deleteUserImage().subscribe(
-              () => this.router.navigateByUrl('map')
+              () => window.location.reload()
             )
           }
         }
