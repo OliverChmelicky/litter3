@@ -369,21 +369,24 @@ export class EventDetailsComponent implements OnInit {
   }
 
   private assignMarkers() {
-    this.event.Trash.map(t => {
-      let collLength = 0
-      if (t.Collections) {
-        collLength = t.Collections.length
-      }
-      if (!t.Images) {
-        t.Images = [defaultTrashImage];
-      }
-      this.markers.push({
-        id: t.Id,
-        lat: t.Location[0],
-        lng: t.Location[1],
-        cleaned: t.Cleaned,
-        images: t.Images,
-        numOfCollections: collLength
+    const trashIds = this.event.Trash.map( t => t.Id)
+    this.trashService.getTrashByIds(trashIds).subscribe( trash => {
+      trash.map(t => {
+        let collLength = 0
+        if (t.Collections) {
+          collLength = t.Collections.length
+        }
+        if (!t.Images) {
+          t.Images = [defaultTrashImage];
+        }
+        this.markers.push({
+          id: t.Id,
+          lat: t.Location[0],
+          lng: t.Location[1],
+          cleaned: t.Cleaned,
+          images: t.Images,
+          numOfCollections: collLength
+        })
       })
     })
   }
@@ -457,7 +460,6 @@ export class EventDetailsComponent implements OnInit {
           return
         }
         if (result.deleteImages.length > 0) {
-          console.log('col id' + collectionId + 'konci')
           this.trashService.deleteCollectionEventImages(collectionId, result.deleteImages, this.event.Id, this.availableDecisionsAs[this.selectedCreator]).subscribe(
             () => {
             },
@@ -603,7 +605,6 @@ export class ShowCollectionComponent {
 
   constructor( public dialogRef: MatDialogRef<ShowCollectionComponent>,
                @Inject(MAT_DIALOG_DATA) public data: DialogDataShowCollection) {
-    console.log(data)
   }
 
   onNoClick(): void {

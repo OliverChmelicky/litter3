@@ -60,6 +60,8 @@ func (s *EventService) GetEvent(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetEvent, err))
 	}
 
+	fmt.Println("Trash:" ,event.Trash)
+
 	return c.JSON(http.StatusOK, event)
 }
 

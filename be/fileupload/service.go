@@ -385,18 +385,11 @@ func (s *FileuploadService) DeleteCollectionImages(c echo.Context) error {
 func (s *FileuploadService) DeleteEventsCollectionsImages(c echo.Context) error {
 	userId := c.Get("userId").(string)
 	collectionId := c.Param("collectionId")
-
 	eventId := c.QueryParam("eventId")
 	pickerId := c.QueryParam("pickerId")
 	requestAsSociety := c.QueryParam("asSociety")
 	idsString := c.QueryParam("ids")
 	ids := strings.Split(idsString, ",")
-
-	fmt.Println("EventId: ", eventId)
-	fmt.Println("AS soc: ", requestAsSociety)
-	fmt.Println("pickerId: ", pickerId)
-	fmt.Println("idsImages: ", ids)
-	fmt.Println("Collection ID", collectionId)
 
 	asSociety, err := strconv.ParseBool(requestAsSociety)
 	if err != nil {
@@ -438,11 +431,10 @@ func (s *FileuploadService) DeleteEventsCollectionsImages(c echo.Context) error 
 
 	for _, imageName := range ids {
 		imageDb := new(models.CollectionImage)
-		res, err := s.db.Model(imageDb).Where("url = ? and collection_id = ?", imageName, collectionId).Delete()
+		_, err = s.db.Model(imageDb).Where("url = ? and collection_id = ?", imageName, collectionId).Delete()
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
 		}
-		fmt.Println("In reality I deleted: ", res)
 
 		err = s.DeleteImage(imageName)
 		if err != nil {

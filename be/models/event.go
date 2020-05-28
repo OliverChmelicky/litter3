@@ -71,7 +71,7 @@ type EventWithCollections struct {
 	Date         time.Time
 	Description  string
 	CreatedAt    time.Time
-	Trash        []Trash
+	Trash        []Trash `pg:"many2many:events_trash"`
 	UsersIds     []EventUser
 	SocietiesIds []EventSociety
 	Collections  []Collection
