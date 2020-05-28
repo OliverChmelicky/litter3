@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"strings"
@@ -44,7 +45,13 @@ func (s *userService) CreateUser(c echo.Context) error {
 	defer cancel()
 	err = s.Firebase.SetCustomUserClaims(ctx, user.Uid, claims)
 	if err != nil {
-		errDel := s.UserAccess.DeleteUser(user.Id)
+		_, errDel := s.UserAccess.DeleteUser(user.Id)
+		go func() {
+			err = s.Firebase.DeleteUser(context.Background(), user.Uid)
+			if err != nil {
+				log.Error(err)
+			}
+		}()
 		err = fmt.Errorf(err.Error()+" ERROR user deleted %w", errDel)
 		return c.JSON(http.StatusGatewayTimeout, custom_errors.WrapError(custom_errors.ErrCreateUser, err))
 	}
@@ -154,7 +161,13 @@ func (s *userService) RemoveApplicationForMembership(c echo.Context) error {
 func (s *userService) DeleteUser(c echo.Context) error {
 	userId := c.Get("userId").(string)
 
-	err := s.UserAccess.DeleteUser(userId)
+	firebaseUid, err := s.UserAccess.DeleteUser(userId)
+	if err != nil {
+		log.Error(err)
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteUser, err))
+	}
+
+	err = s.Firebase.DeleteUser(context.Background(), firebaseUid)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteUser, err))
 	}

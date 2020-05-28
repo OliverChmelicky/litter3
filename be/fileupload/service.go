@@ -50,15 +50,24 @@ func CreateService(db *pg.DB, opt option.ClientOption, bucketName string) *Fileu
 }
 
 func (s *FileuploadService) UploadUserImage(c echo.Context) error {
-	userId := c.Param("userId")
+	userId := c.Get("userId").(string)
+
+	user := new(models.User)
+	err := s.db.Model(user).Where("id = ?", userId).Select()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetUserById, err))
+	}
+	if user.Avatar != "" {
+		_ = s.DeleteImage(user.Avatar)
+	}
 
 	objectName, err := s.UploadImage(c)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
 	}
 
-	user := new(models.User)
-	_, err = s.db.Model(user).Set("avatar = ?", objectName).Where("id = ?", userId).Update()
+	user.Avatar = objectName
+	err = s.db.Update(user)
 	if err != nil {
 		_ = s.DeleteImage(objectName)
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
@@ -138,10 +147,35 @@ func (s *FileuploadService) UploadCollectionImages(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-//func (s *FileuploadService) GetUserImage() error {
-//
-//}
-//
+func (s *FileuploadService) GetUserImage(c echo.Context) error {
+	imageName := c.Param("image")
+
+	oh := s.bh.Object(imageName)
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+
+	attr, err := oh.Attrs(ctx)
+	if err != nil {
+		log.Error("ATTR_OBJECT_ERROR", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	rc, err := oh.NewReader(ctx)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	defer rc.Close()
+
+	data, err := ioutil.ReadAll(rc)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return c.Blob(http.StatusOK, attr.ContentType, data)
+}
+
 func (s *FileuploadService) GetSocietyImage(c echo.Context) error {
 	imageName := c.Param("image")
 
@@ -240,9 +274,41 @@ func (s *FileuploadService) GetCollectionImages(c echo.Context) error {
 	return c.Blob(http.StatusOK, attr.ContentType, data)
 }
 
-//func (s *FileuploadService) DeleteUserImage() error {
-//
-//}
+func (s *FileuploadService) DeleteUserImage(c echo.Context) error {
+	userId := c.Get("userId").(string)
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+	}
+	defer tx.Rollback()
+
+	user := new(models.User)
+	err = tx.Model(user).Where("id = ?", userId).Select()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrGetUserById, err))
+	}
+	user.Avatar = ""
+	err = tx.Update(user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
+	}
+
+	if user.Avatar != "" {
+		err = s.DeleteImage(user.Avatar)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteImage, err))
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
 //
 //func (s *FileuploadService) DeleteSocietyImage() error {
 //

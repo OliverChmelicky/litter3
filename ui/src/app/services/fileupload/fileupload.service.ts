@@ -18,10 +18,8 @@ export class FileuploadService {
     this.apiUrl = ApisModel.apiUrl
   }
 
-  uploadUserImage(event) {
-    const fd = new FormData();
-    fd.append("file", event.target.files[0], event.target.files[0].name);
-    const url = `${ApisModel.apiUrl}/${ApisModel.fileupload}/${ApisModel.trash}`;
+  uploadUserImage(fd : FormData) {
+    const url = `${ApisModel.apiUrl}/${ApisModel.fileupload}/${ApisModel.user}/upload`;
     return this.http.post(url, fd).pipe(
       catchError(err => FileuploadService.handleError(err))
     );
@@ -49,7 +47,10 @@ export class FileuploadService {
   }
 
   deleteUserImage() {
-
+    const url = `${this.apiUrl}/${ApisModel.fileupload}/${ApisModel.user}/delete`;
+    return this.http.delete(url).pipe(
+      catchError(err => FileuploadService.handleError(err))
+    );
   }
 
   deleteSocietyImage() {

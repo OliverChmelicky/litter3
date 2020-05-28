@@ -33,8 +33,18 @@ func (s *UserAccess) GetUserById(id string) (*models.User, error) {
 	user.Id = id
 
 	err := s.Db.Model(user).Column("user.*").
-		Relation("Societies").
+		Relation("Societies").Relation("Collections").
 		Where("id = ?", id).First()
+
+	for i, collection := range user.Collections {
+		var images []models.CollectionImage
+		err = s.Db.Model(&images).Where("collection_id = ?", collection.Id).Select()
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		user.Collections[i].Images = images
+	}
 
 	if err != nil {
 		return &models.User{}, err
@@ -98,38 +108,48 @@ func (s *UserAccess) RemoveApplicationForMembership(in *models.Applicant) error 
 	return err
 }
 
-func (s *UserAccess) DeleteUser(userId string) error {
+func (s *UserAccess) DeleteUser(userId string) (string, error) {
 	tx, err := s.Db.Begin()
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer tx.Rollback()
+
+	user := new(models.User)
+	err = tx.Model(user).Where("id = ?", userId).Select()
+	if err != nil {
+		return "", err
+	}
+	firebaseUid := user.Uid
 
 	var members []models.Member
 	err = tx.Model(&members).Where("user_id = ? and permission = ?", userId, "admin").Select()
 	if err != nil {
-		return err
+		return firebaseUid, err
 	}
 
 	var testNumOfAdmins []models.Member
 	var societies []string
 	for _, member := range members {
-		err = s.Db.Model(&testNumOfAdmins).Where("society_id = ? and permission = ?", member.SocietyId, "admin").Select()
+		err = tx.Model(&testNumOfAdmins).Where("society_id = ? and permission = ?", member.SocietyId, "admin").Select()
 		if err != nil {
-			return fmt.Errorf("Error check number of adims in society: %w ", err)
+			return firebaseUid, fmt.Errorf("Error check number of adims in society: %w ", err)
 		}
 		if len(testNumOfAdmins) == 1 {
 			societies = append(societies, member.SocietyId)
 		}
 	}
+
 	err = s.DeleteSocieties(societies, tx)
+	fmt.Println("mazem usera2")
+
+	_, err = tx.Model(user).Where("id = ?", userId).Delete()
 	if err != nil {
-		return err
+		log.Error(err)
 	}
 
-	_, err = tx.Model(&models.User{}).Where("id = ?", userId).Delete()
-
-	return tx.Commit()
+	//return firebaseUid, nil
+	return firebaseUid, tx.Commit()
 }
 
 //

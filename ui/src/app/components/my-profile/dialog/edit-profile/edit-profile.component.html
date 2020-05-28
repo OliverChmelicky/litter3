@@ -9,9 +9,11 @@
     <mat-label>Last name</mat-label>
     <input matInput [(ngModel)]="data.lastName">
   </mat-form-field>
+  <input type="file" (change)="onUpload($event)">
+  <mat-checkbox [(ngModel)]="data.deletePicture">delete picture</mat-checkbox>
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
-  <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Save</button>
-  <button mat-button color="warn" (click)="onDeleteAccount()" cdkFocusInitial>Delete account</button>
+  <button mat-button [mat-dialog-close]="data" (click)="onSaveChanges()">Save</button>
+  <button mat-button color="warn" (click)="onDeleteAccount()">Delete account</button>
 </div>

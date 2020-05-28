@@ -1,7 +1,7 @@
 <div class="user-container">
   <div class="user-item" *ngIf="me">
     <div>
-      <app-image [image]="me.Avatar" [service]="'users'"></app-image>
+      <app-image [image]="me.Avatar" [service]="'users'" size="small"></app-image>
     </div>
     <label>
       First name:
@@ -132,7 +132,7 @@
 
       <ng-container matColumnDef="image">
         <th mat-header-cell *matHeaderCellDef>Email</th>
-        <td mat-cell *matCellDef="let element"> <app-image [image]="element.Images[0].Url"></app-image> </td>
+        <td mat-cell *matCellDef="let element"> <app-image [image]="element.Images[0].Url" [service]="'collections'"></app-image> </td>
       </ng-container>
 
       <ng-container matColumnDef="date">

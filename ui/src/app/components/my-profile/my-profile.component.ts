@@ -7,7 +7,8 @@ import {
   requestsSendColumnsDefinition,
   societiesColumnsDefinition,
   requestsReceivedColumnsDefinition,
-  myCollectionsColumns, myEventsColumns
+  myCollectionsColumns,
+  myEventsColumns
 } from "./table-definitions";
 import {SocietyModel} from "../../models/society.model";
 import {SocietyService} from "../../services/society/society.service";
@@ -17,12 +18,16 @@ import {EventModel} from "../../models/event.model";
 import {Router} from "@angular/router";
 import {TrashService} from "../../services/trash/trash.service";
 import {FileuploadService} from "../../services/fileupload/fileupload.service";
+import {MatTableDataSource} from "@angular/material/table";
+import {ApisModel} from "../../api/api-urls";
 
 export interface ProfileDialogData {
   viewName?: string;
   firstName: string;
   lastName: string;
-  email: string;
+  newPicture: FormData;
+  deletePicture: boolean;
+  updateUser: boolean;
   deleteAccount: boolean;
 }
 
@@ -56,6 +61,7 @@ export class MyProfileComponent implements OnInit {
   requestsReceivedColumns = requestsReceivedColumnsDefinition;
   myCollectionsColumns = myCollectionsColumns;
   myEventsColumns = myEventsColumns;
+  imageUrlPrefix: string = ApisModel.apiUrl + '/' + ApisModel.fileupload + '/' + ApisModel.user + '/load/';
 
   constructor(
     private router: Router,
@@ -73,7 +79,9 @@ export class MyProfileComponent implements OnInit {
       user => {
         this.me = user;
         this.mySocietiesView = user.Societies
-        this.myCollections = user.Collections
+        if (user.Collections) {
+          this.fillCollections(user.Collections)
+        }
         this.myEvents = user.Events
         this.userService.getMyFriendRequests().subscribe(
           requests => {
@@ -85,17 +93,16 @@ export class MyProfileComponent implements OnInit {
             console.log('Error fetching my requests ', err)
           },
         )
+        this.userService.getMyFriendsIds().subscribe(
+          relationship => {
+            if (relationship != null) {
+              this.myFriendsIds = relationship;
+              this.fetchUserDetailsForFriends(relationship)
+            }
+          },
+          error => console.log('Error GetMyFriends ', error)
+        )
       })
-
-    this.userService.getMyFriendsIds().subscribe(
-      relationship => {
-        if (relationship != null) {
-          this.myFriendsIds = relationship;
-          this.fetchUserDetailsForFriends(relationship)
-        }
-      },
-      error => console.log('Error GetMyFriends ', error)
-    )
 
   }
 
@@ -103,30 +110,39 @@ export class MyProfileComponent implements OnInit {
     const dialogRef = this.editProfileDialog.open(EditProfileComponent, {
       width: '800px',
       data: {
+        viewName: this.me.FirstName + ' ' + this.me.LastName,
         firstName: this.me.FirstName,
         lastName: this.me.LastName,
-        email: this.me.Email,
+        newPicture: new FormData(),
+        deletePicture: false,
+        updateUser: false,
         deleteAccount: false,
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result.firstName)
-      console.log(result.data)
       if (result) {
-        console.log(result.deleteAccount)
+        console.log(result)
         if (result.deleteAccount) {
           this.userService.deleteAccount().subscribe(res => console.log(res))
           return
         }
-        if (result.firstName) {
-          this.me.FirstName = result.FirstName;
-        }
-        if (result.LastName) {
-          this.me.LastName = result.LastName;
-        }
-        if (result.firstName != this.me.FirstName || result.lastName != this.me.LastName) {
-          this.userService.updateUser(this.me).subscribe()
+        if (result.updateUser) {
+          if (result.firstName) {
+            this.me.FirstName = result.FirstName;
+          }
+          if (result.LastName) {
+            this.me.LastName = result.LastName;
+          }
+          if (result.firstName != this.me.FirstName || result.lastName != this.me.LastName) {
+            this.userService.updateUser(this.me).subscribe()
+          }
+          if (result.newPicture.has('file')) {
+            console.log('uploading', result.newPicture)
+            this.fileuploadService.uploadUserImage(result.newPicture).subscribe()
+          } else if (result.deletePicture) {
+            this.fileuploadService.deleteUserImage().subscribe()
+          }
         }
       }
     });
@@ -137,6 +153,7 @@ export class MyProfileComponent implements OnInit {
       () => {
         const index = this.myFriendsView.findIndex(u => u.UserId === userId)
         this.myFriendsView.splice(index, 1)
+        this.reinitMyFriendsTable()
       }
     )
 
@@ -162,6 +179,8 @@ export class MyProfileComponent implements OnInit {
         const index = this.IreceivedFriendRequests.findIndex(u => u.UserId === userId)
         this.myFriendsView.push(this.IreceivedFriendRequests[index])
         this.IreceivedFriendRequests.splice(index, 1)
+        this.reinitReceivedRequestsTable()
+        this.reinitMyFriendsTable()
       }
     )
   }
@@ -171,6 +190,7 @@ export class MyProfileComponent implements OnInit {
       () => {
         const index = this.IreceivedFriendRequests.findIndex(u => u.UserId === userId)
         this.IreceivedFriendRequests.splice(index, 1)
+        this.reinitReceivedRequestsTable()
       }
     )
   }
@@ -180,6 +200,7 @@ export class MyProfileComponent implements OnInit {
       () => {
         const index = this.IsendFriendRequests.findIndex(u => u.UserId === userId)
         this.IsendFriendRequests.splice(index, 1)
+        this.reinitSendRequestTable()
       }
     )
   }
@@ -222,6 +243,7 @@ export class MyProfileComponent implements OnInit {
   private pushUserToMyFriends(users: UserModel[]) {
     this.myFriendsIds.map(friendship => {
       users.map(user => {
+          console.log(user.Id === friendship.User1Id || user.Id === friendship.User2Id)
           if (user.Id === friendship.User1Id || user.Id === friendship.User2Id) {
             this.myFriendsView.push(
               {
@@ -237,6 +259,7 @@ export class MyProfileComponent implements OnInit {
         }
       )
     })
+    this.reinitMyFriendsTable()
   }
 
   private pushUserToFriendRequests(requests: FriendRequestModel[], users: UserModel[]) {
@@ -313,11 +336,56 @@ export class MyProfileComponent implements OnInit {
     });
   }
 
+
+  reinitSendRequestTable() {
+    const newData = new MatTableDataSource<UserViewModel>(this.IsendFriendRequests);
+    this.IsendFriendRequests = []
+    for (let i = 0; i < newData.data.length; i++) {
+      this.IsendFriendRequests.push(newData.data[i])
+    }
+  }
+
+  reinitReceivedRequestsTable() {
+    const newData = new MatTableDataSource<UserViewModel>(this.IreceivedFriendRequests);
+    this.IreceivedFriendRequests = []
+    for (let i = 0; i < newData.data.length; i++) {
+      this.IreceivedFriendRequests.push(newData.data[i])
+    }
+  }
+
+  reinitMyFriendsTable() {
+    const newData = new MatTableDataSource<UserViewModel>(this.myFriendsView);
+    this.myFriendsView = []
+    for (let i = 0; i < newData.data.length; i++) {
+      this.myFriendsView.push(newData.data[i])
+    }
+  }
+
+  reinitMyCollectionsTable() {
+    const newData = new MatTableDataSource<CollectionModel>(this.myCollections);
+    this.myCollections = []
+    for (let i = 0; i < newData.data.length; i++) {
+      this.myCollections.push(newData.data[i])
+    }
+  }
+
+
+  private fillCollections(collections: CollectionModel[]) {
+    collections.map(c => {
+      if (!c.Images) {
+        c.Images = [{
+          Url: '',
+          CollectionId: '',
+        }]
+      }
+    })
+    this.myCollections = collections
+  }
 }
 
 @Component({
   selector: 'app-edit-profile',
-  templateUrl: './dialog/edit-profile.component.html',
+  templateUrl: './dialog/edit-profile/edit-profile.component.html',
   //styleUrls: ['./dialog/edit-profile.component.css']
 })
 export class EditProfileComponent {
@@ -333,15 +401,25 @@ export class EditProfileComponent {
 
   onDeleteAccount() {
     this.data.deleteAccount = true;
-    this.dialogRef.close({data: this.data});
+    this.dialogRef.close(this.data);
   }
 
+  onUpload(event) {
+    this.data.newPicture.delete('file')
+    this.data.newPicture.append("file", event.target.files[0], event.target.files[0].name)
+    this.data.updateUser = true
+  }
+
+  onSaveChanges() {
+    this.data.updateUser = true
+    this.dialogRef.close(this.data);
+  }
 }
 
 @Component({
   selector: 'app-collection-detail',
-  templateUrl: './dialog/collection-details.component.html',
-  //styleUrls: ['./dialog/collection-details.component.css']
+  templateUrl: './dialog/collection-details/collection-details.component.html',
+  styleUrls: ['./dialog/collection-details/collection-details.component.css']
 })
 export class ShowCollectionRandomDetails {
 

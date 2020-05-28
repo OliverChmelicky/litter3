@@ -92,7 +92,7 @@ func main() {
 	e.GET("/users/me", userService.GetCurrentUser, tokenMiddleware.AuthorizeUser)
 	e.PUT("/users/update", userService.UpdateUser, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/details", userService.GetUsers)
-	e.DELETE("/users/delete", userService.DeleteUser)
+	e.DELETE("/users/delete", userService.DeleteUser, tokenMiddleware.AuthorizeUser)
 
 	e.GET("/users/societies", userService.GetMySocieties, tokenMiddleware.AuthorizeUser)
 	e.GET("/users/societies/editable", userService.GetEditableSocieties, tokenMiddleware.AuthorizeUser)
@@ -163,10 +163,10 @@ func main() {
 	e.GET("/fileupload/collections/load/:image", fileuploadService.GetCollectionImages)
 	e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteCollectionImages, tokenMiddleware.AuthorizeUser)
 
-	//e.POST("/fileupload/societies/:societyId", fileuploadService.UploadUserImage, tokenMiddleware.AuthorizeUser)
-	//e.GET("/fileupload/societies/load/:image", fileuploadService.GetUserImage)
 	//e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteSocietyImage, tokenMiddleware.AuthorizeUser)
-	//e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteUserImage, tokenMiddleware.AuthorizeUser)
+	e.GET("/fileupload/users/load/:image", fileuploadService.GetUserImage)
+	e.POST("/fileupload/users/upload", fileuploadService.UploadUserImage, tokenMiddleware.AuthorizeUser)
+	e.DELETE("/fileupload/users/delete", fileuploadService.DeleteUserImage, tokenMiddleware.AuthorizeUser)
 
 	if production {
 		listenOn := fmt.Sprintf(":%s", os.Getenv("PORT"))
