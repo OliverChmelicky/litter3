@@ -5,9 +5,7 @@
     <input type="number" [(ngModel)]="data.collection.Weight" >
     <mat-checkbox [(ngModel)] = "data.collection.CleanedTrash">Cleaned trash</mat-checkbox>
     <div *ngFor="let image of images;let i = index">
-      <app-image [image]="image.Url" [service]="'collections'"></app-image>
-<!--      <button *ngIf="!i.inDeleteList" mat-button color="warn" (click)="onDelete(i.Url)">Delete</button>-->
-<!--      <button *ngIf="i.inDeleteList" mat-button (click)="onRemoveFromList(i.Url)">Undo deletion</button>-->
+      <app-image [image]="image.Url" [service]="'collections'" size="medium"></app-image>
       <mat-checkbox [(ngModel)]="data.collection.Images[i].inDeleteList">delete picture</mat-checkbox>
     </div>
   </div>

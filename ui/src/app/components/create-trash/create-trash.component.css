@@ -1,7 +1,10 @@
 agm-map{
-  margin-left: 150px;
   height: 500px;
   width: 750px;
+}
+
+.map-part {
+  margin-left: 150px;
 }
 
 .report-container {

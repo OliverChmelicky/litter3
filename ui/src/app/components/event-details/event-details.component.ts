@@ -440,6 +440,7 @@ export class EventDetailsComponent implements OnInit {
     }
 
     const weightBefore = collection.Weight
+    const cleanedBefore = collection.CleanedTrash
 
     const dialogRef = this.editCollectionDialog.open(EditCollectionComponent, {
       width: '800px',
@@ -471,8 +472,9 @@ export class EventDetailsComponent implements OnInit {
             this.fileuploadService.uploadCollectionImages(result.uploadImages, collectionId).subscribe()
           }
         }
-        if (result.collection.Weight !== weightBefore) {
-          this.eventService.updateCollectionOrganized(result.collection, this.event.Id ,this.availableDecisionsAs[this.selectedCreator]).subscribe( res => {},
+        if (result.collection.Weight !== weightBefore || result.collection.CleanedTrash !== cleanedBefore) {
+          this.eventService.updateCollectionOrganized(result.collection, this.event.Id ,this.availableDecisionsAs[this.selectedCreator]).subscribe(
+            () => window.location.reload(),
             error => {console.log(error)}
             )
         }

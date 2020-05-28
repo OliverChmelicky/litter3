@@ -1,9 +1,11 @@
 <h1 mat-dialog-title>Collection details</h1>
 <div mat-dialog-content class="margin">
+  <label>Cleaned at:</label>
+  <p>{{data.collection.CreatedAt | date: 'dd/MM/yyyy HH:mm'}}</p>
     <label>Weight in kilograms</label><br>
     <p>{{data.collection.Weight}}</p>
   <div *ngFor="let collection of data.collection.Images">
-    <app-image [image]="collection.Url" [size]="'medium'" [service]="'collections'"></app-image>
+    <app-image [image]="collection.Url" [size]="'large'" [service]="'collections'"></app-image>
   </div>
 </div>
 <div mat-dialog-actions>

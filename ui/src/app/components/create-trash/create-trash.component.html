@@ -61,19 +61,21 @@
   <div class="report-items">
 <!--    <input disabled="true" type="text" [value]="markerLat" formControlName="lat"><br>-->
 <!--    <input disabled="true" type="text" [value]="markerLng" formControlName="lng">-->
-    <agm-map
-      [latitude]="initMapLat"
-      [longitude]="initMapLng"
-      [zoom]="5"
-      (mapReady)="onMapReady($event)"
-      disableDoubleClickZoom="true">
+    <div class="map-part">
+      <agm-map
+        [latitude]="initMapLat"
+        [longitude]="initMapLng"
+        [zoom]="5"
+        (mapReady)="onMapReady($event)"
+        disableDoubleClickZoom="true">
 
-      <agm-marker [latitude]="markerLat" [longitude]="markerLng"
-                  [markerDraggable]="true"
-                  (drag)="onDragging($event)">
-      </agm-marker>
-    </agm-map>
+        <agm-marker [latitude]="markerLat" [longitude]="markerLng"
+                    [markerDraggable]="true"
+                    (drag)="onDragging($event)">
+        </agm-marker>
+      </agm-map>
+      <p>Move the marker to the location of the dump</p>
+    </div>
   </div>
-
 
 </div>
