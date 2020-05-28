@@ -20,7 +20,7 @@ import {MarkerCollectionModel} from "../../models/trash.model";
   styleUrls: ['./society-details.component.css'],
 })
 export class SocietyDetailsComponent implements OnInit {
-  society: SocietyModel = DefaultSociety;
+  society: SocietyModel;
   adminIds: string[] = [];
   me: UserModel = loggoutUser;
 

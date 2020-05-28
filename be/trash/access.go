@@ -5,6 +5,7 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
 	"github.com/olo/litter3/models"
+	log "github.com/sirupsen/logrus"
 )
 
 type TrashAccess struct {
@@ -30,6 +31,16 @@ func (s *TrashAccess) GetTrash(id string) (*models.Trash, error) {
 	if err != nil {
 		fmt.Println(err)
 		return &models.Trash{}, err
+	}
+
+	for i, collection := range trash.Collections {
+		var images []models.CollectionImage
+		err = s.Db.Model(&images).Where("collection_id = ?", collection.Id).Select()
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		trash.Collections[i].Images = images
 	}
 
 	return trash, nil

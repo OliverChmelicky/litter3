@@ -27,13 +27,13 @@
 
     <div class="events-container">
       <div>
-        <button mat-button (click)="onCreateEvent()">Create event</button>
+        <button mat-button color="primary" (click)="onCreateEvent()">Create event</button>
       </div>
       <div>
-        <button *ngIf="isLoggedIn" mat-button (click)="onEdit()">Edit trash</button>
+        <button *ngIf="isLoggedIn" color="primary" mat-button (click)="onEdit()">Edit trash</button>
       </div>
       <div>
-        <button *ngIf="isLoggedIn" mat-button (click)="onCreateCollection()">Create collection</button>
+        <button *ngIf="isLoggedIn" color="primary" mat-button (click)="onCreateCollection()">Create collection</button>
       </div>
     </div>
 

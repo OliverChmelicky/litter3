@@ -7,7 +7,7 @@
   <p>{{data.collection.Weight}}</p>
 
   <div *ngFor="let picture of data.collection.Images">
-    <app-image [image]="picture.Url" [service]="'trash'"></app-image>
+    <app-image [image]="picture.Url" [service]="'trash'" size="large"></app-image>
   </div>
 
 </div>

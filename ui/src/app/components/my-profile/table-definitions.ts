@@ -17,6 +17,7 @@ export const requestsSendColumnsDefinition: string[] = [
 export const requestsReceivedColumnsDefinition: string[] = [
   'first-name',
   'last-name',
+  'email',
   'accept-button',
   'deny-button',
 ]

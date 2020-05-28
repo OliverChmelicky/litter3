@@ -70,11 +70,10 @@
       <div class="final-buttons">
         <button mat-button (click)="onSave()">Save</button>
         <button class="total-delete" mat-button color="warn" (click)="onDelete()">Delete trash</button>
-        <p *ngIf="errorMessage">{{errorMessage}}</p>
       </div>
+      <p *ngIf="errorMessage">{{errorMessage}}</p>
 
     </form>
-
 
   </div>
 

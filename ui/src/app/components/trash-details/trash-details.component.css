@@ -55,7 +55,13 @@ agm-map {
 }
 
 .right-part {
+  display: flex;
+  flex-wrap: wrap;
   width: 50%;
+}
+
+.right-part app-image {
+  margin: 4px;
 }
 
 .comments {

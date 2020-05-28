@@ -18,7 +18,6 @@ import {GoogleMap} from "@agm/core/services/google-maps-types";
 import {MarkerModel} from "../google-map/Marker.model";
 import {MapLocationModel} from "../../models/GPSlocation.model";
 import {
-  CollectionImageModel,
   CollectionModel,
   defaultCollectionModel,
   defaultTrashImage

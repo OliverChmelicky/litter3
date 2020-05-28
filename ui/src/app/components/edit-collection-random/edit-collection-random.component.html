@@ -1,7 +1,7 @@
 <div class="edit-collection-random">
   <div class="edit-collection-form">
     <mat-form-field>
-      <mat-label>Your friends not in collection:</mat-label>
+      <mat-label>Your friends not in here:</mat-label>
       <mat-select [formControl]="addFriends" multiple>
         <mat-option *ngFor="let user of friendsNotInCollection" [value]="user.Id">{{user.Email}}</mat-option>
       </mat-select>

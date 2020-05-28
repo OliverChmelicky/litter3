@@ -1,10 +1,7 @@
 <div class="society-container">
 
-  <div class="information-container">
+  <div *ngIf="society" class="information-container">
     <h1>{{society.Name}}</h1>
-    <div *ngIf="isAdmin">
-      <button mat-button color="primary" (click)="onEdit()" >Edit</button>
-    </div>
     <div *ngIf="isLoggedIn">
       <div *ngIf="!isAdmin && isMember">
         <button *ngIf="isMember" mat-button color="primary" (click)="onLeave()">Leave</button>
@@ -17,11 +14,15 @@
       </div>
     </div>
     <app-image [service]="'societies'" [image]="society.Avatar"></app-image>
+    <div *ngIf="isAdmin">
+      <button mat-button color="primary" (click)="onEdit()" >Edit</button>
+    </div>
     <p>{{society.Description}}</p>
   </div>
 
   <div class="tables">
     <div *ngIf="isAdmin">
+      <label>Applicants for entering:</label>
       <table mat-table [dataSource]="applicants" class="mat-elevation-z8">
         <ng-container matColumnDef="first-name">
           <th mat-header-cell *matHeaderCellDef> First name </th>
@@ -31,13 +32,17 @@
           <th mat-header-cell *matHeaderCellDef> Last name </th>
           <td mat-cell *matCellDef="let element"> {{element.LastName}} </td>
         </ng-container>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element"> {{element.Email}} </td>
+        </ng-container>
         <ng-container matColumnDef="accept-button">
           <th mat-header-cell *matHeaderCellDef> Accept </th>
-          <td mat-cell *matCellDef="let element"><button (click)="onAccept(element.Id)">Accept</button></td>
+          <td mat-cell *matCellDef="let element"><button mat-button (click)="onAccept(element.Id)">Accept</button></td>
         </ng-container>
         <ng-container matColumnDef="deny-button">
           <th mat-header-cell *matHeaderCellDef> Deny </th>
-          <td mat-cell *matCellDef="let element"> <button (click)="onDeny(element.Id)">Deny</button> </td>
+          <td mat-cell *matCellDef="let element"> <button mat-button color="warn" (click)="onDeny(element.Id)">Deny</button> </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="requestsReceivedColumns"></tr>
@@ -46,6 +51,7 @@
     </div>
 
     <div class="members">
+      <label>Members:</label>
       <table mat-table [dataSource]="members" class="mat-elevation-z8">
         <!-- Weight Column -->
         <ng-container matColumnDef="image">

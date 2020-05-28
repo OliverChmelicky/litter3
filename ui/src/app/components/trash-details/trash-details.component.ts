@@ -193,6 +193,7 @@ export class TrashDetailsComponent implements OnInit {
         }
       })
 
+    console.log(collection.Images)
       if (!collection.Images) {
         collection.Images = [];
       }
