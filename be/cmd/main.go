@@ -164,7 +164,6 @@ func main() {
 	e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteCollectionImages, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/fileupload/collections/event/delete/:collectionId", fileuploadService.DeleteEventsCollectionsImages, tokenMiddleware.AuthorizeUser)
 
-	//e.DELETE("/fileupload/collections/delete/:collectionId", fileuploadService.DeleteSocietyImage, tokenMiddleware.AuthorizeUser)
 	e.GET("/fileupload/users/load/:image", fileuploadService.GetUserImage)
 	e.POST("/fileupload/users/upload", fileuploadService.UploadUserImage, tokenMiddleware.AuthorizeUser)
 	e.DELETE("/fileupload/users/delete", fileuploadService.DeleteUserImage, tokenMiddleware.AuthorizeUser)

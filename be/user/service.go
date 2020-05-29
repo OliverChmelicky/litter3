@@ -524,7 +524,6 @@ func (s *userService) DismissApplicant(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
-	fmt.Println("HAS RIGHTS? ", hasRights)
 	if !hasRights {
 		return c.JSON(http.StatusForbidden, custom_errors.WrapError(custom_errors.ErrDismissApplicant, fmt.Errorf("You are not an admin ")))
 	}

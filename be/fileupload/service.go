@@ -129,7 +129,6 @@ func (s *FileuploadService) UploadCollectionImages(c echo.Context) error {
 
 	objectNames, err := s.UploadImages(c)
 	if err != nil {
-		fmt.Println("ERROR1: ", err)
 		return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUploadImage, err))
 	}
 
@@ -139,7 +138,6 @@ func (s *FileuploadService) UploadCollectionImages(c echo.Context) error {
 		trashImage.Url = objectName
 		_, err = s.db.Model(trashImage).Insert(trashImage)
 		if err != nil {
-			fmt.Println("ERROR: ", err)
 			_ = s.DeleteImage(objectName)
 			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrUpdateUser, err))
 		}
@@ -227,14 +225,12 @@ func (s *FileuploadService) GetTrashImage(c echo.Context) error {
 
 	rc, err := oh.NewReader(ctx)
 	if err != nil {
-		fmt.Println("Err new reader: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	defer rc.Close()
 
 	data, err := ioutil.ReadAll(rc)
 	if err != nil {
-		fmt.Println("Error read all: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -261,14 +257,12 @@ func (s *FileuploadService) GetCollectionImages(c echo.Context) error {
 
 	rc, err := oh.NewReader(ctx)
 	if err != nil {
-		fmt.Println("Err new reader: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	defer rc.Close()
 
 	data, err := ioutil.ReadAll(rc)
 	if err != nil {
-		fmt.Println("Error read all: ", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -410,7 +404,6 @@ func (s *FileuploadService) DeleteEventsCollectionsImages(c echo.Context) error 
 		permission := new(models.EventSociety)
 		err = s.db.Model(permission).Where("society_id = ? and event_id = ?", pickerId, eventId).Select()
 		if err != nil {
-			fmt.Println("TU")
 			log.Error(err)
 			return c.JSON(http.StatusInternalServerError, custom_errors.WrapError(custom_errors.ErrDeleteCollectionImage, err))
 		}

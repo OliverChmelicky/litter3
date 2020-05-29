@@ -66,7 +66,6 @@ func (s *trashService) GetTrashById(c echo.Context) error {
 func (s *trashService) GetTrashByIds(c echo.Context) error {
 	idsString := c.QueryParam("ids")
 	ids := strings.Split(idsString, ",")
-	fmt.Println(ids)
 
 	trash, err := s.TrashAccess.GetTrashByIds(ids)
 	if err != nil {
@@ -272,8 +271,6 @@ func (s *trashService) AddPickerToCollection(c echo.Context) error {
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, custom_errors.WrapError(custom_errors.ErrBindingRequest, err))
 	}
-
-	fmt.Println("request: ", request)
 
 	collection, err := s.TrashAccess.AddPickersToCollection(request, userId)
 	if err != nil {

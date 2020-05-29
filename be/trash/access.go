@@ -29,7 +29,6 @@ func (s *TrashAccess) GetTrash(id string) (*models.Trash, error) {
 		Relation("Comments").
 		First()
 	if err != nil {
-		fmt.Println(err)
 		return &models.Trash{}, err
 	}
 
@@ -250,7 +249,6 @@ func (s *TrashAccess) AddPickersToCollection(request *models.AddPickersToCollect
 	}
 
 	for _, picker := range request.UserId {
-		fmt.Println("pridavam")
 		record := new(models.UserCollection)
 		record.UserId = picker
 		record.CollectionId = request.CollectionId
@@ -259,8 +257,6 @@ func (s *TrashAccess) AddPickersToCollection(request *models.AddPickersToCollect
 			return &models.AddPickersToCollectionRequest{}, fmt.Errorf("Error adding picker to collection: %w ", err)
 		}
 	}
-
-	fmt.Println("Pridal som: ", len(request.UserId))
 
 	return request, nil
 }
@@ -327,8 +323,6 @@ func (s *TrashAccess) DeleteCollectionFromUser(collectionId string, userId strin
 
 func (s *TrashAccess) isUserInCollection(collectionId string, userId string) (bool, error) {
 	userCollection := new(models.UserCollection)
-	fmt.Println(collectionId)
-	fmt.Println(userId)
 	err := s.Db.Model(userCollection).Where("collection_id = ? and user_id = ?", collectionId, userId).Select()
 	if err == pg.ErrNoRows {
 		return false, fmt.Errorf("You are not a member of collection")

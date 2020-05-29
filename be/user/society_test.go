@@ -219,7 +219,6 @@ func (s *SocietySuite) Test_ApplyFormMembershipExistingMember() {
 			s.Nil(err) //end test
 		}
 		if errors.Is(err, pg.ErrNoRows) {
-			fmt.Println("Should be found something")
 			s.Error(nil) //throw error in test
 		}
 
@@ -645,7 +644,6 @@ func (s *SocietySuite) Test_DeleteSociety() {
 
 		err = s.db.Model(&models.Trash{}).Where("id = ?", candidate.trash.Id).Select()
 		s.Nil(err)
-		fmt.Println("event je: ", candidate.event)
 		err = s.db.Model(&models.Event{}).Where("id = ?", candidate.event.Id).Select()
 		s.NotNil(err)
 		err = s.db.Model(&models.EventUser{}).Where("user_id = ?", candidate.memberAndEventAttendant.Id).Select()

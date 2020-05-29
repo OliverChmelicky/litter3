@@ -389,7 +389,6 @@ func (s *TrashSuite) Test_DeleteCollection() {
 		c.SetParamValues(candidates[i].collection.Id)
 
 		s.NoError(s.service.DeleteCollectionFromUser(c))
-		fmt.Println(rec.Body)
 
 		s.EqualValues(http.StatusOK, rec.Code)
 

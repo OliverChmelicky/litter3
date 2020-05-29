@@ -143,7 +143,6 @@ func (s *UserAccess) DeleteUser(userId string) (string, error) {
 	}
 
 	err = s.DeleteSocieties(societies, tx)
-	fmt.Println("mazem usera2")
 
 	_, err = tx.Model(user).Where("id = ?", userId).Delete()
 	if err != nil {
@@ -274,7 +273,6 @@ func (s *UserAccess) GetUserSocieties(id string) ([]models.Society, error) {
 func (s *UserAccess) GetSocietyAdmins(societyId string) ([]string, error) {
 	members := new(models.Member)
 	var admins []string
-	fmt.Println("Zo society: ", societyId)
 	err := s.Db.Model(members).Column("user_id").Where("permission = 'admin' and society_id = ? ", societyId).Select(&admins)
 	if err != nil {
 		return nil, err
@@ -567,8 +565,6 @@ func (s *UserAccess) RemoveFriend(friendship *models.Friends) error {
 		return err
 	}
 	if res.RowsAffected() == 0 {
-		fmt.Println("Why no rows were affected")
-		fmt.Println(friendship)
 		return errors.New("REMOVE FRIEND: NO ROWS WERE AFFECTED")
 	}
 	return err
@@ -578,7 +574,6 @@ func (s *UserAccess) RemoveFriend(friendship *models.Friends) error {
 func (s *UserAccess) IsUserSocietyAdmin(userId, societyId string) (bool, int, error) {
 	admins, err := s.GetSocietyAdmins(societyId)
 	if err != nil {
-		fmt.Println("Is admin err: ", err)
 		return false, 0, err
 	}
 	if len(admins) == 0 {
