@@ -1,5 +1,5 @@
 # litter3
-This is my Bachelor thesis
+This is my Bachelor`s thesis
 
 The program made by myself, Oliver Chmelický, can serve as an application for reporting trash
 or as a skeleton of another project UriNATION.
