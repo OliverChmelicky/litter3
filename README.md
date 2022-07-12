@@ -12,6 +12,7 @@ There are four services having structure of mappers, accesses and endpoints impl
 - user
 - trash
 - event
+
 And one small service manipulating with GCP bucket:
 - fileupload
 
