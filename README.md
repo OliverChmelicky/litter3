@@ -1,8 +1,21 @@
 # litter3
 This is my Bachelor`s thesis
 
-The program made by myself, Oliver Chmelický, can serve as an application for reporting trash
-or as a skeleton of another project UriNATION.
+The project cosists of 
+/be - for backend on Golang
+/ui - frontend in Angular
+/postgres - database definition, triggers and constraints
+
+## Backend
+
+There are four services having structure of mappers, accesses and endpoints implemented: 
+- user
+- trash
+- event
+And one small service manipulating with GCP bucket:
+- fileupload
+
+
 
 Possible future highlits and features of Litter3 project:
 Add gamification questions:
