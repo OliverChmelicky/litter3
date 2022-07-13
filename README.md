@@ -6,18 +6,26 @@ The project cosists of
 /ui - frontend in Angular
 /postgres - database definition, triggers and constraints
 
+
+## Technology stack
+Golang, Angular, Docker, GCP, Firebase (Frontend is deployed here).
+
 ## Backend
 
 There are four services having structure of mappers, accesses and endpoints implemented: 
 - user
 - trash
 - event
-
-And one small service manipulating with GCP bucket:
 - fileupload
 
+Services consist of access codes manipulating with DB.
+In some services there are also mappers mapping database models into API models.
+Service.go handles API calls and calls access layer and mapper layer in order to handle user's requests.
 
 
+
+
+### Possible improvements
 Possible future highlits and features of Litter3 project:
 Add gamification questions:
     Epidemia samoa pred Covid19
