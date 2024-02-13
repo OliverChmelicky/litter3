@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"fmt"
+
 	"github.com/go-pg/pg/v9"
 	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
@@ -526,10 +527,6 @@ func (s *UserAccess) AddFriendshipRequest(request *models.FriendRequest) (*model
 func (s *UserAccess) RemoveApplicationForFriendship(request *models.FriendRequest) error {
 	application := new(models.FriendRequest)
 	_, err := s.Db.Model(application).Where("(user1_id = ? and user2_id = ?) or (user1_id = ? and user2_id = ?)", request.User1Id, request.User2Id, request.User2Id, request.User1Id).Delete()
-	if err != nil {
-		return err
-	}
-
 	return err
 }
 
@@ -570,7 +567,7 @@ func (s *UserAccess) RemoveFriend(friendship *models.Friends) error {
 	return err
 }
 
-//HELPERS
+// HELPERS
 func (s *UserAccess) IsUserSocietyAdmin(userId, societyId string) (bool, int, error) {
 	admins, err := s.GetSocietyAdmins(societyId)
 	if err != nil {

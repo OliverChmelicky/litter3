@@ -2,13 +2,14 @@ package trash
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 type trashService struct {

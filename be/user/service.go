@@ -3,17 +3,18 @@ package user
 import (
 	"context"
 	"errors"
-	"firebase.google.com/go/auth"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"firebase.google.com/go/auth"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type userService struct {

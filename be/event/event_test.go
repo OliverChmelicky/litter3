@@ -2,6 +2,13 @@ package event
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	"github.com/olo/litter3/models"
@@ -9,12 +16,6 @@ import (
 	"github.com/olo/litter3/user"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"strconv"
-	"strings"
-	"testing"
-	"time"
 )
 
 type TrashSuite struct {
@@ -50,7 +51,7 @@ func (s *TrashSuite) SetupSuite() {
 	s.e = echo.New()
 }
 
-//create event --> hard
+// create event --> hard
 func (s *TrashSuite) Test_CreateTrash_User() {
 	candidates := []struct {
 		creatorUser  *models.User
