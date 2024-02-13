@@ -1,21 +1,21 @@
 package fileupload
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
-	firebase "firebase.google.com/go"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"cloud.google.com/go/storage"
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type FileuploadService struct {
@@ -24,29 +24,30 @@ type FileuploadService struct {
 }
 
 func CreateService(db *pg.DB, opt option.ClientOption, bucketName string) *FileuploadService {
-	app, err := firebase.NewApp(context.Background(), nil, opt)
-	if err != nil {
-		log.Fatalf("Fileupload service error initializing firebase app: %s\n", err.Error())
-		panic(err.Error())
-	}
-	st, err := app.Storage(context.Background())
-	if err != nil {
-		log.Fatalf("Fileupload service initializing storage: %s\n", err.Error())
-		panic(err.Error())
-	}
-	bh, err := st.Bucket(bucketName)
-	if err != nil {
-		log.Fatalf("Fileupload service error getting bucket handler: %s\n", err.Error())
-		panic(err.Error())
-	}
-	if _, err = bh.Attrs(context.Background()); err != nil {
-		log.Fatalf("Bucket does not exist: %s\n", err.Error())
-		panic(err.Error())
-	}
+	// app, err := firebase.NewApp(context.Background(), nil, opt)
+	// if err != nil {
+	// 	log.Fatalf("Fileupload service error initializing firebase app: %s\n", err.Error())
+	// 	panic(err.Error())
+	// }
+	// st, err := app.Storage(context.Background())
+	// if err != nil {
+	// 	log.Fatalf("Fileupload service initializing storage: %s\n", err.Error())
+	// 	panic(err.Error())
+	// }
+	// bh, err := st.Bucket(bucketName)
+	// if err != nil {
+	// 	log.Fatalf("Fileupload service error getting bucket handler: %s\n", err.Error())
+	// 	panic(err.Error())
+	// }
+	// if _, err = bh.Attrs(context.Background()); err != nil {
+	// 	log.Fatalf("Bucket does not exist: %s\n", err.Error())
+	// 	panic(err.Error())
+	// }
 
 	return &FileuploadService{
 		db: db,
-		bh: bh,
+		// bh: bh,
+		bh: nil,
 	}
 }
 
@@ -304,10 +305,9 @@ func (s *FileuploadService) DeleteUserImage(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+// func (s *FileuploadService) DeleteSocietyImage() error {
 //
-//func (s *FileuploadService) DeleteSocietyImage() error {
-//
-//}
+// }
 func (s *FileuploadService) DeleteTrashImage(c echo.Context) error {
 	imageName := c.Param("image")
 	trashId := c.Param("trashId")

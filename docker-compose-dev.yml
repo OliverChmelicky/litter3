@@ -16,7 +16,7 @@ services:
 #      - CLOUDSQL_DB_CREDENTIALS_PASSWORD=goo
 #      - DB_NAME=goo
   db-svc:
-    image: kartoza/postgis
+    image: kartoza/postgis:16-3.4--v2023.11.04
     restart: always
     volumes:
     - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -25,7 +25,6 @@ services:
       - POSTGRES_DBNAME=goo
       - POSTGRES_USER=goo
       - POSTGRES_PASS=goo
-#      - DB_EXTENSION=pgcrypto
     networks:
       - dev
     ports:

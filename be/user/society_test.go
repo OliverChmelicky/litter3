@@ -3,17 +3,17 @@ package user
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/go-pg/pg/v9"
 	"github.com/labstack/echo"
 	custom_errors "github.com/olo/litter3/custom-errors"
 	"github.com/olo/litter3/models"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
 )
 
 type SocietySuite struct {
@@ -38,7 +38,7 @@ func (s *SocietySuite) SetupSuite() {
 		log.Error("PostgresSQL is down")
 	}
 
-	s.service = CreateService(db, nil, nil)
+	s.service = CreateService(db, nil)
 	s.db = db
 
 	s.e = echo.New()

@@ -81,7 +81,7 @@ create table trash_comments
 (
     id         varchar PRIMARY KEY,
     trash_id   VARCHAR REFERENCES trash (id) on delete cascade not null,
-    user_id    VARCHAR REFERENCES users (id) on delete set null not null,
+    user_id    VARCHAR REFERENCES users (id) on delete set null,
     message    varchar     not null,
     created_at timestamptz NOT NULL
 );
@@ -249,5 +249,5 @@ VALUES ('4', 'Stvrte', 'Aufschneider', '2003-2-4');
 insert into trash (id, cleaned, size, accessibility, trash_type, location, description, finder_id, created_at)
 values ('1', false, 'bag', 'easy', 0, ST_GeomFromText('POINT(48 19)', 4326), '', null, '2003-2-11');
 --
-insert into collections (id, trash_id, event_id, weight, cleaned_trash, created_at)
-values ('1','1', '', 655, false, '2005-2-11')
+insert into collections (id, trash_id, weight, cleaned_trash, created_at)
+values ('1','1', 655, false, '2005-2-11')
